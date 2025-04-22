@@ -1,0 +1,19 @@
+2025-04-22 13:41:07,229 - INFO - Starting Random Forest model training
+2025-04-22 13:43:05,033 - INFO - Optuna best score: -inf
+2025-04-22 13:43:05,034 - INFO - Best parameters:
+2025-04-22 13:43:05,034 - INFO - n_estimators: 800
+2025-04-22 13:43:05,034 - INFO - max_depth: None
+2025-04-22 13:43:05,034 - INFO - min_samples_split: 6
+2025-04-22 13:43:05,034 - INFO - min_samples_leaf: 5
+2025-04-22 13:43:05,034 - INFO - max_features: 0.5
+2025-04-22 13:43:05,034 - INFO - Best metrics:
+2025-04-22 13:43:05,034 - INFO - AUC: 0.7550
+2025-04-22 13:43:05,034 - INFO - AUC-PR: 0.0629
+2025-04-22 13:43:05,034 - INFO - Sensitivity: 0.4390
+2025-04-22 13:43:05,034 - INFO - Specificity: 0.8950
+2025-04-22 13:43:05,034 - INFO - Precision: 0.0703
+2025-04-22 13:43:05,034 - INFO - Recall: 0.4390
+2025-04-22 13:43:05,034 - INFO - F1: 0.1212
+2025-04-22 13:43:05,034 - INFO - ECE: 0.1436
+2025-04-22 13:43:05,034 - INFO - MCE: 0.8508
+2025-04-22 13:43:05,034 - INFO - Brier: 0.0819

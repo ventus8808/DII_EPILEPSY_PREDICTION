@@ -1,0 +1,30 @@
+2025-04-22 13:48:46,149 - INFO - Starting CatBoost model training
+2025-04-22 13:48:54,565 - INFO - Starting CatBoost model training
+2025-04-22 13:49:39,026 - INFO - Starting CatBoost model training
+2025-04-22 13:50:28,225 - INFO - Starting CatBoost model training
+2025-04-22 13:51:20,808 - INFO - Starting CatBoost model training
+2025-04-22 13:51:55,760 - INFO - Starting CatBoost model training
+2025-04-22 13:52:27,597 - INFO - Starting CatBoost model training
+2025-04-22 13:52:34,780 - INFO - Starting CatBoost model training
+2025-04-22 13:55:10,572 - INFO - Optuna best score: 0.7655007692555973
+2025-04-22 13:55:10,572 - INFO - Best parameters:
+2025-04-22 13:55:10,573 - INFO - iterations: 614
+2025-04-22 13:55:10,573 - INFO - learning_rate: 0.19460615412007065
+2025-04-22 13:55:10,573 - INFO - depth: 10
+2025-04-22 13:55:10,573 - INFO - l2_leaf_reg: 1.1680670527167694
+2025-04-22 13:55:17,915 - INFO - Best model and parameters saved.
+2025-04-22 14:13:14,837 - INFO - Starting CatBoost model training
+2025-04-22 14:15:08,629 - INFO - Optuna best score: 0.7595081067705252
+2025-04-22 14:15:08,629 - INFO - Best parameters:
+2025-04-22 14:15:08,629 - INFO - iterations: 717
+2025-04-22 14:15:08,629 - INFO - learning_rate: 0.17274367777227997
+2025-04-22 14:15:08,629 - INFO - depth: 10
+2025-04-22 14:15:08,630 - INFO - l2_leaf_reg: 9.947983649592063
+2025-04-22 14:16:22,972 - INFO - Starting CatBoost model training
+2025-04-22 14:16:50,296 - INFO - Optuna best score: 0.7452957061551206
+2025-04-22 14:16:50,296 - INFO - Best parameters:
+2025-04-22 14:16:50,296 - INFO - iterations: 538
+2025-04-22 14:16:50,296 - INFO - learning_rate: 0.043139795651099266
+2025-04-22 14:16:50,296 - INFO - depth: 9
+2025-04-22 14:16:50,296 - INFO - l2_leaf_reg: 2.158927015190441
+2025-04-22 14:16:54,461 - INFO - Best model, parameters, and feature info saved.

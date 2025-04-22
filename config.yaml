@@ -1,0 +1,21 @@
+# 项目全局配置文件
+# 用户只需修改本文件即可适配不同任务
+
+# 数据相关
+# 原始数据文件路径（相对路径）
+data_path: "data/16_ML.csv"
+# 主要暴露变量名
+exposure: "DII_food"
+# 结局变量名
+outcome: "Epilepsy"
+# 协变量列表
+covariates: ["Gender", "Age", "BMI", "Education", "Marriage", "Smoke", "Alcohol", "Employment", "ActivityLevel"]
+
+# 模型训练次数
+n_trials: 10000
+
+# 输出相关
+output_dir: "result/"
+plot_dir: "plot/"
+model_dir: "model/"
+random_seed: 42
