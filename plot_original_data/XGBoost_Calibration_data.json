@@ -1,79 +1,58 @@
 {
     "bin_metrics": [
         {
-            "bin_lower": 0.0,
-            "bin_upper": 0.1,
-            "actual_prob": 0.00673277972401552,
-            "predicted_prob": 0.013953294336159041,
-            "bin_weight": 0.8711060408267616
-        },
-        {
             "bin_lower": 0.1,
             "bin_upper": 0.2,
-            "actual_prob": 0.0,
-            "predicted_prob": 0.13806821694590976,
-            "bin_weight": 0.056328116372169765
+            "actual_prob": 0.0011636018724778467,
+            "predicted_prob": 0.19067009151227968,
+            "bin_weight": 0.15105740938520576
         },
         {
             "bin_lower": 0.2,
             "bin_upper": 0.30000000000000004,
-            "actual_prob": 0.11654326854195042,
-            "predicted_prob": 0.24188436623382129,
-            "bin_weight": 0.013814674430354706
+            "actual_prob": 0.007060473048774711,
+            "predicted_prob": 0.23742308527622685,
+            "bin_weight": 0.5444470715614949
         },
         {
             "bin_lower": 0.30000000000000004,
             "bin_upper": 0.4,
-            "actual_prob": 0.0,
-            "predicted_prob": 0.3541730653514178,
-            "bin_weight": 0.012210638632234063
+            "actual_prob": 0.03966409198756993,
+            "predicted_prob": 0.3410732396916369,
+            "bin_weight": 0.14049721953632482
         },
         {
             "bin_lower": 0.4,
             "bin_upper": 0.5,
-            "actual_prob": 0.02123506499594493,
-            "predicted_prob": 0.4679079415216744,
-            "bin_weight": 0.008443181345571935
+            "actual_prob": 0.020233246196845786,
+            "predicted_prob": 0.4389324485138387,
+            "bin_weight": 0.06629567427841428
         },
         {
             "bin_lower": 0.5,
             "bin_upper": 0.6000000000000001,
-            "actual_prob": 0.07816243989373418,
-            "predicted_prob": 0.5579252685596142,
-            "bin_weight": 0.012688572512814286
+            "actual_prob": 0.006993863403137703,
+            "predicted_prob": 0.549366331438146,
+            "bin_weight": 0.05357545849762485
         },
         {
             "bin_lower": 0.6000000000000001,
             "bin_upper": 0.7000000000000001,
-            "actual_prob": 0.45083776572322126,
-            "predicted_prob": 0.6585279156196723,
-            "bin_weight": 0.013035185307821507
+            "actual_prob": 0.13511617479303167,
+            "predicted_prob": 0.6489038356154992,
+            "bin_weight": 0.024228626668696608
         },
         {
             "bin_lower": 0.7000000000000001,
             "bin_upper": 0.8,
-            "actual_prob": 0.07335705886215196,
-            "predicted_prob": 0.7490699006908195,
-            "bin_weight": 0.006134364928894687
-        },
-        {
-            "bin_lower": 0.8,
-            "bin_upper": 0.9,
-            "actual_prob": 0.112815983616881,
-            "predicted_prob": 0.8412102881718364,
-            "bin_weight": 0.0011851700145157358
-        },
-        {
-            "bin_lower": 0.9,
-            "bin_upper": 1.0,
-            "actual_prob": 0.5599945575002273,
-            "predicted_prob": 0.9554493450636349,
-            "bin_weight": 0.005054055628861818
+            "actual_prob": 0.1685782746987785,
+            "predicted_prob": 0.7418985081770196,
+            "bin_weight": 0.01989854007223888
         }
     ],
-    "ece": 0.039696298131686264,
-    "mce": 0.7283943045549555,
-    "brier": 0.025992664601533443,
-    "chi2": 5906014.788103361,
+    "ece": 0.277066160856446,
+    "mce": 0.5733202334782411,
+    "brier": 0.10440457032726341,
+    "chi2": 1333919.0741461013,
     "p_value": 0.0
 }

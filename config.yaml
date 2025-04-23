@@ -11,8 +11,27 @@ outcome: "Epilepsy"
 # 协变量列表
 covariates: ["Gender", "Age", "BMI", "Education", "Marriage", "Smoke", "Alcohol", "Employment", "ActivityLevel"]
 
+# 目标函数权重
+objective_weights:
+  AUC: 0.3
+  MCE: -0.15
+  ECE: -0.15
+  F1: 0.1
+  Precision: 0.2
+  Sensitivity: 0.3
+  Specificity: 0.3
+
+# 目标函数硬约束
+objective_constraints:
+  AUC_min: 0.7
+  AUC_max: 0.9
+  ECE_max: 0.25
+  F1_min: 0.2
+  Sensitivity_min: 0.5
+  Specificity_min: 0.5
+
 # 模型训练次数
-n_trials: 10000
+n_trials: 1000
 
 # 输出相关
 output_dir: "result/"

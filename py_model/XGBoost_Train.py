@@ -130,21 +130,35 @@ def calculate_metrics(y_true, y_pred, y_prob, weights=None):
         'LogLoss': logloss
     }
 
-def objective_function(metrics):
-    weights = {
-        'AUC-ROC': 0.3, 'MCE': -0.15, 'ECE': -0.15, 'F1': 0.1,
-        'AUC-PR': 0.1, 'Sensitivity': 0.1, 'Brier': -0.1, 'LogLoss': -0.1
-    }
-    # 约束
-    if metrics['AUC-ROC'] < 0.7:
+import yaml
+
+def load_objective_config(config_path='config.yaml'):
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
+    weights = config.get('objective_weights', {})
+    constraints = config.get('objective_constraints', {})
+    return weights, constraints
+
+def objective_function(metrics, config_path='config.yaml'):
+    """Calculate objective score based on metrics and config constraints."""
+    weights, constraints = load_objective_config(config_path)
+    # 硬约束
+    if 'AUC_min' in constraints and metrics.get('AUC', 0) < constraints['AUC_min']:
         return float('-inf')
-    if metrics['MCE'] >= 0.3:
+    if 'AUC_max' in constraints and metrics.get('AUC', 1) > constraints['AUC_max']:
         return float('-inf')
-    if metrics['ECE'] >= 0.25:
+    if 'MCE_max' in constraints and metrics.get('MCE', 0) >= constraints['MCE_max']:
         return float('-inf')
-    if metrics['F1'] <= 0.2:
+    if 'ECE_max' in constraints and metrics.get('ECE', 0) >= constraints['ECE_max']:
         return float('-inf')
-    score = sum(weight * metrics[metric] for metric, weight in weights.items())
+    if 'F1_min' in constraints and metrics.get('F1', 0) <= constraints['F1_min']:
+        return float('-inf')
+    if 'Sensitivity_min' in constraints and metrics.get('Sensitivity', 0) < constraints['Sensitivity_min']:
+        return float('-inf')
+    if 'Specificity_min' in constraints and metrics.get('Specificity', 0) < constraints['Specificity_min']:
+        return float('-inf')
+    # 线性加权
+    score = sum(weights.get(metric, 0) * metrics.get(metric, 0) for metric in weights)
     return score
 
 # 5. Optuna + SMOTE 优化
@@ -302,41 +316,60 @@ def main():
     logger.info("Starting XGBoost model training")
     X_train, X_test, y_train, y_test, weights_train, weights_test, preprocessor = load_and_preprocess_data()
     n_trials = config.get('n_trials', 200)
-    study = optuna.create_study(direction='maximize')
-    study.optimize(objective, n_trials=n_trials, show_progress_bar=True)
-    best_trial = study.best_trial
-    best_score = best_trial.value
-    best_params = best_trial.user_attrs['params']
-    best_metrics = best_trial.user_attrs['metrics']
-    # 训练并保存最佳模型
-    pipeline = Pipeline([
-        ('preprocessor', preprocessor),
-        ('classifier', XGBClassifier(**best_params))
-    ])
-    smote = SMOTE(random_state=42)
-    X_train_res, y_train_res = smote.fit_resample(X_train, y_train)
-    pipeline.fit(X_train_res, y_train_res)
-    model_path = model_dir / f'XGBoost_model.pkl'
-    with open(model_path, 'wb') as f:
-        pickle.dump(pipeline, f)
-    # 保存最佳参数
-    def convert_np(obj):
-        if isinstance(obj, (np.integer, np.int32, np.int64)):
-            return int(obj)
-        elif isinstance(obj, (np.floating, np.float32, np.float64)):
-            return float(obj)
-        elif isinstance(obj, np.ndarray):
-            return obj.tolist()
-        return obj
-    params_serializable = {k: convert_np(v) for k, v in best_params.items()}
-    param_path = model_dir / f'XGBoost_best_params.json'
-    with open(param_path, 'w') as f:
-        json.dump(params_serializable, f, indent=4)
-    logger.info(f"Optuna best score: {best_score}")
-    logger.info("Best parameters:")
+    # 断点恢复机制：每发现更优模型立即保存
+    best_score = float('-inf')
+    best_params = None
+    best_metrics = None
+    for trial in range(n_trials):
+        optuna_trial = study.ask()
+        score = objective(optuna_trial)
+        study.tell(optuna_trial, score)
+        trial_metrics = optuna_trial.user_attrs['metrics']
+        trial_params = optuna_trial.user_attrs['params']
+        if score > best_score:
+            best_score = score
+            best_params = trial_params
+            best_metrics = trial_metrics
+            # 训练并保存当前最佳模型
+            pipeline = Pipeline([
+                ('preprocessor', preprocessor),
+                ('classifier', XGBClassifier(**best_params))
+            ])
+            smote = SMOTE(random_state=42)
+            X_train_res, y_train_res = smote.fit_resample(X_train, y_train)
+            pipeline.fit(X_train_res, y_train_res)
+            model_path = model_dir / f'XGBoost_model.pkl'
+            with open(model_path, 'wb') as f:
+                pickle.dump(pipeline, f)
+            # 保存最佳参数
+            def convert_np(obj):
+                if isinstance(obj, (np.integer, np.int32, np.int64)):
+                    return int(obj)
+                elif isinstance(obj, (np.floating, np.float32, np.float64)):
+                    return float(obj)
+                elif isinstance(obj, np.ndarray):
+                    return obj.tolist()
+                return obj
+            params_serializable = {k: convert_np(v) for k, v in best_params.items()}
+            param_path = model_dir / f'XGBoost_best_params.json'
+            with open(param_path, 'w') as f:
+                json.dump(params_serializable, f, indent=4)
+            # 保存最佳指标
+            metrics_path = model_dir / f'XGBoost_best_metrics.json'
+            with open(metrics_path, 'w') as f:
+                json.dump(best_metrics, f, indent=4)
+            logger.info(f"[Trial {trial+1}] New best score: {best_score}")
+            logger.info("Best parameters:")
+            for k, v in best_params.items():
+                logger.info(f"{k}: {v}")
+            logger.info("Best metrics:")
+            for metric, value in best_metrics.items():
+                logger.info(f"{metric}: {value:.4f}")
+    logger.info(f"Training finished. Best score: {best_score}")
+    logger.info("Final best parameters:")
     for k, v in best_params.items():
         logger.info(f"{k}: {v}")
-    logger.info("Best metrics:")
+    logger.info("Final best metrics:")
     for metric, value in best_metrics.items():
         logger.info(f"{metric}: {value:.4f}")
 
