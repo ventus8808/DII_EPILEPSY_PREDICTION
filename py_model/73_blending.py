@@ -206,7 +206,7 @@ def main():
     # Try different meta-learners
     meta_learners = {
         'LogisticRegression': LogisticRegression(random_state=42, max_iter=1000),
-        'XGBoost': xgb.XGBClassifier(random_state=42, use_label_encoder=False, eval_metric='logloss')
+        'XGBoost': xgb.XGBClassifier(random_state=42, eval_metric='logloss')
     }
     
     best_meta_learner = None

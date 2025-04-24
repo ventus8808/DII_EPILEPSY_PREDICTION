@@ -47,3 +47,533 @@
 2025-04-22 17:37:58,992 - INFO - MCE: 0.5733
 2025-04-22 17:37:58,992 - INFO - Brier: 0.1044
 2025-04-22 17:37:58,992 - INFO - LogLoss: 0.3747
+2025-04-24 10:24:51,165 - INFO - Starting XGBoost model training
+2025-04-24 10:24:51,202 - INFO - Running 10 trials for hyperparameter optimization
+2025-04-24 10:24:51,611 - INFO - Fold 1/5 metrics: Sensitivity=0.2723, Specificity=0.9415, AUC-ROC=0.7118
+2025-04-24 10:24:52,036 - INFO - Fold 2/5 metrics: Sensitivity=0.3346, Specificity=0.9437, AUC-ROC=0.7729
+2025-04-24 10:24:52,434 - INFO - Fold 3/5 metrics: Sensitivity=0.2641, Specificity=0.9388, AUC-ROC=0.7730
+2025-04-24 10:24:52,835 - INFO - Fold 4/5 metrics: Sensitivity=0.3278, Specificity=0.9272, AUC-ROC=0.7101
+2025-04-24 10:24:53,245 - INFO - Fold 5/5 metrics: Sensitivity=0.2474, Specificity=0.9470, AUC-ROC=0.6806
+2025-04-24 10:24:53,246 - INFO - Trial 0: score=-inf, AUC-ROC=0.7297
+2025-04-24 10:24:54,652 - INFO - Fold 1/5 metrics: Sensitivity=0.2287, Specificity=0.9752, AUC-ROC=0.7500
+2025-04-24 10:24:56,063 - INFO - Fold 2/5 metrics: Sensitivity=0.4270, Specificity=0.9796, AUC-ROC=0.8007
+2025-04-24 10:24:57,473 - INFO - Fold 3/5 metrics: Sensitivity=0.4869, Specificity=0.9691, AUC-ROC=0.8463
+2025-04-24 10:24:58,816 - INFO - Fold 4/5 metrics: Sensitivity=0.3696, Specificity=0.9619, AUC-ROC=0.6297
+2025-04-24 10:25:00,203 - INFO - Fold 5/5 metrics: Sensitivity=0.2324, Specificity=0.9829, AUC-ROC=0.7332
+2025-04-24 10:25:00,205 - INFO - Trial 1: score=-inf, AUC-ROC=0.7520
+2025-04-24 10:25:00,892 - INFO - Fold 1/5 metrics: Sensitivity=0.2610, Specificity=0.9090, AUC-ROC=0.6814
+2025-04-24 10:25:01,564 - INFO - Fold 2/5 metrics: Sensitivity=0.3904, Specificity=0.9134, AUC-ROC=0.7438
+2025-04-24 10:25:02,265 - INFO - Fold 3/5 metrics: Sensitivity=0.3712, Specificity=0.9184, AUC-ROC=0.7394
+2025-04-24 10:25:02,918 - INFO - Fold 4/5 metrics: Sensitivity=0.3104, Specificity=0.8963, AUC-ROC=0.7500
+2025-04-24 10:25:03,548 - INFO - Fold 5/5 metrics: Sensitivity=0.2474, Specificity=0.9178, AUC-ROC=0.6971
+2025-04-24 10:25:03,550 - INFO - Trial 2: score=-inf, AUC-ROC=0.7223
+2025-04-24 10:25:04,251 - INFO - Fold 1/5 metrics: Sensitivity=0.1981, Specificity=0.9239, AUC-ROC=0.7055
+2025-04-24 10:25:04,942 - INFO - Fold 2/5 metrics: Sensitivity=0.3771, Specificity=0.9410, AUC-ROC=0.7705
+2025-04-24 10:25:05,620 - INFO - Fold 3/5 metrics: Sensitivity=0.4682, Specificity=0.9366, AUC-ROC=0.8064
+2025-04-24 10:25:06,307 - INFO - Fold 4/5 metrics: Sensitivity=0.3108, Specificity=0.9228, AUC-ROC=0.6833
+2025-04-24 10:25:06,977 - INFO - Fold 5/5 metrics: Sensitivity=0.2332, Specificity=0.9465, AUC-ROC=0.7672
+2025-04-24 10:25:06,978 - INFO - Trial 3: score=-inf, AUC-ROC=0.7466
+2025-04-24 10:25:07,809 - INFO - Fold 1/5 metrics: Sensitivity=0.2232, Specificity=0.9741, AUC-ROC=0.7610
+2025-04-24 10:25:08,679 - INFO - Fold 2/5 metrics: Sensitivity=0.4206, Specificity=0.9779, AUC-ROC=0.7999
+2025-04-24 10:25:09,514 - INFO - Fold 3/5 metrics: Sensitivity=0.4869, Specificity=0.9702, AUC-ROC=0.8575
+2025-04-24 10:25:10,382 - INFO - Fold 4/5 metrics: Sensitivity=0.3696, Specificity=0.9570, AUC-ROC=0.6547
+2025-04-24 10:25:11,205 - INFO - Fold 5/5 metrics: Sensitivity=0.2114, Specificity=0.9785, AUC-ROC=0.7164
+2025-04-24 10:25:11,207 - INFO - Trial 4: score=-inf, AUC-ROC=0.7579
+2025-04-24 10:25:12,860 - INFO - Fold 1/5 metrics: Sensitivity=0.2341, Specificity=0.9741, AUC-ROC=0.7138
+2025-04-24 10:25:14,513 - INFO - Fold 2/5 metrics: Sensitivity=0.4270, Specificity=0.9823, AUC-ROC=0.7918
+2025-04-24 10:25:16,202 - INFO - Fold 3/5 metrics: Sensitivity=0.4802, Specificity=0.9708, AUC-ROC=0.8457
+2025-04-24 10:25:17,864 - INFO - Fold 4/5 metrics: Sensitivity=0.3462, Specificity=0.9630, AUC-ROC=0.6236
+2025-04-24 10:25:19,535 - INFO - Fold 5/5 metrics: Sensitivity=0.2324, Specificity=0.9823, AUC-ROC=0.7370
+2025-04-24 10:25:19,537 - INFO - Trial 5: score=-inf, AUC-ROC=0.7424
+2025-04-24 10:25:20,809 - INFO - Fold 1/5 metrics: Sensitivity=0.2471, Specificity=0.9790, AUC-ROC=0.7667
+2025-04-24 10:25:22,036 - INFO - Fold 2/5 metrics: Sensitivity=0.4270, Specificity=0.9812, AUC-ROC=0.7894
+2025-04-24 10:25:23,337 - INFO - Fold 3/5 metrics: Sensitivity=0.5228, Specificity=0.9713, AUC-ROC=0.8425
+2025-04-24 10:25:24,633 - INFO - Fold 4/5 metrics: Sensitivity=0.3788, Specificity=0.9719, AUC-ROC=0.6353
+2025-04-24 10:25:25,863 - INFO - Fold 5/5 metrics: Sensitivity=0.2324, Specificity=0.9851, AUC-ROC=0.7455
+2025-04-24 10:25:25,865 - INFO - Trial 6: score=-inf, AUC-ROC=0.7559
+2025-04-24 10:25:26,465 - INFO - Fold 1/5 metrics: Sensitivity=0.2318, Specificity=0.9040, AUC-ROC=0.7064
+2025-04-24 10:25:27,089 - INFO - Fold 2/5 metrics: Sensitivity=0.3990, Specificity=0.9151, AUC-ROC=0.6985
+2025-04-24 10:25:27,694 - INFO - Fold 3/5 metrics: Sensitivity=0.4995, Specificity=0.9189, AUC-ROC=0.8184
+2025-04-24 10:25:28,327 - INFO - Fold 4/5 metrics: Sensitivity=0.3337, Specificity=0.9046, AUC-ROC=0.6921
+2025-04-24 10:25:28,961 - INFO - Fold 5/5 metrics: Sensitivity=0.2474, Specificity=0.9194, AUC-ROC=0.7661
+2025-04-24 10:25:28,963 - INFO - Trial 7: score=-inf, AUC-ROC=0.7363
+2025-04-24 10:25:30,350 - INFO - Fold 1/5 metrics: Sensitivity=0.2670, Specificity=0.9570, AUC-ROC=0.7455
+2025-04-24 10:25:31,632 - INFO - Fold 2/5 metrics: Sensitivity=0.4820, Specificity=0.9614, AUC-ROC=0.7733
+2025-04-24 10:25:33,022 - INFO - Fold 3/5 metrics: Sensitivity=0.4478, Specificity=0.9526, AUC-ROC=0.8338
+2025-04-24 10:25:34,344 - INFO - Fold 4/5 metrics: Sensitivity=0.2669, Specificity=0.9443, AUC-ROC=0.6628
+2025-04-24 10:25:35,660 - INFO - Fold 5/5 metrics: Sensitivity=0.2114, Specificity=0.9647, AUC-ROC=0.7125
+2025-04-24 10:25:35,661 - INFO - Trial 8: score=-inf, AUC-ROC=0.7456
+2025-04-24 10:25:35,761 - INFO - Fold 1/5 metrics: Sensitivity=0.2949, Specificity=0.8290, AUC-ROC=0.6703
+2025-04-24 10:25:35,890 - INFO - Fold 2/5 metrics: Sensitivity=0.5199, Specificity=0.8367, AUC-ROC=0.6683
+2025-04-24 10:25:36,007 - INFO - Fold 3/5 metrics: Sensitivity=0.3818, Specificity=0.8345, AUC-ROC=0.7390
+2025-04-24 10:25:36,112 - INFO - Fold 4/5 metrics: Sensitivity=0.4056, Specificity=0.8456, AUC-ROC=0.7081
+2025-04-24 10:25:36,216 - INFO - Fold 5/5 metrics: Sensitivity=0.5435, Specificity=0.8521, AUC-ROC=0.7151
+2025-04-24 10:25:36,218 - INFO - Trial 9: score=-inf, AUC-ROC=0.7001
+2025-04-24 10:25:36,218 - INFO - Optimization finished. Best score: -inf
+2025-04-24 10:25:36,218 - INFO - Best parameters:
+2025-04-24 10:25:36,218 - INFO - n_estimators: 300
+2025-04-24 10:25:36,218 - INFO - max_depth: None
+2025-04-24 10:25:36,218 - INFO - learning_rate: 0.05907320350793839
+2025-04-24 10:25:36,218 - INFO - subsample: 0.6775107562670531
+2025-04-24 10:25:36,218 - INFO - colsample_bytree: 0.4500435101442505
+2025-04-24 10:25:36,218 - INFO - reg_alpha: 1.775713497289697
+2025-04-24 10:25:36,218 - INFO - reg_lambda: 1.5038516474123624
+2025-04-24 10:25:36,218 - INFO - use_label_encoder: False
+2025-04-24 10:25:36,218 - INFO - random_state: 42
+2025-04-24 10:25:36,218 - INFO - eval_metric: logloss
+2025-04-24 10:25:36,220 - INFO - Best CV metrics:
+2025-04-24 10:25:36,220 - INFO - Accuracy: 0.9388605474415618
+2025-04-24 10:25:36,220 - INFO - Sensitivity: 0.2892328898617682
+2025-04-24 10:25:36,220 - INFO - Specificity: 0.9396521809009982
+2025-04-24 10:25:36,220 - INFO - Precision: 0.08292034747017771
+2025-04-24 10:25:36,220 - INFO - NPV: 0.9889728569245152
+2025-04-24 10:25:36,220 - INFO - F1 Score: 0.1285167747752351
+2025-04-24 10:25:36,220 - INFO - Youden's Index: 0.22888507076276654
+2025-04-24 10:25:36,220 - INFO - Cohen's Kappa: 0.1069959533650953
+2025-04-24 10:25:36,220 - INFO - AUC-ROC: 0.7296943854784071
+2025-04-24 10:25:36,220 - INFO - AUC-PR: 0.07577026189666887
+2025-04-24 10:25:36,220 - INFO - Log Loss: 0.18638248202740693
+2025-04-24 10:25:36,220 - INFO - Brier: 0.05149603909962188
+2025-04-24 10:25:36,220 - INFO - ECE: 0.09725825849222351
+2025-04-24 10:25:36,220 - INFO - MCE: 0.836304436481907
+2025-04-24 10:25:36,220 - INFO - Final best parameters:
+2025-04-24 10:25:36,220 - INFO - n_estimators: 300
+2025-04-24 10:25:36,220 - INFO - max_depth: None
+2025-04-24 10:25:36,220 - INFO - learning_rate: 0.05907320350793839
+2025-04-24 10:25:36,220 - INFO - subsample: 0.6775107562670531
+2025-04-24 10:25:36,220 - INFO - colsample_bytree: 0.4500435101442505
+2025-04-24 10:25:36,220 - INFO - reg_alpha: 1.775713497289697
+2025-04-24 10:25:36,220 - INFO - reg_lambda: 1.5038516474123624
+2025-04-24 10:25:36,220 - INFO - use_label_encoder: False
+2025-04-24 10:25:36,220 - INFO - random_state: 42
+2025-04-24 10:25:36,220 - INFO - eval_metric: logloss
+2025-04-24 10:25:36,220 - INFO - Final best metrics (CV mean):
+2025-04-24 10:25:36,220 - INFO - Accuracy: 0.939
+2025-04-24 10:25:36,220 - INFO - Sensitivity: 0.289
+2025-04-24 10:25:36,220 - INFO - Specificity: 0.940
+2025-04-24 10:25:36,220 - INFO - Precision: 0.083
+2025-04-24 10:25:36,220 - INFO - NPV: 0.989
+2025-04-24 10:25:36,220 - INFO - F1 Score: 0.129
+2025-04-24 10:25:36,220 - INFO - Youden's Index: 0.229
+2025-04-24 10:25:36,220 - INFO - Cohen's Kappa: 0.107
+2025-04-24 10:25:36,220 - INFO - AUC-ROC: 0.730
+2025-04-24 10:25:36,220 - INFO - AUC-PR: 0.076
+2025-04-24 10:25:36,220 - INFO - Log Loss: 0.186
+2025-04-24 10:25:36,220 - INFO - Brier: 0.051
+2025-04-24 10:25:36,221 - INFO - ECE: 0.097
+2025-04-24 10:25:36,221 - INFO - MCE: 0.836
+2025-04-24 10:25:36,221 - INFO - Evaluating on held-out test set (never seen during training/tuning)...
+2025-04-24 10:28:30,832 - INFO - Starting XGBoost model training
+2025-04-24 10:28:30,832 - INFO - [并行调参说明] 本脚本支持Optuna多进程/多机并行调参，只需多开终端运行本脚本即可，Optuna会自动分配trial。
+2025-04-24 10:28:30,879 - INFO - Running 10 trials for hyperparameter optimization
+2025-04-24 10:28:30,879 - INFO - Found existing XGBoost_best_params.json, evaluating initial score...
+2025-04-24 10:28:30,879 - ERROR - Error loading existing params: 'PseudoTrial' object has no attribute 'suggest_categorical'
+2025-04-24 10:28:30,879 - INFO - Starting optimization from scratch due to error loading params.
+2025-04-24 10:28:32,590 - INFO - Fold 1/5 metrics: Sensitivity=0.215, Specificity=0.926, AUC-ROC=0.704
+2025-04-24 10:28:34,274 - INFO - Fold 2/5 metrics: Sensitivity=0.377, Specificity=0.937, AUC-ROC=0.765
+2025-04-24 10:28:35,991 - INFO - Fold 3/5 metrics: Sensitivity=0.357, Specificity=0.942, AUC-ROC=0.803
+2025-04-24 10:28:37,758 - INFO - Fold 4/5 metrics: Sensitivity=0.326, Specificity=0.924, AUC-ROC=0.725
+2025-04-24 10:28:39,493 - INFO - Fold 5/5 metrics: Sensitivity=0.247, Specificity=0.939, AUC-ROC=0.735
+2025-04-24 10:28:39,495 - INFO - [Trial 0] 5-fold mean metrics: {'Accuracy': 0.9331771084076129, 'Sensitivity': 0.30468720242957337, 'Specificity': 0.9334736615247495, 'Precision': 0.07894531522482925, 'NPV': 0.9886652823103403, 'F1 Score': 0.1252119721132871, "Youden's Index": 0.23816086395432284, "Cohen's Kappa": 0.10303959115905421, 'AUC-ROC': 0.7464261885560912, 'AUC-PR': 0.06475524428860323, 'Log Loss': 0.2321585101278126, 'Brier': 0.060862754141211825, 'ECE': 0.15218786883378427, 'MCE': 0.8537496914250753}
+2025-04-24 10:28:39,495 - INFO - Trial 0: AUC-ROC=0.746 AUC-PR=0.065 Sens=0.305 Spec=0.933 Prec=0.079 Score=-inf
+2025-04-24 10:28:39,495 - INFO - [04-24 10:28:39][Trial 1/10] AUC-ROC=0.746 AUC-PR=0.065 Sens=0.305 Spec=0.933 Prec=0.079 Score=-inf
+2025-04-24 10:28:40,330 - INFO - Fold 1/5 metrics: Sensitivity=0.232, Specificity=0.967, AUC-ROC=0.745
+2025-04-24 10:28:41,162 - INFO - Fold 2/5 metrics: Sensitivity=0.427, Specificity=0.976, AUC-ROC=0.793
+2025-04-24 10:28:42,039 - INFO - Fold 3/5 metrics: Sensitivity=0.504, Specificity=0.965, AUC-ROC=0.847
+2025-04-24 10:28:42,923 - INFO - Fold 4/5 metrics: Sensitivity=0.392, Specificity=0.955, AUC-ROC=0.662
+2025-04-24 10:28:43,820 - INFO - Fold 5/5 metrics: Sensitivity=0.232, Specificity=0.971, AUC-ROC=0.719
+2025-04-24 10:28:43,822 - INFO - [Trial 1] 5-fold mean metrics: {'Accuracy': 0.962123534444261, 'Sensitivity': 0.3575722731598665, 'Specificity': 0.9670128298321297, 'Precision': 0.1646937048596406, 'NPV': 0.9896184057633717, 'F1 Score': 0.22447734370221833, "Youden's Index": 0.3245851029919963, "Cohen's Kappa": 0.2077804026961126, 'AUC-ROC': 0.7532349865385218, 'AUC-PR': 0.14124158368779807, 'Log Loss': 0.12516772472107573, 'Brier': 0.03196977934492425, 'ECE': 0.05118533530065393, 'MCE': 0.7632481566452187}
+2025-04-24 10:28:43,822 - INFO - Trial 1: AUC-ROC=0.753 AUC-PR=0.141 Sens=0.358 Spec=0.967 Prec=0.165 Score=-inf
+2025-04-24 10:28:43,822 - INFO - [04-24 10:28:43][Trial 2/10] AUC-ROC=0.753 AUC-PR=0.141 Sens=0.358 Spec=0.967 Prec=0.165 Score=-inf
+2025-04-24 10:28:44,956 - INFO - Fold 1/5 metrics: Sensitivity=0.198, Specificity=0.916, AUC-ROC=0.704
+2025-04-24 10:28:46,047 - INFO - Fold 2/5 metrics: Sensitivity=0.377, Specificity=0.926, AUC-ROC=0.753
+2025-04-24 10:28:47,137 - INFO - Fold 3/5 metrics: Sensitivity=0.473, Specificity=0.931, AUC-ROC=0.811
+2025-04-24 10:28:48,253 - INFO - Fold 4/5 metrics: Sensitivity=0.311, Specificity=0.915, AUC-ROC=0.706
+2025-04-24 10:28:49,380 - INFO - Fold 5/5 metrics: Sensitivity=0.247, Specificity=0.940, AUC-ROC=0.761
+2025-04-24 10:28:49,382 - INFO - [Trial 2] 5-fold mean metrics: {'Accuracy': 0.9261374657542516, 'Sensitivity': 0.32132519671126536, 'Specificity': 0.9256415220464417, 'Precision': 0.07524844885676521, 'NPV': 0.9886849541843905, 'F1 Score': 0.12162498326406312, "Youden's Index": 0.24696671875770707, "Cohen's Kappa": 0.09882401696772666, 'AUC-ROC': 0.7469930407107939, 'AUC-PR': 0.05699926665325221, 'Log Loss': 0.27651649187615274, 'Brier': 0.07203397492424671, 'ECE': 0.19303441032184573, 'MCE': 0.7661085856857069}
+2025-04-24 10:28:49,382 - INFO - Trial 2: AUC-ROC=0.747 AUC-PR=0.057 Sens=0.321 Spec=0.926 Prec=0.075 Score=-inf
+2025-04-24 10:28:49,382 - INFO - [04-24 10:28:49][Trial 3/10] AUC-ROC=0.747 AUC-PR=0.057 Sens=0.321 Spec=0.926 Prec=0.075 Score=-inf
+2025-04-24 10:28:50,015 - INFO - Fold 1/5 metrics: Sensitivity=0.272, Specificity=0.936, AUC-ROC=0.730
+2025-04-24 10:28:50,639 - INFO - Fold 2/5 metrics: Sensitivity=0.377, Specificity=0.937, AUC-ROC=0.775
+2025-04-24 10:28:51,267 - INFO - Fold 3/5 metrics: Sensitivity=0.478, Specificity=0.944, AUC-ROC=0.797
+2025-04-24 10:28:51,878 - INFO - Fold 4/5 metrics: Sensitivity=0.371, Specificity=0.933, AUC-ROC=0.734
+2025-04-24 10:28:52,498 - INFO - Fold 5/5 metrics: Sensitivity=0.267, Specificity=0.946, AUC-ROC=0.724
+2025-04-24 10:28:52,499 - INFO - [Trial 3] 5-fold mean metrics: {'Accuracy': 0.941545558168708, 'Sensitivity': 0.35311197006178013, 'Specificity': 0.9392108015570646, 'Precision': 0.10375838532348516, 'NPV': 0.9897697852796998, 'F1 Score': 0.16015809149577506, "Youden's Index": 0.2923227716188447, "Cohen's Kappa": 0.13939015887480535, 'AUC-ROC': 0.7518613602215403, 'AUC-PR': 0.07509251606194377, 'Log Loss': 0.23605154561471356, 'Brier': 0.06057694772242613, 'ECE': 0.16108931081815026, 'MCE': 0.7920035409554034}
+2025-04-24 10:28:52,499 - INFO - Trial 3: AUC-ROC=0.752 AUC-PR=0.075 Sens=0.353 Spec=0.939 Prec=0.104 Score=-inf
+2025-04-24 10:28:52,500 - INFO - [04-24 10:28:52][Trial 4/10] AUC-ROC=0.752 AUC-PR=0.075 Sens=0.353 Spec=0.939 Prec=0.104 Score=-inf
+2025-04-24 10:28:52,842 - INFO - Fold 1/5 metrics: Sensitivity=0.255, Specificity=0.904, AUC-ROC=0.678
+2025-04-24 10:28:53,185 - INFO - Fold 2/5 metrics: Sensitivity=0.323, Specificity=0.904, AUC-ROC=0.734
+2025-04-24 10:28:53,537 - INFO - Fold 3/5 metrics: Sensitivity=0.398, Specificity=0.917, AUC-ROC=0.763
+2025-04-24 10:28:53,890 - INFO - Fold 4/5 metrics: Sensitivity=0.310, Specificity=0.900, AUC-ROC=0.750
+2025-04-24 10:28:54,228 - INFO - Fold 5/5 metrics: Sensitivity=0.247, Specificity=0.911, AUC-ROC=0.686
+2025-04-24 10:28:54,230 - INFO - [Trial 4] 5-fold mean metrics: {'Accuracy': 0.9109141978472529, 'Sensitivity': 0.3067656853789513, 'Specificity': 0.9071054768784192, 'Precision': 0.05786718422934548, 'NPV': 0.9888139028034164, 'F1 Score': 0.0972519898209215, "Youden's Index": 0.21387116225737057, "Cohen's Kappa": 0.07300582025067004, 'AUC-ROC': 0.7221616142904543, 'AUC-PR': 0.05407431156683536, 'Log Loss': 0.25705689809890436, 'Brier': 0.07352627991898855, 'ECE': 0.15911584721835487, 'MCE': 0.8636339248608047}
+2025-04-24 10:28:54,230 - INFO - Trial 4: AUC-ROC=0.722 AUC-PR=0.054 Sens=0.307 Spec=0.907 Prec=0.058 Score=-inf
+2025-04-24 10:28:54,230 - INFO - [04-24 10:28:54][Trial 5/10] AUC-ROC=0.722 AUC-PR=0.054 Sens=0.307 Spec=0.907 Prec=0.058 Score=-inf
+2025-04-24 10:28:54,756 - INFO - Fold 1/5 metrics: Sensitivity=0.260, Specificity=0.942, AUC-ROC=0.708
+2025-04-24 10:28:55,309 - INFO - Fold 2/5 metrics: Sensitivity=0.328, Specificity=0.953, AUC-ROC=0.773
+2025-04-24 10:28:55,830 - INFO - Fold 3/5 metrics: Sensitivity=0.457, Specificity=0.943, AUC-ROC=0.801
+2025-04-24 10:28:56,357 - INFO - Fold 4/5 metrics: Sensitivity=0.423, Specificity=0.936, AUC-ROC=0.700
+2025-04-24 10:28:56,920 - INFO - Fold 5/5 metrics: Sensitivity=0.323, Specificity=0.955, AUC-ROC=0.697
+2025-04-24 10:28:56,922 - INFO - [Trial 5] 5-fold mean metrics: {'Accuracy': 0.9404538334472428, 'Sensitivity': 0.35800780726386017, 'Specificity': 0.9459410146732757, 'Precision': 0.10121203432518266, 'NPV': 0.9896173968106551, 'F1 Score': 0.1573288433523049, "Youden's Index": 0.30394882193713596, "Cohen's Kappa": 0.1364373750360867, 'AUC-ROC': 0.7358535436270757, 'AUC-PR': 0.08400770102197916, 'Log Loss': 0.16448788869532235, 'Brier': 0.04521548362832297, 'ECE': 0.0772245586149989, 'MCE': 0.8314188446981884}
+2025-04-24 10:28:56,922 - INFO - Trial 5: AUC-ROC=0.736 AUC-PR=0.084 Sens=0.358 Spec=0.946 Prec=0.101 Score=-inf
+2025-04-24 10:28:56,922 - INFO - [04-24 10:28:56][Trial 6/10] AUC-ROC=0.736 AUC-PR=0.084 Sens=0.358 Spec=0.946 Prec=0.101 Score=-inf
+2025-04-24 10:28:58,652 - INFO - Fold 1/5 metrics: Sensitivity=0.128, Specificity=0.963, AUC-ROC=0.739
+2025-04-24 10:29:00,350 - INFO - Fold 2/5 metrics: Sensitivity=0.427, Specificity=0.975, AUC-ROC=0.820
+2025-04-24 10:29:02,107 - INFO - Fold 3/5 metrics: Sensitivity=0.497, Specificity=0.966, AUC-ROC=0.843
+2025-04-24 10:29:03,841 - INFO - Fold 4/5 metrics: Sensitivity=0.277, Specificity=0.952, AUC-ROC=0.657
+2025-04-24 10:29:05,578 - INFO - Fold 5/5 metrics: Sensitivity=0.135, Specificity=0.978, AUC-ROC=0.781
+2025-04-24 10:29:05,580 - INFO - [Trial 6] 5-fold mean metrics: {'Accuracy': 0.9590189199686037, 'Sensitivity': 0.2929025688512353, 'Specificity': 0.9670136212709532, 'Precision': 0.13397378147895395, 'NPV': 0.9881641710991301, 'F1 Score': 0.18223207981441933, "Youden's Index": 0.2599161901221886, "Cohen's Kappa": 0.16451314427135375, 'AUC-ROC': 0.7679789235463067, 'AUC-PR': 0.11102277871459372, 'Log Loss': 0.20383868294759355, 'Brier': 0.04459487017192802, 'ECE': 0.1443781549515037, 'MCE': 0.6797769192153644}
+2025-04-24 10:29:05,580 - INFO - Trial 6: AUC-ROC=0.768 AUC-PR=0.111 Sens=0.293 Spec=0.967 Prec=0.134 Score=-inf
+2025-04-24 10:29:05,580 - INFO - [04-24 10:29:05][Trial 7/10] AUC-ROC=0.768 AUC-PR=0.111 Sens=0.293 Spec=0.967 Prec=0.134 Score=-inf
+2025-04-24 10:29:07,521 - INFO - Fold 1/5 metrics: Sensitivity=0.191, Specificity=0.942, AUC-ROC=0.704
+2025-04-24 10:29:09,382 - INFO - Fold 2/5 metrics: Sensitivity=0.392, Specificity=0.954, AUC-ROC=0.810
+2025-04-24 10:29:11,213 - INFO - Fold 3/5 metrics: Sensitivity=0.539, Specificity=0.949, AUC-ROC=0.838
+2025-04-24 10:29:13,149 - INFO - Fold 4/5 metrics: Sensitivity=0.272, Specificity=0.930, AUC-ROC=0.673
+2025-04-24 10:29:15,046 - INFO - Fold 5/5 metrics: Sensitivity=0.243, Specificity=0.958, AUC-ROC=0.770
+2025-04-24 10:29:15,048 - INFO - [Trial 7] 5-fold mean metrics: {'Accuracy': 0.9433225521293729, 'Sensitivity': 0.3273481276185781, 'Specificity': 0.9466032054489955, 'Precision': 0.10074604354764063, 'NPV': 0.9888179635573205, 'F1 Score': 0.15365696648405583, "Youden's Index": 0.27395133306757347, "Cohen's Kappa": 0.1330095005145913, 'AUC-ROC': 0.7589146670984294, 'AUC-PR': 0.0734941468253337, 'Log Loss': 0.27813759460890425, 'Brier': 0.06782915617254433, 'ECE': 0.2047985913476011, 'MCE': 0.7265795644237127}
+2025-04-24 10:29:15,048 - INFO - Trial 7: AUC-ROC=0.759 AUC-PR=0.073 Sens=0.327 Spec=0.947 Prec=0.101 Score=-inf
+2025-04-24 10:29:15,048 - INFO - [04-24 10:29:15][Trial 8/10] AUC-ROC=0.759 AUC-PR=0.073 Sens=0.327 Spec=0.947 Prec=0.101 Score=-inf
+2025-04-24 10:29:16,004 - INFO - Fold 1/5 metrics: Sensitivity=0.260, Specificity=0.930, AUC-ROC=0.704
+2025-04-24 10:29:16,904 - INFO - Fold 2/5 metrics: Sensitivity=0.396, Specificity=0.939, AUC-ROC=0.758
+2025-04-24 10:29:17,799 - INFO - Fold 3/5 metrics: Sensitivity=0.324, Specificity=0.935, AUC-ROC=0.774
+2025-04-24 10:29:18,689 - INFO - Fold 4/5 metrics: Sensitivity=0.319, Specificity=0.924, AUC-ROC=0.704
+2025-04-24 10:29:19,575 - INFO - Fold 5/5 metrics: Sensitivity=0.323, Specificity=0.944, AUC-ROC=0.706
+2025-04-24 10:29:19,577 - INFO - [Trial 8] 5-fold mean metrics: {'Accuracy': 0.932358539229836, 'Sensitivity': 0.3242971539398812, 'Specificity': 0.9343567246121646, 'Precision': 0.08206375927267655, 'NPV': 0.9891382892680143, 'F1 Score': 0.1307737012276345, "Youden's Index": 0.25865387855204575, "Cohen's Kappa": 0.10865787486846956, 'AUC-ROC': 0.7292141282098823, 'AUC-PR': 0.06532156329426389, 'Log Loss': 0.18990277922370263, 'Brier': 0.053400483364934394, 'ECE': 0.09572389118406294, 'MCE': 0.8488138202984455}
+2025-04-24 10:29:19,577 - INFO - Trial 8: AUC-ROC=0.729 AUC-PR=0.065 Sens=0.324 Spec=0.934 Prec=0.082 Score=-inf
+2025-04-24 10:29:19,577 - INFO - [04-24 10:29:19][Trial 9/10] AUC-ROC=0.729 AUC-PR=0.065 Sens=0.324 Spec=0.934 Prec=0.082 Score=-inf
+2025-04-24 10:29:21,077 - INFO - Fold 1/5 metrics: Sensitivity=0.236, Specificity=0.972, AUC-ROC=0.740
+2025-04-24 10:29:22,576 - INFO - Fold 2/5 metrics: Sensitivity=0.427, Specificity=0.976, AUC-ROC=0.788
+2025-04-24 10:29:24,063 - INFO - Fold 3/5 metrics: Sensitivity=0.461, Specificity=0.965, AUC-ROC=0.840
+2025-04-24 10:29:25,502 - INFO - Fold 4/5 metrics: Sensitivity=0.423, Specificity=0.956, AUC-ROC=0.659
+2025-04-24 10:29:26,886 - INFO - Fold 5/5 metrics: Sensitivity=0.232, Specificity=0.977, AUC-ROC=0.738
+2025-04-24 10:29:26,887 - INFO - [Trial 9] 5-fold mean metrics: {'Accuracy': 0.9643692371491905, 'Sensitivity': 0.3557977386266951, 'Specificity': 0.9693301018277367, 'Precision': 0.17558501421734346, 'NPV': 0.9896458726061429, 'F1 Score': 0.2326803701376392, "Youden's Index": 0.3251278404544318, "Cohen's Kappa": 0.2166719181354675, 'AUC-ROC': 0.7529810050204866, 'AUC-PR': 0.16399828324639734, 'Log Loss': 0.11949486413113411, 'Brier': 0.029727284004788024, 'ECE': 0.03858773720157339, 'MCE': 0.7536743996903829}
+2025-04-24 10:29:26,887 - INFO - Trial 9: AUC-ROC=0.753 AUC-PR=0.164 Sens=0.356 Spec=0.969 Prec=0.176 Score=-inf
+2025-04-24 10:29:26,888 - INFO - [04-24 10:29:26][Trial 10/10] AUC-ROC=0.753 AUC-PR=0.164 Sens=0.356 Spec=0.969 Prec=0.176 Score=-inf
+2025-04-24 10:29:26,888 - INFO - Training finished. Best score: -inf
+2025-04-24 10:29:26,888 - INFO - Optimization finished. Best score: -inf
+2025-04-24 10:29:26,888 - INFO - Best parameters:
+2025-04-24 10:29:26,888 - INFO - n_estimators: 800
+2025-04-24 10:29:26,888 - INFO - max_depth: 10
+2025-04-24 10:29:26,888 - INFO - learning_rate: 0.004302570478260816
+2025-04-24 10:29:26,888 - INFO - subsample: 0.547168494554797
+2025-04-24 10:29:26,888 - INFO - colsample_bytree: 0.7007779329653695
+2025-04-24 10:29:26,888 - INFO - reg_alpha: 2.377235078202275
+2025-04-24 10:29:26,888 - INFO - reg_lambda: 3.9992343544780757
+2025-04-24 10:29:26,888 - INFO - use_label_encoder: False
+2025-04-24 10:29:26,888 - INFO - random_state: 42
+2025-04-24 10:29:26,888 - INFO - eval_metric: logloss
+2025-04-24 10:29:26,889 - INFO - Best CV metrics:
+2025-04-24 10:29:26,889 - INFO - Accuracy: 0.933
+2025-04-24 10:29:26,889 - INFO - Sensitivity: 0.305
+2025-04-24 10:29:26,889 - INFO - Specificity: 0.933
+2025-04-24 10:29:26,889 - INFO - Precision: 0.079
+2025-04-24 10:29:26,889 - INFO - NPV: 0.989
+2025-04-24 10:29:26,889 - INFO - F1 Score: 0.125
+2025-04-24 10:29:26,889 - INFO - Youden's Index: 0.238
+2025-04-24 10:29:26,889 - INFO - Cohen's Kappa: 0.103
+2025-04-24 10:29:26,889 - INFO - AUC-ROC: 0.746
+2025-04-24 10:29:26,889 - INFO - AUC-PR: 0.065
+2025-04-24 10:29:26,889 - INFO - Log Loss: 0.232
+2025-04-24 10:29:26,889 - INFO - Brier: 0.061
+2025-04-24 10:29:26,889 - INFO - ECE: 0.152
+2025-04-24 10:29:26,889 - INFO - MCE: 0.854
+2025-04-24 10:29:26,889 - INFO - Final best parameters:
+2025-04-24 10:29:26,889 - INFO - n_estimators: 800
+2025-04-24 10:29:26,889 - INFO - max_depth: 10
+2025-04-24 10:29:26,889 - INFO - learning_rate: 0.004302570478260816
+2025-04-24 10:29:26,889 - INFO - subsample: 0.547168494554797
+2025-04-24 10:29:26,889 - INFO - colsample_bytree: 0.7007779329653695
+2025-04-24 10:29:26,889 - INFO - reg_alpha: 2.377235078202275
+2025-04-24 10:29:26,889 - INFO - reg_lambda: 3.9992343544780757
+2025-04-24 10:29:26,889 - INFO - use_label_encoder: False
+2025-04-24 10:29:26,889 - INFO - random_state: 42
+2025-04-24 10:29:26,889 - INFO - eval_metric: logloss
+2025-04-24 10:29:26,889 - INFO - Final best metrics (CV mean):
+2025-04-24 10:29:26,889 - INFO - Accuracy: 0.933
+2025-04-24 10:29:26,889 - INFO - Sensitivity: 0.305
+2025-04-24 10:29:26,889 - INFO - Specificity: 0.933
+2025-04-24 10:29:26,889 - INFO - Precision: 0.079
+2025-04-24 10:29:26,889 - INFO - NPV: 0.989
+2025-04-24 10:29:26,889 - INFO - F1 Score: 0.125
+2025-04-24 10:29:26,889 - INFO - Youden's Index: 0.238
+2025-04-24 10:29:26,889 - INFO - Cohen's Kappa: 0.103
+2025-04-24 10:29:26,889 - INFO - AUC-ROC: 0.746
+2025-04-24 10:29:26,889 - INFO - AUC-PR: 0.065
+2025-04-24 10:29:26,889 - INFO - Log Loss: 0.232
+2025-04-24 10:29:26,889 - INFO - Brier: 0.061
+2025-04-24 10:29:26,889 - INFO - ECE: 0.152
+2025-04-24 10:29:26,889 - INFO - MCE: 0.854
+2025-04-24 10:29:26,889 - INFO - Evaluating on held-out test set (never seen during training/tuning)...
+2025-04-24 10:31:10,402 - INFO - Starting XGBoost model training
+2025-04-24 10:31:10,403 - INFO - [并行调参说明] 本脚本支持Optuna多进程/多机并行调参，只需多开终端运行本脚本即可，Optuna会自动分配trial。
+2025-04-24 10:31:10,444 - INFO - Running 10 trials for hyperparameter optimization
+2025-04-24 10:31:10,444 - INFO - Found existing XGBoost_best_params.json, evaluating initial score...
+2025-04-24 10:31:12,197 - INFO - Fold 1/5 metrics: Sensitivity=0.215, Specificity=0.926, AUC-ROC=0.704
+2025-04-24 10:31:13,987 - INFO - Fold 2/5 metrics: Sensitivity=0.377, Specificity=0.937, AUC-ROC=0.765
+2025-04-24 10:31:15,747 - INFO - Fold 3/5 metrics: Sensitivity=0.357, Specificity=0.942, AUC-ROC=0.803
+2025-04-24 10:31:17,518 - INFO - Fold 4/5 metrics: Sensitivity=0.326, Specificity=0.924, AUC-ROC=0.725
+2025-04-24 10:31:19,342 - INFO - Fold 5/5 metrics: Sensitivity=0.247, Specificity=0.939, AUC-ROC=0.735
+2025-04-24 10:31:19,344 - INFO - [Trial ?] 5-fold mean metrics: {'Accuracy': 0.9331771084076129, 'Sensitivity': 0.30468720242957337, 'Specificity': 0.9334736615247495, 'Precision': 0.07894531522482925, 'NPV': 0.9886652823103403, 'F1 Score': 0.1252119721132871, "Youden's Index": 0.23816086395432284, "Cohen's Kappa": 0.10303959115905421, 'AUC-ROC': 0.7464261885560912, 'AUC-PR': 0.06475524428860323, 'Log Loss': 0.2321585101278126, 'Brier': 0.060862754141211825, 'ECE': 0.15218786883378427, 'MCE': 0.8537496914250753}
+2025-04-24 10:31:19,344 - ERROR - Error loading existing params: 'PseudoTrial' object has no attribute 'number'
+2025-04-24 10:31:19,344 - INFO - Starting optimization from scratch due to error loading params.
+2025-04-24 10:31:19,654 - INFO - Fold 1/5 metrics: Sensitivity=0.272, Specificity=0.954, AUC-ROC=0.728
+2025-04-24 10:31:19,924 - INFO - Fold 2/5 metrics: Sensitivity=0.421, Specificity=0.966, AUC-ROC=0.787
+2025-04-24 10:31:20,202 - INFO - Fold 3/5 metrics: Sensitivity=0.475, Specificity=0.957, AUC-ROC=0.821
+2025-04-24 10:31:20,477 - INFO - Fold 4/5 metrics: Sensitivity=0.413, Specificity=0.942, AUC-ROC=0.707
+2025-04-24 10:31:20,748 - INFO - Fold 5/5 metrics: Sensitivity=0.329, Specificity=0.964, AUC-ROC=0.729
+2025-04-24 10:31:20,750 - INFO - [Trial 0] 5-fold mean metrics: {'Accuracy': 0.9527529009116039, 'Sensitivity': 0.38210845407291194, 'Specificity': 0.9564217954946432, 'Precision': 0.1378919916855917, 'NPV': 0.9897309513365842, 'F1 Score': 0.20186073375683625, "Youden's Index": 0.33853024956755506, "Cohen's Kappa": 0.18321262677265443, 'AUC-ROC': 0.7543884775216082, 'AUC-PR': 0.10683843256660666, 'Log Loss': 0.1448212252699818, 'Brier': 0.0385413071151023, 'ECE': 0.06507597498610665, 'MCE': 0.7950853301938701}
+2025-04-24 10:31:20,750 - INFO - Trial 0: AUC-ROC=0.754 AUC-PR=0.107 Sens=0.382 Spec=0.956 Prec=0.138 Score=-inf
+2025-04-24 10:31:20,750 - INFO - [04-24 10:31:20][Trial 1/10] AUC-ROC=0.754 AUC-PR=0.107 Sens=0.382 Spec=0.956 Prec=0.138 Score=-inf
+2025-04-24 10:31:21,217 - INFO - Fold 1/5 metrics: Sensitivity=0.271, Specificity=0.969, AUC-ROC=0.728
+2025-04-24 10:31:21,683 - INFO - Fold 2/5 metrics: Sensitivity=0.427, Specificity=0.972, AUC-ROC=0.772
+2025-04-24 10:31:22,239 - INFO - Fold 3/5 metrics: Sensitivity=0.487, Specificity=0.966, AUC-ROC=0.832
+2025-04-24 10:31:22,708 - INFO - Fold 4/5 metrics: Sensitivity=0.410, Specificity=0.959, AUC-ROC=0.687
+2025-04-24 10:31:23,191 - INFO - Fold 5/5 metrics: Sensitivity=0.232, Specificity=0.980, AUC-ROC=0.700
+2025-04-24 10:31:23,193 - INFO - [Trial 1] 5-fold mean metrics: {'Accuracy': 0.9639064019196907, 'Sensitivity': 0.3655848374429976, 'Specificity': 0.9691097165553172, 'Precision': 0.17921895497861773, 'NPV': 0.9898640666862241, 'F1 Score': 0.23767001902712348, "Youden's Index": 0.33469455399831494, "Cohen's Kappa": 0.22160823579674602, 'AUC-ROC': 0.7439076220624138, 'AUC-PR': 0.17580524220010801, 'Log Loss': 0.13012590231338686, 'Brier': 0.03023114859653877, 'ECE': 0.036505436354737644, 'MCE': 0.7657120757871066}
+2025-04-24 10:31:23,193 - INFO - Trial 1: AUC-ROC=0.744 AUC-PR=0.176 Sens=0.366 Spec=0.969 Prec=0.179 Score=-inf
+2025-04-24 10:31:23,194 - INFO - [04-24 10:31:23][Trial 2/10] AUC-ROC=0.744 AUC-PR=0.176 Sens=0.366 Spec=0.969 Prec=0.179 Score=-inf
+2025-04-24 10:31:23,384 - INFO - Fold 1/5 metrics: Sensitivity=0.264, Specificity=0.970, AUC-ROC=0.738
+2025-04-24 10:31:23,567 - INFO - Fold 2/5 metrics: Sensitivity=0.449, Specificity=0.972, AUC-ROC=0.756
+2025-04-24 10:31:23,745 - INFO - Fold 3/5 metrics: Sensitivity=0.478, Specificity=0.961, AUC-ROC=0.832
+2025-04-24 10:31:23,921 - INFO - Fold 4/5 metrics: Sensitivity=0.403, Specificity=0.963, AUC-ROC=0.685
+2025-04-24 10:31:24,097 - INFO - Fold 5/5 metrics: Sensitivity=0.232, Specificity=0.976, AUC-ROC=0.708
+2025-04-24 10:31:24,098 - INFO - [Trial 2] 5-fold mean metrics: {'Accuracy': 0.9630536625920261, 'Sensitivity': 0.36535596212538424, 'Specificity': 0.9686680936917457, 'Precision': 0.17020635810083987, 'NPV': 0.9895239858814403, 'F1 Score': 0.23100368354339534, "Youden's Index": 0.3340240558171298, "Cohen's Kappa": 0.21458514224796107, 'AUC-ROC': 0.7439531052198836, 'AUC-PR': 0.1629997365018742, 'Log Loss': 0.13294539373027217, 'Brier': 0.031371986041803676, 'ECE': 0.03826542938790146, 'MCE': 0.7771622662775449}
+2025-04-24 10:31:24,098 - INFO - Trial 2: AUC-ROC=0.744 AUC-PR=0.163 Sens=0.365 Spec=0.969 Prec=0.170 Score=-inf
+2025-04-24 10:31:24,099 - INFO - [04-24 10:31:24][Trial 3/10] AUC-ROC=0.744 AUC-PR=0.163 Sens=0.365 Spec=0.969 Prec=0.170 Score=-inf
+2025-04-24 10:31:24,697 - INFO - Fold 1/5 metrics: Sensitivity=0.385, Specificity=0.913, AUC-ROC=0.711
+2025-04-24 10:31:25,267 - INFO - Fold 2/5 metrics: Sensitivity=0.371, Specificity=0.917, AUC-ROC=0.749
+2025-04-24 10:31:25,837 - INFO - Fold 3/5 metrics: Sensitivity=0.431, Specificity=0.927, AUC-ROC=0.776
+2025-04-24 10:31:26,414 - INFO - Fold 4/5 metrics: Sensitivity=0.389, Specificity=0.913, AUC-ROC=0.723
+2025-04-24 10:31:26,982 - INFO - Fold 5/5 metrics: Sensitivity=0.267, Specificity=0.927, AUC-ROC=0.705
+2025-04-24 10:31:26,983 - INFO - [Trial 3] 5-fold mean metrics: {'Accuracy': 0.9241157724160587, 'Sensitivity': 0.3688311082549498, 'Specificity': 0.9191314506830117, 'Precision': 0.07976512660524906, 'NPV': 0.9899044870563369, 'F1 Score': 0.13105811384906643, "Youden's Index": 0.2879625589379615, "Cohen's Kappa": 0.10829987638183629, 'AUC-ROC': 0.7327872308624841, 'AUC-PR': 0.06339535777250918, 'Log Loss': 0.3717683211232402, 'Brier': 0.10340535439487634, 'ECE': 0.2776410702259849, 'MCE': 0.7796934965668035}
+2025-04-24 10:31:26,984 - INFO - Trial 3: AUC-ROC=0.733 AUC-PR=0.063 Sens=0.369 Spec=0.919 Prec=0.080 Score=-inf
+2025-04-24 10:31:26,984 - INFO - [04-24 10:31:26][Trial 4/10] AUC-ROC=0.733 AUC-PR=0.063 Sens=0.369 Spec=0.919 Prec=0.080 Score=-inf
+2025-04-24 10:31:27,970 - INFO - Fold 1/5 metrics: Sensitivity=0.223, Specificity=0.973, AUC-ROC=0.744
+2025-04-24 10:31:28,928 - INFO - Fold 2/5 metrics: Sensitivity=0.427, Specificity=0.981, AUC-ROC=0.804
+2025-04-24 10:31:29,892 - INFO - Fold 3/5 metrics: Sensitivity=0.487, Specificity=0.972, AUC-ROC=0.861
+2025-04-24 10:31:30,842 - INFO - Fold 4/5 metrics: Sensitivity=0.350, Specificity=0.963, AUC-ROC=0.684
+2025-04-24 10:31:31,828 - INFO - Fold 5/5 metrics: Sensitivity=0.232, Specificity=0.983, AUC-ROC=0.768
+2025-04-24 10:31:31,829 - INFO - [Trial 4] 5-fold mean metrics: {'Accuracy': 0.9671338406906493, 'Sensitivity': 0.3438036664861245, 'Specificity': 0.9745154872401798, 'Precision': 0.19226229770706466, 'NPV': 0.9893619066616518, 'F1 Score': 0.2450837069993715, "Youden's Index": 0.3183191537263042, "Cohen's Kappa": 0.22978694331017885, 'AUC-ROC': 0.7721434671528117, 'AUC-PR': 0.1690938744339323, 'Log Loss': 0.10735191343893109, 'Brier': 0.02682785509758807, 'ECE': 0.031569194021565786, 'MCE': 0.6874979959908872}
+2025-04-24 10:31:31,829 - INFO - Trial 4: AUC-ROC=0.772 AUC-PR=0.169 Sens=0.344 Spec=0.975 Prec=0.192 Score=-inf
+2025-04-24 10:31:31,830 - INFO - [04-24 10:31:31][Trial 5/10] AUC-ROC=0.772 AUC-PR=0.169 Sens=0.344 Spec=0.975 Prec=0.192 Score=-inf
+2025-04-24 10:31:33,191 - INFO - Fold 1/5 metrics: Sensitivity=0.255, Specificity=0.959, AUC-ROC=0.747
+2025-04-24 10:31:34,564 - INFO - Fold 2/5 metrics: Sensitivity=0.463, Specificity=0.969, AUC-ROC=0.789
+2025-04-24 10:31:35,925 - INFO - Fold 3/5 metrics: Sensitivity=0.457, Specificity=0.958, AUC-ROC=0.824
+2025-04-24 10:31:37,298 - INFO - Fold 4/5 metrics: Sensitivity=0.392, Specificity=0.946, AUC-ROC=0.656
+2025-04-24 10:31:38,672 - INFO - Fold 5/5 metrics: Sensitivity=0.211, Specificity=0.970, AUC-ROC=0.713
+2025-04-24 10:31:38,674 - INFO - [Trial 5] 5-fold mean metrics: {'Accuracy': 0.9551344765547455, 'Sensitivity': 0.35578509357376786, 'Specificity': 0.9605041587066185, 'Precision': 0.13712266234773884, 'NPV': 0.9893268404954574, 'F1 Score': 0.19683134634088356, "Youden's Index": 0.3162892522803864, "Cohen's Kappa": 0.1785399953273202, 'AUC-ROC': 0.7456532901526292, 'AUC-PR': 0.11916807932472526, 'Log Loss': 0.1353641799878622, 'Brier': 0.03564448893784389, 'ECE': 0.05564965999750086, 'MCE': 0.8013698622237673}
+2025-04-24 10:31:38,674 - INFO - Trial 5: AUC-ROC=0.746 AUC-PR=0.119 Sens=0.356 Spec=0.961 Prec=0.137 Score=-inf
+2025-04-24 10:31:38,674 - INFO - [04-24 10:31:38][Trial 6/10] AUC-ROC=0.746 AUC-PR=0.119 Sens=0.356 Spec=0.961 Prec=0.137 Score=-inf
+2025-04-24 10:31:39,001 - INFO - Fold 1/5 metrics: Sensitivity=0.317, Specificity=0.843, AUC-ROC=0.671
+2025-04-24 10:31:39,311 - INFO - Fold 2/5 metrics: Sensitivity=0.535, Specificity=0.835, AUC-ROC=0.667
+2025-04-24 10:31:39,619 - INFO - Fold 3/5 metrics: Sensitivity=0.382, Specificity=0.833, AUC-ROC=0.723
+2025-04-24 10:31:39,976 - INFO - Fold 4/5 metrics: Sensitivity=0.406, Specificity=0.843, AUC-ROC=0.702
+2025-04-24 10:31:40,287 - INFO - Fold 5/5 metrics: Sensitivity=0.543, Specificity=0.855, AUC-ROC=0.712
+2025-04-24 10:31:40,289 - INFO - [Trial 6] 5-fold mean metrics: {'Accuracy': 0.8546323712459376, 'Sensitivity': 0.4366772200467975, 'Specificity': 0.8417931446786697, 'Precision': 0.0477611113935968, 'NPV': 0.9906502672633462, 'F1 Score': 0.08603303655173697, "Youden's Index": 0.2784703647254672, "Cohen's Kappa": 0.05973232681255321, 'AUC-ROC': 0.6949092721601993, 'AUC-PR': 0.04695675217923699, 'Log Loss': 0.47514369872300877, 'Brier': 0.148209288013658, 'ECE': 0.3428128614249933, 'MCE': 0.6995299166559003}
+2025-04-24 10:31:40,289 - INFO - Trial 6: AUC-ROC=0.695 AUC-PR=0.047 Sens=0.437 Spec=0.842 Prec=0.048 Score=-inf
+2025-04-24 10:31:40,289 - INFO - [04-24 10:31:40][Trial 7/10] AUC-ROC=0.695 AUC-PR=0.047 Sens=0.437 Spec=0.842 Prec=0.048 Score=-inf
+2025-04-24 10:31:41,210 - INFO - Fold 1/5 metrics: Sensitivity=0.272, Specificity=0.940, AUC-ROC=0.722
+2025-04-24 10:31:42,133 - INFO - Fold 2/5 metrics: Sensitivity=0.377, Specificity=0.948, AUC-ROC=0.784
+2025-04-24 10:31:43,066 - INFO - Fold 3/5 metrics: Sensitivity=0.316, Specificity=0.950, AUC-ROC=0.805
+2025-04-24 10:31:43,997 - INFO - Fold 4/5 metrics: Sensitivity=0.326, Specificity=0.934, AUC-ROC=0.725
+2025-04-24 10:31:44,991 - INFO - Fold 5/5 metrics: Sensitivity=0.247, Specificity=0.951, AUC-ROC=0.723
+2025-04-24 10:31:44,992 - INFO - [Trial 7] 5-fold mean metrics: {'Accuracy': 0.9441595239515725, 'Sensitivity': 0.30780411846331757, 'Specificity': 0.944947758949651, 'Precision': 0.09833968750802943, 'NPV': 0.9890329242549756, 'F1 Score': 0.1483683441564597, "Youden's Index": 0.2527518774129687, "Cohen's Kappa": 0.12776644099128995, 'AUC-ROC': 0.7520694221103199, 'AUC-PR': 0.0750219689280439, 'Log Loss': 0.2590427908586689, 'Brier': 0.06423739871383051, 'ECE': 0.18628830859680826, 'MCE': 0.7127090487619883}
+2025-04-24 10:31:44,992 - INFO - Trial 7: AUC-ROC=0.752 AUC-PR=0.075 Sens=0.308 Spec=0.945 Prec=0.098 Score=-inf
+2025-04-24 10:31:44,992 - INFO - [04-24 10:31:44][Trial 8/10] AUC-ROC=0.752 AUC-PR=0.075 Sens=0.308 Spec=0.945 Prec=0.098 Score=-inf
+2025-04-24 10:31:46,991 - INFO - Fold 1/5 metrics: Sensitivity=0.229, Specificity=0.956, AUC-ROC=0.744
+2025-04-24 10:31:48,991 - INFO - Fold 2/5 metrics: Sensitivity=0.266, Specificity=0.969, AUC-ROC=0.806
+2025-04-24 10:31:51,066 - INFO - Fold 3/5 metrics: Sensitivity=0.504, Specificity=0.966, AUC-ROC=0.828
+2025-04-24 10:31:53,275 - INFO - Fold 4/5 metrics: Sensitivity=0.287, Specificity=0.945, AUC-ROC=0.697
+2025-04-24 10:31:55,220 - INFO - Fold 5/5 metrics: Sensitivity=0.305, Specificity=0.970, AUC-ROC=0.745
+2025-04-24 10:31:55,221 - INFO - [Trial 8] 5-fold mean metrics: {'Accuracy': 0.9560445695985231, 'Sensitivity': 0.3182999779752239, 'Specificity': 0.961165984202881, 'Precision': 0.13756279181046924, 'NPV': 0.9888777743132471, 'F1 Score': 0.1911615871152956, "Youden's Index": 0.279465962178105, "Cohen's Kappa": 0.17282125596643352, 'AUC-ROC': 0.7640732567183238, 'AUC-PR': 0.1130414244186336, 'Log Loss': 0.1393251617600851, 'Brier': 0.0359332981203387, 'ECE': 0.06905707929501992, 'MCE': 0.7606029547655886}
+2025-04-24 10:31:55,221 - INFO - Trial 8: AUC-ROC=0.764 AUC-PR=0.113 Sens=0.318 Spec=0.961 Prec=0.138 Score=-inf
+2025-04-24 10:31:55,222 - INFO - [04-24 10:31:55][Trial 9/10] AUC-ROC=0.764 AUC-PR=0.113 Sens=0.318 Spec=0.961 Prec=0.138 Score=-inf
+2025-04-24 10:31:55,542 - INFO - Fold 1/5 metrics: Sensitivity=0.248, Specificity=0.950, AUC-ROC=0.752
+2025-04-24 10:31:55,833 - INFO - Fold 2/5 metrics: Sensitivity=0.463, Specificity=0.962, AUC-ROC=0.788
+2025-04-24 10:31:56,118 - INFO - Fold 3/5 metrics: Sensitivity=0.504, Specificity=0.956, AUC-ROC=0.830
+2025-04-24 10:31:56,437 - INFO - Fold 4/5 metrics: Sensitivity=0.293, Specificity=0.942, AUC-ROC=0.633
+2025-04-24 10:31:56,727 - INFO - Fold 5/5 metrics: Sensitivity=0.309, Specificity=0.962, AUC-ROC=0.747
+2025-04-24 10:31:56,728 - INFO - [Trial 9] 5-fold mean metrics: {'Accuracy': 0.9512741090424616, 'Sensitivity': 0.3634732131545684, 'Specificity': 0.9544360146063079, 'Precision': 0.12925522523111221, 'NPV': 0.9891375406502526, 'F1 Score': 0.19054034107875584, "Youden's Index": 0.31790922776087627, "Cohen's Kappa": 0.17144139783254575, 'AUC-ROC': 0.7501328539045995, 'AUC-PR': 0.09989258830786449, 'Log Loss': 0.14471162832581164, 'Brier': 0.03863235589895803, 'ECE': 0.06502455063002034, 'MCE': 0.7917417985314082}
+2025-04-24 10:31:56,729 - INFO - Trial 9: AUC-ROC=0.750 AUC-PR=0.100 Sens=0.363 Spec=0.954 Prec=0.129 Score=-inf
+2025-04-24 10:31:56,729 - INFO - [04-24 10:31:56][Trial 10/10] AUC-ROC=0.750 AUC-PR=0.100 Sens=0.363 Spec=0.954 Prec=0.129 Score=-inf
+2025-04-24 10:31:56,729 - INFO - Training finished. Best score: -inf
+2025-04-24 10:31:56,729 - INFO - Optimization finished. Best score: -inf
+2025-04-24 10:31:56,729 - INFO - Best parameters:
+2025-04-24 10:31:56,729 - INFO - n_estimators: 100
+2025-04-24 10:31:56,729 - INFO - max_depth: 15
+2025-04-24 10:31:56,729 - INFO - learning_rate: 0.1854264162051135
+2025-04-24 10:31:56,729 - INFO - subsample: 0.8905455730124703
+2025-04-24 10:31:56,729 - INFO - colsample_bytree: 0.4781333398983014
+2025-04-24 10:31:56,729 - INFO - reg_alpha: 4.585814266599354
+2025-04-24 10:31:56,729 - INFO - reg_lambda: 1.1575714377647206
+2025-04-24 10:31:56,729 - INFO - use_label_encoder: False
+2025-04-24 10:31:56,729 - INFO - random_state: 42
+2025-04-24 10:31:56,729 - INFO - eval_metric: logloss
+2025-04-24 10:31:56,730 - INFO - Best CV metrics:
+2025-04-24 10:31:56,730 - INFO - Accuracy: 0.953
+2025-04-24 10:31:56,730 - INFO - Sensitivity: 0.382
+2025-04-24 10:31:56,730 - INFO - Specificity: 0.956
+2025-04-24 10:31:56,730 - INFO - Precision: 0.138
+2025-04-24 10:31:56,730 - INFO - NPV: 0.990
+2025-04-24 10:31:56,731 - INFO - F1 Score: 0.202
+2025-04-24 10:31:56,731 - INFO - Youden's Index: 0.339
+2025-04-24 10:31:56,731 - INFO - Cohen's Kappa: 0.183
+2025-04-24 10:31:56,731 - INFO - AUC-ROC: 0.754
+2025-04-24 10:31:56,731 - INFO - AUC-PR: 0.107
+2025-04-24 10:31:56,731 - INFO - Log Loss: 0.145
+2025-04-24 10:31:56,731 - INFO - Brier: 0.039
+2025-04-24 10:31:56,731 - INFO - ECE: 0.065
+2025-04-24 10:31:56,731 - INFO - MCE: 0.795
+2025-04-24 10:31:56,731 - INFO - Final best parameters:
+2025-04-24 10:31:56,731 - INFO - n_estimators: 100
+2025-04-24 10:31:56,731 - INFO - max_depth: 15
+2025-04-24 10:31:56,731 - INFO - learning_rate: 0.1854264162051135
+2025-04-24 10:31:56,731 - INFO - subsample: 0.8905455730124703
+2025-04-24 10:31:56,731 - INFO - colsample_bytree: 0.4781333398983014
+2025-04-24 10:31:56,731 - INFO - reg_alpha: 4.585814266599354
+2025-04-24 10:31:56,731 - INFO - reg_lambda: 1.1575714377647206
+2025-04-24 10:31:56,731 - INFO - use_label_encoder: False
+2025-04-24 10:31:56,731 - INFO - random_state: 42
+2025-04-24 10:31:56,731 - INFO - eval_metric: logloss
+2025-04-24 10:31:56,731 - INFO - Final best metrics (CV mean):
+2025-04-24 10:31:56,731 - INFO - Accuracy: 0.953
+2025-04-24 10:31:56,731 - INFO - Sensitivity: 0.382
+2025-04-24 10:31:56,731 - INFO - Specificity: 0.956
+2025-04-24 10:31:56,731 - INFO - Precision: 0.138
+2025-04-24 10:31:56,731 - INFO - NPV: 0.990
+2025-04-24 10:31:56,731 - INFO - F1 Score: 0.202
+2025-04-24 10:31:56,731 - INFO - Youden's Index: 0.339
+2025-04-24 10:31:56,731 - INFO - Cohen's Kappa: 0.183
+2025-04-24 10:31:56,731 - INFO - AUC-ROC: 0.754
+2025-04-24 10:31:56,731 - INFO - AUC-PR: 0.107
+2025-04-24 10:31:56,731 - INFO - Log Loss: 0.145
+2025-04-24 10:31:56,731 - INFO - Brier: 0.039
+2025-04-24 10:31:56,731 - INFO - ECE: 0.065
+2025-04-24 10:31:56,731 - INFO - MCE: 0.795
+2025-04-24 10:31:56,731 - INFO - Evaluating on held-out test set (never seen during training/tuning)...
+2025-04-24 10:31:57,306 - INFO - Test set metrics (never seen during training/tuning):
+2025-04-24 10:31:57,307 - INFO - Accuracy: 0.954
+2025-04-24 10:31:57,307 - INFO - Sensitivity: 0.568
+2025-04-24 10:31:57,307 - INFO - Specificity: 0.942
+2025-04-24 10:31:57,307 - INFO - Precision: 0.209
+2025-04-24 10:31:57,307 - INFO - NPV: 0.991
+2025-04-24 10:31:57,307 - INFO - F1 Score: 0.306
+2025-04-24 10:31:57,307 - INFO - Youden's Index: 0.510
+2025-04-24 10:31:57,307 - INFO - Cohen's Kappa: 0.287
+2025-04-24 10:31:57,307 - INFO - AUC-ROC: 0.804
+2025-04-24 10:31:57,307 - INFO - AUC-PR: 0.412
+2025-04-24 10:31:57,307 - INFO - Log Loss: 0.169
+2025-04-24 10:31:57,307 - INFO - Brier: 0.037
+2025-04-24 10:31:57,307 - INFO - ECE: 0.043
+2025-04-24 10:31:57,307 - INFO - MCE: 0.733
+2025-04-24 10:42:21,639 - INFO - Starting XGBoost model training
+2025-04-24 10:42:21,639 - INFO - [并行调参说明] 本脚本支持Optuna多进程/多机并行调参，只需多开终端运行本脚本即可，Optuna会自动分配trial。
+2025-04-24 10:42:21,681 - INFO - Running 10 trials for hyperparameter optimization
+2025-04-24 10:42:21,681 - INFO - Found existing XGBoost_best_params.json, evaluating initial score...
+2025-04-24 10:42:22,560 - INFO - [Trial ?] 5-fold mean metrics: {'Accuracy': 0.851903376195893, 'Sensitivity': 0.6105635167934708, 'Specificity': 0.8411316844618643, 'Precision': 0.06287161237469711, 'NPV': 0.9929757210017325, 'F1 Score': 0.11392389504781261, "Youden's Index": 0.451695201255335, "Cohen's Kappa": 0.0882596137611921, 'AUC-ROC': 0.7530097815771055, 'AUC-PR': 0.09016337597394268, 'Log Loss': 0.3911839616549648, 'Brier': 0.11275298040447523, 'ECE': 0.17121281099880079, 'MCE': 0.840253370177714}
+2025-04-24 10:42:22,560 - ERROR - Error loading existing params: 'PseudoTrial' object has no attribute 'number'
+2025-04-24 10:42:22,560 - INFO - Starting optimization from scratch due to error loading params.
+2025-04-24 10:42:23,681 - INFO - [Trial 0] 5-fold mean metrics: {'Accuracy': 0.8733554925104938, 'Sensitivity': 0.5334510180365211, 'Specificity': 0.8688236418605388, 'Precision': 0.06548748052496352, 'NPV': 0.9918192400420717, 'F1 Score': 0.116478721394881, "Youden's Index": 0.40227465989705974, "Cohen's Kappa": 0.09135017970045804, 'AUC-ROC': 0.744134951559982, 'AUC-PR': 0.07294680675293927, 'Log Loss': 0.3100235677358617, 'Brier': 0.09243102822406643, 'ECE': 0.17642092470051024, 'MCE': 0.8447927145405686}
+2025-04-24 10:42:23,681 - INFO - Trial 0: AUC-ROC=0.744 AUC-PR=0.073 Sens=0.533 Spec=0.869 Prec=0.065 Score=-inf
+2025-04-24 10:42:23,681 - INFO - [04-24 10:42:23][Trial 1/10] AUC-ROC=0.744 AUC-PR=0.073 Sens=0.533 Spec=0.869 Prec=0.065 Score=-inf
+2025-04-24 10:42:27,703 - INFO - [Trial 1] 5-fold mean metrics: {'Accuracy': 0.7933856373936753, 'Sensitivity': 0.6108295690560809, 'Specificity': 0.7796807822824853, 'Precision': 0.045051797371742565, 'NPV': 0.9936806616768106, 'F1 Score': 0.08388704892628769, "Youden's Index": 0.39051035133856604, "Cohen's Kappa": 0.056620432430551815, 'AUC-ROC': 0.7689824577372951, 'AUC-PR': 0.07592292685173227, 'Log Loss': 0.553158994315974, 'Brier': 0.1575499786503551, 'ECE': 0.2323390623157778, 'MCE': 0.8827195269933252}
+2025-04-24 10:42:27,703 - INFO - Trial 1: AUC-ROC=0.769 AUC-PR=0.076 Sens=0.611 Spec=0.780 Prec=0.045 Score=-inf
+2025-04-24 10:42:27,703 - INFO - [04-24 10:42:27][Trial 2/10] AUC-ROC=0.769 AUC-PR=0.076 Sens=0.611 Spec=0.780 Prec=0.045 Score=-inf
+2025-04-24 10:42:31,245 - INFO - [Trial 2] 5-fold mean metrics: {'Accuracy': 0.8589959315989087, 'Sensitivity': 0.5538354180869641, 'Specificity': 0.8492957412068103, 'Precision': 0.06048173090438068, 'NPV': 0.9926560703568519, 'F1 Score': 0.10897090000137996, "Youden's Index": 0.4031311592937744, "Cohen's Kappa": 0.0833245510012798, 'AUC-ROC': 0.7554488583920899, 'AUC-PR': 0.07981887279555004, 'Log Loss': 0.35741047354381916, 'Brier': 0.10592664969987171, 'ECE': 0.17131983149414648, 'MCE': 0.8377948649610547}
+2025-04-24 10:42:31,245 - INFO - Trial 2: AUC-ROC=0.755 AUC-PR=0.080 Sens=0.554 Spec=0.849 Prec=0.060 Score=-inf
+2025-04-24 10:42:31,245 - INFO - [04-24 10:42:31][Trial 3/10] AUC-ROC=0.755 AUC-PR=0.080 Sens=0.554 Spec=0.849 Prec=0.060 Score=-inf
+2025-04-24 10:42:32,931 - INFO - [Trial 3] 5-fold mean metrics: {'Accuracy': 0.5479742439998163, 'Sensitivity': 0.7338800974547723, 'Specificity': 0.5158897781414338, 'Precision': 0.024615924564913887, 'NPV': 0.9926646912796461, 'F1 Score': 0.047615840365351034, "Youden's Index": 0.24976987559620606, "Cohen's Kappa": 0.018151276849226527, 'AUC-ROC': 0.717825544254542, 'AUC-PR': 0.05337509788988519, 'Log Loss': 0.8712010540685318, 'Brier': 0.300123755547712, 'ECE': 0.4607005145778321, 'MCE': 0.8728587753633257}
+2025-04-24 10:42:32,931 - INFO - Trial 3: AUC-ROC=0.718 AUC-PR=0.053 Sens=0.734 Spec=0.516 Prec=0.025 Score=-inf
+2025-04-24 10:42:32,931 - INFO - [04-24 10:42:32][Trial 4/10] AUC-ROC=0.718 AUC-PR=0.053 Sens=0.734 Spec=0.516 Prec=0.025 Score=-inf
+2025-04-24 10:42:34,748 - INFO - [Trial 4] 5-fold mean metrics: {'Accuracy': 0.344277355390897, 'Sensitivity': 0.851576526047127, 'Specificity': 0.31432212047160013, 'Precision': 0.019620113173587573, 'NPV': 0.9939777348879855, 'F1 Score': 0.03834419692552113, "Youden's Index": 0.16589864651872696, "Cohen's Kappa": 0.008266351316746468, 'AUC-ROC': 0.6922260720246365, 'AUC-PR': 0.04734853465387075, 'Log Loss': 1.182374983700372, 'Brier': 0.421192437281492, 'ECE': 0.5902432762122178, 'MCE': 0.8844007758096893}
+2025-04-24 10:42:34,748 - INFO - Trial 4: AUC-ROC=0.692 AUC-PR=0.047 Sens=0.852 Spec=0.314 Prec=0.020 Score=-inf
+2025-04-24 10:42:34,748 - INFO - [04-24 10:42:34][Trial 5/10] AUC-ROC=0.692 AUC-PR=0.047 Sens=0.852 Spec=0.314 Prec=0.020 Score=-inf
+2025-04-24 10:42:43,982 - INFO - [Trial 5] 5-fold mean metrics: {'Accuracy': 0.7639372746540468, 'Sensitivity': 0.6031619169032256, 'Specificity': 0.7512166849915193, 'Precision': 0.03909498074728179, 'NPV': 0.9933039311644629, 'F1 Score': 0.07339285753065823, "Youden's Index": 0.354378601894745, "Cohen's Kappa": 0.045585654652667104, 'AUC-ROC': 0.7600292529746321, 'AUC-PR': 0.07415796881669937, 'Log Loss': 0.57390984798865, 'Brier': 0.17241918673572992, 'ECE': 0.2607745215272363, 'MCE': 0.8725619769483985}
+2025-04-24 10:42:43,982 - INFO - Trial 5: AUC-ROC=0.760 AUC-PR=0.074 Sens=0.603 Spec=0.751 Prec=0.039 Score=-inf
+2025-04-24 10:42:43,982 - INFO - [04-24 10:42:43][Trial 6/10] AUC-ROC=0.760 AUC-PR=0.074 Sens=0.603 Spec=0.751 Prec=0.039 Score=-inf
+2025-04-24 10:42:46,625 - INFO - [Trial 6] 5-fold mean metrics: {'Accuracy': 0.793928942202407, 'Sensitivity': 0.5882864190899987, 'Specificity': 0.787293267047288, 'Precision': 0.04372559541891531, 'NPV': 0.9929224178983258, 'F1 Score': 0.08134600894965527, "Youden's Index": 0.3755796861372866, "Cohen's Kappa": 0.054036781603759354, 'AUC-ROC': 0.7429779810942285, 'AUC-PR': 0.06713676969219654, 'Log Loss': 0.5381801946623976, 'Brier': 0.15649514408570114, 'ECE': 0.22230840307691277, 'MCE': 0.8811086645653304}
+2025-04-24 10:42:46,625 - INFO - Trial 6: AUC-ROC=0.743 AUC-PR=0.067 Sens=0.588 Spec=0.787 Prec=0.044 Score=-inf
+2025-04-24 10:42:46,625 - INFO - [04-24 10:42:46][Trial 7/10] AUC-ROC=0.743 AUC-PR=0.067 Sens=0.588 Spec=0.787 Prec=0.044 Score=-inf
+2025-04-24 10:42:52,622 - INFO - [Trial 7] 5-fold mean metrics: {'Accuracy': 0.8164487870018838, 'Sensitivity': 0.5677332780793028, 'Specificity': 0.8047251941764714, 'Precision': 0.0475354452298262, 'NPV': 0.9925343185290071, 'F1 Score': 0.08766304387397347, "Youden's Index": 0.3724584722557741, "Cohen's Kappa": 0.06076546677694039, 'AUC-ROC': 0.7561916355234977, 'AUC-PR': 0.09245124580330391, 'Log Loss': 0.46516680380113823, 'Brier': 0.13597834429503475, 'ECE': 0.20934572751578226, 'MCE': 0.85377876687172}
+2025-04-24 10:42:52,622 - INFO - Trial 7: AUC-ROC=0.756 AUC-PR=0.092 Sens=0.568 Spec=0.805 Prec=0.048 Score=-inf
+2025-04-24 10:42:52,622 - INFO - [04-24 10:42:52][Trial 8/10] AUC-ROC=0.756 AUC-PR=0.092 Sens=0.568 Spec=0.805 Prec=0.048 Score=-inf
+2025-04-24 10:42:58,135 - INFO - [Trial 8] 5-fold mean metrics: {'Accuracy': 0.40176771632388775, 'Sensitivity': 0.8710268327562656, 'Specificity': 0.3566899106161169, 'Precision': 0.022044054789027323, 'NPV': 0.9948683812822855, 'F1 Score': 0.0429899140042981, "Youden's Index": 0.22771674337238226, "Cohen's Kappa": 0.01312376625644691, 'AUC-ROC': 0.7649673652815531, 'AUC-PR': 0.06158925029784086, 'Log Loss': 1.089554377481773, 'Brier': 0.38976891695980737, 'ECE': 0.5786879242422028, 'MCE': 0.8625584497903729}
+2025-04-24 10:42:58,135 - INFO - Trial 8: AUC-ROC=0.765 AUC-PR=0.062 Sens=0.871 Spec=0.357 Prec=0.022 Score=-inf
+2025-04-24 10:42:58,135 - INFO - [04-24 10:42:58][Trial 9/10] AUC-ROC=0.765 AUC-PR=0.062 Sens=0.871 Spec=0.357 Prec=0.022 Score=-inf
+2025-04-24 10:43:00,095 - INFO - [Trial 9] 5-fold mean metrics: {'Accuracy': 0.6425162494026457, 'Sensitivity': 0.6445229727115486, 'Specificity': 0.6290843418090344, 'Precision': 0.02772805736588214, 'NPV': 0.9928685609813176, 'F1 Score': 0.05314553895497219, "Youden's Index": 0.27360731452058284, "Cohen's Kappa": 0.024121538509365804, 'AUC-ROC': 0.7251549093712664, 'AUC-PR': 0.06087122470243509, 'Log Loss': 0.8721239555421436, 'Brier': 0.2611667547249948, 'ECE': 0.35673460790794104, 'MCE': 0.9061572856228253}
+2025-04-24 10:43:00,095 - INFO - Trial 9: AUC-ROC=0.725 AUC-PR=0.061 Sens=0.645 Spec=0.629 Prec=0.028 Score=-inf
+2025-04-24 10:43:00,095 - INFO - [04-24 10:43:00][Trial 10/10] AUC-ROC=0.725 AUC-PR=0.061 Sens=0.645 Spec=0.629 Prec=0.028 Score=-inf
+2025-04-24 10:43:00,095 - INFO - Training finished. Best score: -inf
+2025-04-24 10:43:00,095 - INFO - Optimization finished. Best score: -inf
+2025-04-24 10:43:00,095 - INFO - Best parameters:
+2025-04-24 10:43:00,095 - INFO - n_estimators: 200
+2025-04-24 10:43:00,095 - INFO - max_depth: 30
+2025-04-24 10:43:00,095 - INFO - learning_rate: 0.09989194772194634
+2025-04-24 10:43:00,095 - INFO - subsample: 0.929704193942847
+2025-04-24 10:43:00,095 - INFO - colsample_bytree: 0.5114158844808988
+2025-04-24 10:43:00,095 - INFO - reg_alpha: 9.687438675087002
+2025-04-24 10:43:00,095 - INFO - reg_lambda: 2.1511044623714604
+2025-04-24 10:43:00,095 - INFO - scale_pos_weight: 3.4498340977848403
+2025-04-24 10:43:00,095 - INFO - min_child_weight: 1.4876189243092222
+2025-04-24 10:43:00,095 - INFO - gamma: 2.3244219540976307
+2025-04-24 10:43:00,095 - INFO - random_state: 42
+2025-04-24 10:43:00,095 - INFO - eval_metric: logloss
+2025-04-24 10:43:00,097 - INFO - Best CV metrics:
+2025-04-24 10:43:00,097 - INFO - Accuracy: 0.873
+2025-04-24 10:43:00,097 - INFO - Sensitivity: 0.533
+2025-04-24 10:43:00,097 - INFO - Specificity: 0.869
+2025-04-24 10:43:00,097 - INFO - Precision: 0.065
+2025-04-24 10:43:00,097 - INFO - NPV: 0.992
+2025-04-24 10:43:00,097 - INFO - F1 Score: 0.116
+2025-04-24 10:43:00,097 - INFO - Youden's Index: 0.402
+2025-04-24 10:43:00,097 - INFO - Cohen's Kappa: 0.091
+2025-04-24 10:43:00,097 - INFO - AUC-ROC: 0.744
+2025-04-24 10:43:00,097 - INFO - AUC-PR: 0.073
+2025-04-24 10:43:00,097 - INFO - Log Loss: 0.310
+2025-04-24 10:43:00,097 - INFO - Brier: 0.092
+2025-04-24 10:43:00,097 - INFO - ECE: 0.176
+2025-04-24 10:43:00,097 - INFO - MCE: 0.845
+2025-04-24 10:43:00,097 - INFO - Final best parameters:
+2025-04-24 10:43:00,097 - INFO - n_estimators: 200
+2025-04-24 10:43:00,097 - INFO - max_depth: 30
+2025-04-24 10:43:00,097 - INFO - learning_rate: 0.09989194772194634
+2025-04-24 10:43:00,097 - INFO - subsample: 0.929704193942847
+2025-04-24 10:43:00,097 - INFO - colsample_bytree: 0.5114158844808988
+2025-04-24 10:43:00,097 - INFO - reg_alpha: 9.687438675087002
+2025-04-24 10:43:00,097 - INFO - reg_lambda: 2.1511044623714604
+2025-04-24 10:43:00,097 - INFO - scale_pos_weight: 3.4498340977848403
+2025-04-24 10:43:00,097 - INFO - min_child_weight: 1.4876189243092222
+2025-04-24 10:43:00,097 - INFO - gamma: 2.3244219540976307
+2025-04-24 10:43:00,097 - INFO - random_state: 42
+2025-04-24 10:43:00,097 - INFO - eval_metric: logloss
+2025-04-24 10:43:00,097 - INFO - Final best metrics (CV mean):
+2025-04-24 10:43:00,097 - INFO - Accuracy: 0.873
+2025-04-24 10:43:00,097 - INFO - Sensitivity: 0.533
+2025-04-24 10:43:00,097 - INFO - Specificity: 0.869
+2025-04-24 10:43:00,097 - INFO - Precision: 0.065
+2025-04-24 10:43:00,097 - INFO - NPV: 0.992
+2025-04-24 10:43:00,097 - INFO - F1 Score: 0.116
+2025-04-24 10:43:00,097 - INFO - Youden's Index: 0.402
+2025-04-24 10:43:00,097 - INFO - Cohen's Kappa: 0.091
+2025-04-24 10:43:00,097 - INFO - AUC-ROC: 0.744
+2025-04-24 10:43:00,097 - INFO - AUC-PR: 0.073
+2025-04-24 10:43:00,097 - INFO - Log Loss: 0.310
+2025-04-24 10:43:00,097 - INFO - Brier: 0.092
+2025-04-24 10:43:00,097 - INFO - ECE: 0.176
+2025-04-24 10:43:00,097 - INFO - MCE: 0.845
+2025-04-24 10:43:00,097 - INFO - Evaluating on held-out test set (never seen during training/tuning)...
+2025-04-24 10:43:01,559 - INFO - Test set metrics (never seen during training/tuning):
+2025-04-24 10:43:01,559 - INFO - Accuracy: 0.943
+2025-04-24 10:43:01,559 - INFO - Sensitivity: 0.530
+2025-04-24 10:43:01,559 - INFO - Specificity: 0.930
+2025-04-24 10:43:01,559 - INFO - Precision: 0.165
+2025-04-24 10:43:01,559 - INFO - NPV: 0.990
+2025-04-24 10:43:01,559 - INFO - F1 Score: 0.251
+2025-04-24 10:43:01,559 - INFO - Youden's Index: 0.461
+2025-04-24 10:43:01,559 - INFO - Cohen's Kappa: 0.230
+2025-04-24 10:43:01,559 - INFO - AUC-ROC: 0.810
+2025-04-24 10:43:01,559 - INFO - AUC-PR: 0.427
+2025-04-24 10:43:01,559 - INFO - Log Loss: 0.201
+2025-04-24 10:43:01,559 - INFO - Brier: 0.045
+2025-04-24 10:43:01,559 - INFO - ECE: 0.050
+2025-04-24 10:43:01,559 - INFO - MCE: 0.841

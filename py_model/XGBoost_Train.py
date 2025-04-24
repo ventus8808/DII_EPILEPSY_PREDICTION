@@ -1,12 +1,5 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
-from xgboost import XGBClassifier
-from imblearn.over_sampling import SMOTE
-import optuna
 import pickle
 import json
 import logging
@@ -14,6 +7,19 @@ from pathlib import Path
 import yaml
 import warnings
 from datetime import datetime
+from sklearn.model_selection import train_test_split, KFold, StratifiedKFold
+from tqdm import tqdm
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from xgboost import XGBClassifier
+from sklearn.metrics import (
+    accuracy_score, precision_score, recall_score, f1_score, roc_auc_score,
+    precision_recall_curve, auc, confusion_matrix, cohen_kappa_score, log_loss, brier_score_loss
+)
+import optuna
+import traceback
+from imblearn.over_sampling import SMOTE
 
 warnings.filterwarnings('ignore')
 
@@ -73,9 +79,6 @@ def load_and_preprocess_data():
     return X_train, X_test, y_train, y_test, weights_train, weights_test, preprocessor
 
 # 4. 指标与目标函数
-from sklearn.metrics import (
-    roc_auc_score, precision_score, recall_score, f1_score, precision_recall_curve, auc, log_loss
-)
 
 def calculate_calibration_metrics(y_true, y_prob, weights=None, n_bins=10):
     bin_boundaries = np.linspace(0, 1, n_bins + 1)
@@ -85,49 +88,55 @@ def calculate_calibration_metrics(y_true, y_prob, weights=None, n_bins=10):
         weights = np.ones_like(y_true)
     ece = 0
     mce = 0
-    bin_metrics = []
     for bin_lower, bin_upper in zip(bin_lowers, bin_uppers):
         in_bin = np.logical_and(y_prob > bin_lower, y_prob <= bin_upper)
         if np.any(in_bin):
             bin_weights = weights[in_bin]
             bin_total_weight = np.sum(bin_weights)
-            if bin_total_weight > 0:
-                actual_prob = np.average(y_true[in_bin], weights=bin_weights)
-                predicted_prob = np.average(y_prob[in_bin], weights=bin_weights)
-                bin_weight = bin_total_weight / np.sum(weights)
-                ece += np.abs(actual_prob - predicted_prob) * bin_weight
-                mce = max(mce, np.abs(actual_prob - predicted_prob))
-                bin_metrics.append({
-                    'bin_lower': float(bin_lower),
-                    'bin_upper': float(bin_upper),
-                    'actual_prob': float(actual_prob),
-                    'predicted_prob': float(predicted_prob),
-                    'bin_weight': float(bin_weight)
-                })
-    return ece, mce, bin_metrics
+            actual_prob = np.average(y_true[in_bin], weights=bin_weights)
+            predicted_prob = np.average(y_prob[in_bin], weights=bin_weights)
+            bin_weight = bin_total_weight / np.sum(weights)
+            ece += np.abs(actual_prob - predicted_prob) * bin_weight
+            mce = max(mce, np.abs(actual_prob - predicted_prob))
+    return ece, mce
 
-def calculate_metrics(y_true, y_pred, y_prob, weights=None):
+def calculate_metrics(y_true, y_pred, y_prob, weights=None, n_bins=10):
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
     precision = precision_score(y_true, y_pred, sample_weight=weights)
     recall = recall_score(y_true, y_pred, sample_weight=weights)
-    specificity = recall_score(y_true, y_pred, pos_label=0, sample_weight=weights)
+    sensitivity = recall
     f1 = f1_score(y_true, y_pred, sample_weight=weights)
     roc_auc = roc_auc_score(y_true, y_prob, sample_weight=weights)
     precision_curve, recall_curve, _ = precision_recall_curve(y_true, y_prob, sample_weight=weights)
     pr_auc = auc(recall_curve, precision_curve)
-    ece, mce, _ = calculate_calibration_metrics(y_true, y_prob, weights)
-    brier = np.average((y_prob - y_true) ** 2, weights=weights)
     logloss = log_loss(y_true, y_prob, sample_weight=weights)
+    brier = brier_score_loss(y_true, y_prob, sample_weight=weights)
+    cm = confusion_matrix(y_true, y_pred)
+    if cm.shape == (2,2):
+        tn, fp, fn, tp = cm.ravel()
+        specificity = tn / (tn + fp) if (tn + fp) > 0 else float('nan')
+        npv = tn / (tn + fn) if (tn + fn) > 0 else float('nan')
+    else:
+        specificity = float('nan')
+        npv = float('nan')
+    youden = recall + specificity - 1 if not (np.isnan(recall) or np.isnan(specificity)) else float('nan')
+    kappa = cohen_kappa_score(y_true, y_pred, sample_weight=weights)
+    ece, mce = calculate_calibration_metrics(y_true, y_prob, weights, n_bins)
     return {
-        'AUC-ROC': roc_auc,
-        'AUC-PR': pr_auc,
-        'Sensitivity': recall,
-        'Specificity': specificity,
-        'Precision': precision,
-        'F1': f1,
-        'ECE': ece,
-        'MCE': mce,
-        'Brier': brier,
-        'LogLoss': logloss
+        "Accuracy": accuracy,
+        "Sensitivity": sensitivity,
+        "Specificity": specificity,
+        "Precision": precision,
+        "NPV": npv,
+        "F1 Score": f1,
+        "Youden's Index": youden,
+        "Cohen's Kappa": kappa,
+        "AUC-ROC": roc_auc,
+        "AUC-PR": pr_auc,
+        "Log Loss": logloss,
+        "Brier": brier,
+        "ECE": ece,
+        "MCE": mce
     }
 
 import yaml
@@ -140,173 +149,43 @@ def load_objective_config(config_path='config.yaml'):
     return weights, constraints
 
 def objective_function(metrics, config_path='config.yaml'):
-    """Calculate objective score based on metrics and config constraints."""
+    """定制目标函数，使用config中的硬约束及自定义权重"""
+    # 获取配置文件中的约束条件
     weights, constraints = load_objective_config(config_path)
-    # 硬约束
-    if 'AUC_min' in constraints and metrics.get('AUC', 0) < constraints['AUC_min']:
+    
+    # 关键指标
+    auc_roc = metrics.get('AUC-ROC', 0)  # AUC-ROC在metrics中是'AUC-ROC'
+    sensitivity = metrics.get('Sensitivity', 0)
+    specificity = metrics.get('Specificity', 0)
+    f1 = metrics.get('F1 Score', 0)  # F1在metrics中是'F1 Score'
+    kappa = metrics.get('Cohen\'s Kappa', 0)
+    ece = metrics.get('ECE', 0)
+    
+    # 应用配置文件中的硬约束
+    if 'AUC_min' in constraints and auc_roc < constraints['AUC_min']:
         return float('-inf')
-    if 'AUC_max' in constraints and metrics.get('AUC', 1) > constraints['AUC_max']:
+    if 'AUC_max' in constraints and auc_roc > constraints['AUC_max']:
         return float('-inf')
-    if 'MCE_max' in constraints and metrics.get('MCE', 0) >= constraints['MCE_max']:
+    if 'ECE_max' in constraints and ece >= constraints['ECE_max']:
         return float('-inf')
-    if 'ECE_max' in constraints and metrics.get('ECE', 0) >= constraints['ECE_max']:
+    if 'F1_min' in constraints and f1 <= constraints['F1_min']:
         return float('-inf')
-    if 'F1_min' in constraints and metrics.get('F1', 0) <= constraints['F1_min']:
+    if 'Sensitivity_min' in constraints and sensitivity < constraints['Sensitivity_min']:
         return float('-inf')
-    if 'Sensitivity_min' in constraints and metrics.get('Sensitivity', 0) < constraints['Sensitivity_min']:
+    if 'Specificity_min' in constraints and specificity < constraints['Specificity_min']:
         return float('-inf')
-    if 'Specificity_min' in constraints and metrics.get('Specificity', 0) < constraints['Specificity_min']:
-        return float('-inf')
-    # 线性加权
-    score = sum(weights.get(metric, 0) * metrics.get(metric, 0) for metric in weights)
+    
+    # 定制权重 - 特别提高敏感度的重要性
+    # 使用自定义权重，能提高敏感度
+    score = 0.25 * auc_roc + 0.5 * sensitivity + 0.1 * specificity + 0.1 * f1 + 0.05 * kappa
+    
     return score
 
 # 5. Optuna + SMOTE 优化
-def objective(trial):
-    params = {
-        'n_estimators': trial.suggest_categorical('n_estimators', [100, 200, 300, 400, 500, 600, 800, 1000]),
-        'max_depth': trial.suggest_categorical('max_depth', [3, 5, 7, 10, 15, 20, 25, 30, None]),
-        'learning_rate': trial.suggest_float('learning_rate', 0.001, 0.5, log=True),
-        'subsample': trial.suggest_float('subsample', 0.4, 1.0),
-        'colsample_bytree': trial.suggest_float('colsample_bytree', 0.4, 1.0),
-        'reg_alpha': trial.suggest_float('reg_alpha', 0, 5.0),
-        'reg_lambda': trial.suggest_float('reg_lambda', 0, 5.0),
-        'use_label_encoder': False,
-        'random_state': 42,
-        'eval_metric': 'logloss'
-    }
-    pipeline = Pipeline([
-        ('preprocessor', preprocessor),
-        ('classifier', XGBClassifier(**params))
-    ])
-    smote = SMOTE(random_state=42)
-    X_train_res, y_train_res = smote.fit_resample(X_train, y_train)
-    try:
-        pipeline.fit(X_train_res, y_train_res)
-        y_pred = pipeline.predict(X_test)
-        y_prob = pipeline.predict_proba(X_test)[:, 1]
-        metrics = calculate_metrics(y_test, y_pred, y_prob, weights_test)
-        score = objective_function(metrics)
-        trial.set_user_attr("metrics", metrics)
-        trial.set_user_attr("params", params)
-        return score
-    except Exception as e:
-        logger.error(f"Optuna trial error: {e}")
-        return float('-inf')
 
-# 6. 可视化函数（与RF_Plot.py风格一致）
-import matplotlib.pyplot as plt
-import seaborn as sns
-sns.set_style("whitegrid")
-plt.rcParams['figure.figsize'] = [8, 8]
-plt.rcParams['figure.dpi'] = 300
 
-def save_plot_data(data, filename):
-    with open(filename, 'w') as f:
-        json.dump(data, f, indent=4)
-
-def plot_roc_curve(y_true, y_prob, weights, model_name):
-    from sklearn.metrics import roc_curve, auc
-    fpr, tpr, _ = roc_curve(y_true, y_prob, sample_weight=weights)
-    roc_auc = auc(fpr, tpr)
-    plt.figure()
-    plt.plot(fpr, tpr, color='b', lw=2, label=f'ROC curve (AUC = {roc_auc:.3f})')
-    plt.plot([0, 1], [0, 1], color='gray', lw=1, linestyle='--')
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('Receiver Operating Characteristic (ROC) Curve')
-    plt.legend(loc="lower right")
-    plt.savefig(str(plot_dir / f"XGB_ROC.png"), bbox_inches='tight', dpi=300)
-    plt.close()
-    save_plot_data({
-        'fpr': [float(x) for x in fpr],
-        'tpr': [float(x) for x in tpr],
-        'auc': float(roc_auc)
-    }, str(plot_data_dir / f"XGB_ROC_data.json"))
-
-def plot_pr_curve(y_true, y_prob, weights, model_name):
-    from sklearn.metrics import precision_recall_curve, auc
-    precision, recall, _ = precision_recall_curve(y_true, y_prob, sample_weight=weights)
-    pr_auc = auc(recall, precision)
-    plt.figure()
-    plt.plot(recall, precision, color='b', lw=2, label=f'PR curve (AUC = {pr_auc:.3f})')
-    plt.xlabel('Recall')
-    plt.ylabel('Precision')
-    plt.title('Precision-Recall Curve')
-    plt.legend(loc="lower left")
-    plt.savefig(str(plot_dir / f"XGB_PR.png"), bbox_inches='tight', dpi=300)
-    plt.close()
-    save_plot_data({
-        'precision': [float(x) for x in precision],
-        'recall': [float(x) for x in recall],
-        'auc': float(pr_auc)
-    }, str(plot_data_dir / f"XGB_PR_data.json"))
-
-def plot_calibration_curve(y_true, y_prob, weights, model_name):
-    ece, mce, bin_metrics = calculate_calibration_metrics(y_true, y_prob, weights)
-    brier = np.average((y_prob - y_true) ** 2, weights=weights)
-    plt.figure()
-    bin_centers = [(bm['bin_lower'] + bm['bin_upper']) / 2 for bm in bin_metrics]
-    actual_probs = [bm['actual_prob'] for bm in bin_metrics]
-    predicted_probs = [bm['predicted_prob'] for bm in bin_metrics]
-    plt.plot(bin_centers, predicted_probs, 's-', label='Predicted')
-    plt.plot(bin_centers, actual_probs, 'o-', label='Actual')
-    plt.plot([0, 1], [0, 1], 'k--', label='Perfectly Calibrated')
-    plt.xlabel('Predicted Probability')
-    plt.ylabel('Actual Probability')
-    plt.title('Calibration Curve')
-    plt.text(0.05, 0.95, f'ECE: {ece:.3f}\nMCE: {mce:.3f}\nBrier: {brier:.3f}', bbox=dict(facecolor='white', alpha=0.8), transform=plt.gca().transAxes)
-    plt.legend(loc='lower right')
-    plt.savefig(str(plot_dir / f"XGB_Calibration.png"), bbox_inches='tight', dpi=300)
-    plt.close()
-    save_plot_data({
-        'bin_metrics': bin_metrics,
-        'ece': float(ece),
-        'mce': float(mce),
-        'brier': float(brier)
-    }, str(plot_data_dir / f"XGB_Calibration_data.json"))
-
-def plot_decision_curve(y_true, y_prob, weights, model_name):
-    thresholds = np.linspace(0.01, 0.3, 30)
-    prevalence = np.sum(weights[y_true == 1]) / np.sum(weights) if weights is not None else np.mean(y_true)
-    net_benefits_model = []
-    net_benefits_all = []
-    for threshold in thresholds:
-        def calculate_net_benefit(y_true, y_prob, threshold, weights=None):
-            if weights is None:
-                weights = np.ones_like(y_true)
-            y_true = np.array(y_true)
-            y_prob = np.array(y_prob)
-            weights = np.array(weights)
-            predictions = (y_prob >= threshold).astype(int)
-            true_pos = predictions & y_true.astype(bool)
-            false_pos = predictions & ~y_true.astype(bool)
-            n_total = len(y_true)
-            tp_rate = np.sum(true_pos) / n_total
-            fp_rate = np.sum(false_pos) / n_total
-            net_benefit = tp_rate - fp_rate * (threshold/(1-threshold))
-            return net_benefit
-        nb_model = calculate_net_benefit(y_true, y_prob, threshold, weights)
-        net_benefits_model.append(nb_model)
-        nb_all = prevalence - (1 - prevalence) * (threshold/(1-threshold))
-        net_benefits_all.append(nb_all)
-    net_benefits_none = np.zeros_like(thresholds)
-    plt.figure(figsize=(10, 8))
-    plt.plot(thresholds, net_benefits_model, 'b-', label='Model', linewidth=2.5)
-    plt.plot(thresholds, net_benefits_all, 'g--', label='Treat All', linewidth=2)
-    plt.plot(thresholds, net_benefits_none, 'r:', label='Treat None', linewidth=2)
-    plt.xlabel('Threshold Probability')
-    plt.ylabel('Net Benefit')
-    plt.title('Decision Curve Analysis')
-    plt.legend(loc='upper right')
-    plt.savefig(str(plot_dir / f"XGB_DCA.png"), bbox_inches='tight', dpi=300)
-    plt.close()
-    save_plot_data({
-        'thresholds': [float(t) for t in thresholds],
-        'net_benefit_model': [float(nb) for nb in net_benefits_model],
-        'net_benefit_all': [float(nb) for nb in net_benefits_all],
-        'net_benefit_none': [float(nb) for nb in net_benefits_none]
-    }, str(plot_data_dir / f"XGBoost_DCA_data.json"))
+# 5. Optuna目标函数
+# 注意：主流程 optuna_objective 里调用 calculate_metrics + objective_function
 
 # 7. 主流程
 def main():
@@ -314,64 +193,361 @@ def main():
     model_name = "XGBoost"
     logger = setup_logger(model_name)
     logger.info("Starting XGBoost model training")
+    logger.info("[并行调参说明] 本脚本支持Optuna多进程/多机并行调参，只需多开终端运行本脚本即可，Optuna会自动分配trial。")
+    
+    # 3. 全局特征定义，供 main() 和特征保存使用
+    categorical_features = ['Gender', 'Education', 'Marriage', 'Smoke', 'Alcohol', 'Employment', 'ActivityLevel']
+    numeric_features = [col for col in ['Age', 'BMI'] if col in pd.read_csv(data_path).columns]
+    features = ['DII_food'] + numeric_features + categorical_features
+    
     X_train, X_test, y_train, y_test, weights_train, weights_test, preprocessor = load_and_preprocess_data()
-    n_trials = config.get('n_trials', 200)
-    # 断点恢复机制：每发现更优模型立即保存
+    
+    # 等分交叉验证优化
+    n_trials = config.get('n_trials', 100)  # 默认运行100次试验
+    study = optuna.create_study(direction='maximize')
+    logger.info(f"Running {n_trials} trials for hyperparameter optimization")
+    
+    # Optuna优化函数，返回每次试验的评分
+    def optuna_objective(trial):
+        # 辅助函数：基于当前最佳值生成建议参数范围
+        def get_suggested_param(trial, name, default_low, default_high, best=None, pct=0.2, is_int=False, log=False):
+            if best is not None:
+                low = best * (1 - pct)
+                high = best * (1 + pct)
+                if is_int:
+                    low, high = int(max(1, low)), int(high)
+                return trial.suggest_float(name, low, high, log=log) if not is_int else trial.suggest_int(name, low, high)
+            else:
+                return trial.suggest_float(name, default_low, default_high, log=log) if not is_int else trial.suggest_int(name, default_low, default_high)
+        
+        # XGBoost模型需要调整的参数
+        params = {
+            'n_estimators': trial.suggest_categorical('n_estimators', [100, 200, 300, 400, 500, 600, 800, 1000]),
+            'max_depth': trial.suggest_categorical('max_depth', [3, 5, 7, 10, 15, 20, 25, 30, None]),
+            'learning_rate': trial.suggest_float('learning_rate', 0.001, 0.5, log=True),
+            'subsample': trial.suggest_float('subsample', 0.4, 1.0),
+            'colsample_bytree': trial.suggest_float('colsample_bytree', 0.4, 1.0),
+            'reg_alpha': trial.suggest_float('reg_alpha', 0, 10.0),
+            'reg_lambda': trial.suggest_float('reg_lambda', 0, 10.0),
+            'scale_pos_weight': trial.suggest_float('scale_pos_weight', 1.0, 50.0),  # 增加正样本权重
+            'min_child_weight': trial.suggest_float('min_child_weight', 0.1, 10.0),  # 控制过拟合
+            'gamma': trial.suggest_float('gamma', 0, 5.0),  # 控制树分裂
+            'random_state': 42,
+            'eval_metric': 'logloss'
+        }
+        
+        # 交叉验证
+        kf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+        trial_metrics_list = []
+        try:
+            # 平均K折交叉验证指标
+            for fold, (train_idx, val_idx) in enumerate(kf.split(X_train, y_train)):
+                train_fold_metrics = train_fold(fold, train_idx, val_idx, params)
+                if train_fold_metrics is not None:
+                    trial_metrics_list.append(train_fold_metrics)
+                    # 针对在缓冲区显示常见关键指标，第一折结束后展示
+                    if fold == 0:
+                        auc_roc = train_fold_metrics.get('AUC-ROC', 0)
+                        sens = train_fold_metrics.get('Sensitivity', 0)
+                        spec = train_fold_metrics.get('Specificity', 0)
+                        print(f"\r[Fold 1/5] AUC={auc_roc:.3f} Sens={sens:.3f} Spec={spec:.3f}", end="")
+            
+            if not trial_metrics_list:  # 所有折数都失败
+                return float('-inf')
+            
+            # 计算平均指标
+            avg_metrics = {}
+            for key in trial_metrics_list[0].keys():
+                avg_metrics[key] = sum(m[key] for m in trial_metrics_list) / len(trial_metrics_list)
+            
+            # 记录当前试验的指标和参数
+            trial.set_user_attr("metrics", avg_metrics)
+            trial.set_user_attr("params", params)
+            
+            # 计算目标函数值
+            score = objective_function(avg_metrics)
+            logger.info(f"[Trial {getattr(trial,'number','?')}] 5-fold mean metrics: {avg_metrics}")
+            auc_roc = avg_metrics.get('AUC-ROC', 0)
+            auc_pr = avg_metrics.get('AUC-PR', 0)
+            sens = avg_metrics.get('Sensitivity', 0)
+            spec = avg_metrics.get('Specificity', 0)
+            prec = avg_metrics.get('Precision', 0)
+            logger.info(f"Trial {trial.number}: AUC-ROC={auc_roc:.3f} AUC-PR={auc_pr:.3f} Sens={sens:.3f} Spec={spec:.3f} Prec={prec:.3f} Score={score:.3f}")
+            return score
+        
+        except Exception as e:
+            logger.error(f"Error in trial {trial.number}: {e}")
+            traceback.print_exc()
+            return float('-inf')
+    
+    # 训练指定折数的模型
+    def train_fold(fold, train_idx, val_idx, params):
+        try:
+            # 分割数据和样本重量
+            X_train_fold, X_val_fold = X_train.iloc[train_idx], X_train.iloc[val_idx]
+            y_train_fold, y_val_fold = y_train.iloc[train_idx], y_train.iloc[val_idx]
+            w_train_fold = weights_train.iloc[train_idx] if weights_train is not None else None
+            w_val_fold = weights_train.iloc[val_idx] if weights_train is not None else None
+            
+            # SMOTE处理训练集
+            smote = SMOTE(random_state=42)
+            X_train_fold_res, y_train_fold_res = smote.fit_resample(X_train_fold, y_train_fold)
+            
+            # 构建和训练模型
+            pipeline = Pipeline([
+                ('preprocessor', preprocessor),
+                ('classifier', XGBClassifier(**params))
+            ])
+            pipeline.fit(X_train_fold_res, y_train_fold_res)
+            
+            # 验证集预测
+            y_val_pred = pipeline.predict(X_val_fold)
+            y_val_prob = pipeline.predict_proba(X_val_fold)[:, 1]
+            
+            # 计算验证指标
+            metrics = calculate_metrics(y_val_fold, y_val_pred, y_val_prob, w_val_fold)
+            return metrics
+        except Exception as e:
+            logger.error(f"Error in fold {fold+1}: {e}")
+            return None
+    
+    # 运行Optuna优化
     best_score = float('-inf')
     best_params = None
     best_metrics = None
-    for trial in range(n_trials):
-        optuna_trial = study.ask()
-        score = objective(optuna_trial)
-        study.tell(optuna_trial, score)
-        trial_metrics = optuna_trial.user_attrs['metrics']
-        trial_params = optuna_trial.user_attrs['params']
-        if score > best_score:
-            best_score = score
-            best_params = trial_params
-            best_metrics = trial_metrics
-            # 训练并保存当前最佳模型
-            pipeline = Pipeline([
-                ('preprocessor', preprocessor),
-                ('classifier', XGBClassifier(**best_params))
-            ])
-            smote = SMOTE(random_state=42)
-            X_train_res, y_train_res = smote.fit_resample(X_train, y_train)
-            pipeline.fit(X_train_res, y_train_res)
-            model_path = model_dir / f'XGBoost_model.pkl'
-            with open(model_path, 'wb') as f:
-                pickle.dump(pipeline, f)
-            # 保存最佳参数
-            def convert_np(obj):
-                if isinstance(obj, (np.integer, np.int32, np.int64)):
-                    return int(obj)
-                elif isinstance(obj, (np.floating, np.float32, np.float64)):
-                    return float(obj)
-                elif isinstance(obj, np.ndarray):
-                    return obj.tolist()
-                return obj
-            params_serializable = {k: convert_np(v) for k, v in best_params.items()}
-            param_path = model_dir / f'XGBoost_best_params.json'
-            with open(param_path, 'w') as f:
-                json.dump(params_serializable, f, indent=4)
-            # 保存最佳指标
-            metrics_path = model_dir / f'XGBoost_best_metrics.json'
-            with open(metrics_path, 'w') as f:
-                json.dump(best_metrics, f, indent=4)
-            logger.info(f"[Trial {trial+1}] New best score: {best_score}")
-            logger.info("Best parameters:")
-            for k, v in best_params.items():
-                logger.info(f"{k}: {v}")
-            logger.info("Best metrics:")
-            for metric, value in best_metrics.items():
-                logger.info(f"{metric}: {value:.4f}")
-    logger.info(f"Training finished. Best score: {best_score}")
-    logger.info("Final best parameters:")
-    for k, v in best_params.items():
-        logger.info(f"{k}: {v}")
-    logger.info("Final best metrics:")
-    for metric, value in best_metrics.items():
-        logger.info(f"{metric}: {value:.4f}")
+    best_pipeline = None
+    
+    # 检查是否有已存在的最佳参数
+    best_params_file = model_dir / 'XGBoost_best_params.json'
+    if best_params_file.exists():
+        logger.info('Found existing XGBoost_best_params.json, evaluating initial score...')
+        try:
+            with open(best_params_file, 'r') as f:
+                best_params = json.load(f)
+                
+            # 使用已有最佳参数评估初始分数
+            # 创建具有相同接口的伪试验对象
+            class PseudoTrial:
+                def __init__(self, params):
+                    self.params = params
+                    self.user_attrs = {}
+                    
+                def set_user_attr(self, key, value):
+                    self.user_attrs[key] = value
+                    
+                def suggest_categorical(self, name, choices):
+                    return self.params.get(name, choices[0])
+                    
+                def suggest_float(self, name, low, high, **kwargs):
+                    return self.params.get(name, (low + high) / 2)
+                    
+                def suggest_int(self, name, low, high, **kwargs):
+                    return self.params.get(name, low)
+            
+            initial_trial = PseudoTrial(best_params)
+            initial_score = optuna_objective(initial_trial)
+            avg_metrics = initial_trial.user_attrs.get("metrics", {})
+            
+            # 更新最佳分数和指标
+            best_score = initial_score
+            best_metrics = avg_metrics
+            
+            logger.info(f"Initial best score from XGBoost_best_params.json: {best_score:.3f}")
+            logger.info(f"Initial best metrics: {avg_metrics}")
+        except Exception as e:
+            logger.error(f"Error loading existing params: {e}")
+            logger.info('Starting optimization from scratch due to error loading params.')
+    else:
+        logger.info('No existing XGBoost_best_params.json found, starting from scratch.')
+    
+    try:
+        # 运行调参试验并显示进度
+        from tqdm import tqdm
+        for trial in tqdm(range(n_trials), desc='Optuna Trials'):
+            optuna_trial = study.ask()
+            try:
+                score = optuna_objective(optuna_trial)
+                study.tell(optuna_trial, score)
+                
+                # 获取当前试验的指标和参数
+                trial_metrics = optuna_trial.user_attrs.get('metrics', {})
+                trial_params = optuna_trial.user_attrs.get('params', {})
+                
+                # 格式化时间戳
+                now_str = datetime.now().strftime('%m-%d %H:%M:%S')
+                
+                # 提取关键指标用于显示
+                auc_roc = trial_metrics.get('AUC-ROC', 0)
+                auc_pr = trial_metrics.get('AUC-PR', 0)
+                sens = trial_metrics.get('Sensitivity', 0)
+                spec = trial_metrics.get('Specificity', 0)
+                prec = trial_metrics.get('Precision', 0)
+                score_val = score
+                
+                # 输出每个试验的简要信息
+                logger.info(f"[{now_str}][Trial {trial+1}/{n_trials}] AUC-ROC={auc_roc:.3f} AUC-PR={auc_pr:.3f} Sens={sens:.3f} Spec={spec:.3f} Prec={prec:.3f} Score={score_val:.3f}")
+                
+                # 更新最佳模型和指标
+                if score > best_score:
+                    best_score = score
+                    best_params = trial_params
+                    best_metrics = trial_metrics
+                    
+                    # 保存最佳参数和指标
+                    # 准备保存参数
+                    def convert_np(obj):
+                        if isinstance(obj, (np.integer, np.int32, np.int64)):
+                            return int(obj)
+                        elif isinstance(obj, (np.floating, np.float32, np.float64)):
+                            return float(obj)
+                        elif isinstance(obj, np.ndarray):
+                            return obj.tolist()
+                        return obj
+                        
+                    params_serializable = {k: convert_np(v) for k, v in best_params.items()}
+                    param_path = model_dir / 'XGBoost_best_params.json'
+                    with open(param_path, 'w') as f:
+                        json.dump(params_serializable, f, indent=4)
+                    
+                    # 保存特征顺序和信息
+                    feature_info = {
+                        'features': features
+                    }
+                    with open(model_dir / 'XGBoost_feature_info.json', 'w') as f:
+                        json.dump(feature_info, f, indent=4)
+                        
+                    # 保存最佳指标
+                    metrics_path = model_dir / 'XGBoost_best_metrics.json'
+                    with open(metrics_path, 'w') as f:
+                        json.dump(best_metrics, f, indent=4)
+                        
+                    # 输出新的最佳结果
+                    logger.info(f"[Trial {trial+1}] New best score: {best_score:.3f}")
+                    logger.info("Best parameters:")
+                    for k, v in best_params.items():
+                        logger.info(f"{k}: {v}")
+                    logger.info("Best metrics:")
+                    for metric, value in best_metrics.items():
+                        if isinstance(value, float):
+                            logger.info(f"{metric}: {value:.3f}")
+                        else:
+                            logger.info(f"{metric}: {value}")
+            except Exception as e:
+                study.tell(optuna_trial, float('-inf'))
+                logger.error(f"Error in trial {trial+1}: {e}")            
+        
+        logger.info(f"Training finished. Best score: {best_score:.3f}")
+        # 获取最佳试验
+        best_trial = study.best_trial
+        best_params = best_trial.user_attrs["params"]
+        best_metrics = best_trial.user_attrs["metrics"]
+        best_score = best_trial.value
+        
+        logger.info(f"Optimization finished. Best score: {best_score:.3f}")
+        logger.info("Best parameters:")
+        for k, v in best_params.items():
+            logger.info(f"{k}: {v}")
+            
+        # 准备保存参数
+        def convert_np(obj):
+            if isinstance(obj, (np.integer, np.int32, np.int64)):
+                return int(obj)
+            elif isinstance(obj, (np.floating, np.float32, np.float64)):
+                return float(obj)
+            elif isinstance(obj, np.ndarray):
+                return obj.tolist()
+            return obj
+            
+        params_serializable = {k: convert_np(v) for k, v in best_params.items()}
+        param_path = model_dir / f'XGBoost_best_params.json'
+        with open(param_path, 'w') as f:
+            json.dump(params_serializable, f, indent=4)
+            
+        # 保存特征顺序和信息
+        feature_info = {
+            'features': features
+        }
+        with open(model_dir / 'XGBoost_feature_info.json', 'w') as f:
+            json.dump(feature_info, f, indent=4)
+            
+        # 保存最佳指标
+        metrics_path = model_dir / f'XGBoost_best_metrics.json'
+        with open(metrics_path, 'w') as f:
+            json.dump(best_metrics, f, indent=4)
+        logger.info(f"Best CV metrics:")
+        for metric, value in best_metrics.items():
+            if isinstance(value, float):
+                logger.info(f"{metric}: {value:.3f}")
+            else:
+                logger.info(f"{metric}: {value}")
+            
+    except Exception as e:
+        logger.error(f"Error during optimization: {e}")
+        logger.error(traceback.format_exc())
+    
+    # 如果成功找到最佳模型，在测试集上进行评估
+    if best_params is not None:
+        logger.info("Final best parameters:")
+        for k, v in best_params.items():
+            logger.info(f"{k}: {v}")
+        logger.info("Final best metrics (CV mean):")
+        for metric, value in best_metrics.items():
+            if isinstance(value, float):
+                logger.info(f"{metric}: {value:.3f}")
+            else:
+                logger.info(f"{metric}: {value}")
+                
+        # 用最终最优参数在训练集做采样训练模型，并在test set评估
+        logger.info("Evaluating on held-out test set (never seen during training/tuning)...")
+        
+        # 重新采样整个训练集
+        smote_final = SMOTE(random_state=42)
+        if weights_train is not None:
+            Xy_train = X_train.copy()
+            Xy_train['__label__'] = y_train
+            Xy_train['__weight__'] = weights_train
+            X_res_final, y_res_final = smote_final.fit_resample(Xy_train.drop(['__label__'], axis=1), Xy_train['__label__'])
+            weights_train_res_final = X_res_final['__weight__'].reset_index(drop=True)
+            X_train_res_final = X_res_final.drop(['__weight__'], axis=1)
+            y_train_res_final = y_res_final.reset_index(drop=True)
+        else:
+            X_train_res_final, y_train_res_final = smote_final.fit_resample(X_train, y_train)
+            weights_train_res_final = None
+            
+        # 用最优参数训练模型
+        # 确保不重复传入参数
+        model_params = best_params.copy()
+        if 'random_state' not in model_params:
+            model_params['random_state'] = 42
+            
+        final_pipeline = Pipeline([
+            ('preprocessor', preprocessor),
+            ('classifier', XGBClassifier(**model_params))
+        ])
+        
+        final_pipeline.fit(X_train_res_final, y_train_res_final, classifier__sample_weight=weights_train_res_final)
+        
+        # 在test set评估
+        y_pred_test = final_pipeline.predict(X_test)
+        y_prob_test = final_pipeline.predict_proba(X_test)[:, 1]
+        test_metrics = calculate_metrics(y_test, y_pred_test, y_prob_test, weights_test)
+        
+        logger.info("Test set metrics (never seen during training/tuning):")
+        for metric, value in test_metrics.items():
+            logger.info(f"{metric}: {value:.3f}")
+            
+        # 保存模型和参数到 model_dir
+        model_path = model_dir / 'XGBoost_model.pkl'
+        with open(model_path, 'wb') as f:
+            pickle.dump(final_pipeline, f)
+            
+        # 保存最终测试集指标到 output_dir
+        test_metrics_path = output_dir / 'XGBoost_metrics.json'
+        with open(test_metrics_path, 'w') as f:
+            json.dump(test_metrics, f, indent=4)
+    else:
+        logger.warning("No valid model found that meets the constraints.")
+        logger.warning("Check your objective constraints and data.")
 
 if __name__ == "__main__":
     main()

@@ -197,7 +197,7 @@ def create_meta_learners():
     """Create a dictionary of meta-learners for the super learner"""
     meta_learners = {
         'LogisticRegression': LogisticRegression(random_state=42, max_iter=1000),
-        'XGBoost': xgb.XGBClassifier(random_state=42, use_label_encoder=False, eval_metric='logloss'),
+        'XGBoost': xgb.XGBClassifier(random_state=42, eval_metric='logloss'),
         'RandomForest': RandomForestClassifier(random_state=42, n_estimators=100),
         'ElasticNet': LogisticRegression(random_state=42, penalty='elasticnet', solver='saga', 
                                          l1_ratio=0.5, max_iter=1000)

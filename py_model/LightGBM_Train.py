@@ -1,13 +1,5 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split, StratifiedKFold
-from sklearn.metrics import roc_auc_score, precision_score, recall_score, f1_score, precision_recall_curve, auc, log_loss, roc_curve
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
-import lightgbm as lgb
-from imblearn.over_sampling import SMOTE
-import optuna
 import pickle
 import json
 import logging
@@ -15,15 +7,81 @@ from pathlib import Path
 import yaml
 import warnings
 from datetime import datetime
+from lightgbm import LGBMClassifier
+from sklearn.model_selection import train_test_split, StratifiedKFold
+from sklearn.metrics import (
+    accuracy_score, precision_score, recall_score, f1_score, roc_auc_score,
+    precision_recall_curve, auc, confusion_matrix, cohen_kappa_score, log_loss, brier_score_loss
+)
+import optuna
+import traceback
+from imblearn.over_sampling import SMOTE
+
+def calculate_calibration_metrics(y_true, y_prob, weights=None, n_bins=10):
+    bin_boundaries = np.linspace(0, 1, n_bins + 1)
+    bin_lowers = bin_boundaries[:-1]
+    bin_uppers = bin_boundaries[1:]
+    if weights is None:
+        weights = np.ones_like(y_true)
+    ece = 0
+    mce = 0
+    for bin_lower, bin_upper in zip(bin_lowers, bin_uppers):
+        in_bin = np.logical_and(y_prob > bin_lower, y_prob <= bin_upper)
+        if np.any(in_bin):
+            bin_weights = weights[in_bin]
+            bin_total_weight = np.sum(bin_weights)
+            actual_prob = np.average(y_true[in_bin], weights=bin_weights)
+            predicted_prob = np.average(y_prob[in_bin], weights=bin_weights)
+            bin_weight = bin_total_weight / np.sum(weights)
+            ece += np.abs(actual_prob - predicted_prob) * bin_weight
+            mce = max(mce, np.abs(actual_prob - predicted_prob))
+    return ece, mce
+
+def calculate_metrics(y_true, y_pred, y_prob, weights=None, n_bins=10):
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
+    precision = precision_score(y_true, y_pred, sample_weight=weights)
+    recall = recall_score(y_true, y_pred, sample_weight=weights)
+    sensitivity = recall
+    f1 = f1_score(y_true, y_pred, sample_weight=weights)
+    roc_auc = roc_auc_score(y_true, y_prob, sample_weight=weights)
+    precision_curve, recall_curve, _ = precision_recall_curve(y_true, y_prob, sample_weight=weights)
+    pr_auc = auc(recall_curve, precision_curve)
+    logloss = log_loss(y_true, y_prob, sample_weight=weights)
+    brier = brier_score_loss(y_true, y_prob, sample_weight=weights)
+    cm = confusion_matrix(y_true, y_pred)
+    if cm.shape == (2,2):
+        tn, fp, fn, tp = cm.ravel()
+        specificity = tn / (tn + fp) if (tn + fp) > 0 else float('nan')
+        npv = tn / (tn + fn) if (tn + fn) > 0 else float('nan')
+    else:
+        specificity = float('nan')
+        npv = float('nan')
+    youden = recall + specificity - 1 if not (np.isnan(recall) or np.isnan(specificity)) else float('nan')
+    kappa = cohen_kappa_score(y_true, y_pred, sample_weight=weights)
+    ece, mce = calculate_calibration_metrics(y_true, y_prob, weights, n_bins)
+    return {
+        "Accuracy": accuracy,
+        "Sensitivity": sensitivity,
+        "Specificity": specificity,
+        "Precision": precision,
+        "NPV": npv,
+        "F1 Score": f1,
+        "Youden's Index": youden,
+        "Cohen's Kappa": kappa,
+        "AUC-ROC": roc_auc,
+        "AUC-PR": pr_auc,
+        "Log Loss": logloss,
+        "Brier": brier,
+        "ECE": ece,
+        "MCE": mce
+    }
 
 warnings.filterwarnings('ignore')
 
 # 1. 配置读取
-def load_config(config_path='config.yaml'):
-    with open(config_path, 'r') as f:
-        return yaml.safe_load(f)
+with open('config.yaml', 'r') as f:
+    config = yaml.safe_load(f)
 
-config = load_config()
 data_path = Path(config['data_path'])
 model_dir = Path(config['model_dir'])
 model_dir.mkdir(exist_ok=True)
@@ -45,64 +103,97 @@ def setup_logger(model_name):
     )
     return logging.getLogger()
 
-# 3. 数据加载与预处理
+# 3. 数据加载和预处理
+# 全局特征定义，供 main() 和特征保存使用
+categorical_features = ['Gender', 'Education', 'Marriage', 'Smoke', 'Alcohol', 'Employment', 'ActivityLevel']
+numeric_features = [col for col in ['Age', 'BMI'] if col in pd.read_csv(data_path).columns]
+features = ['DII_food'] + numeric_features + categorical_features
+
 def load_and_preprocess_data():
+    from sklearn.preprocessing import OneHotEncoder
+    
     df = pd.read_csv(data_path)
     weights = df['WTDRD1'] if 'WTDRD1' in df.columns else None
-    categorical_features = ['Gender', 'Education', 'Marriage', 'Smoke', 'Alcohol', 'Employment', 'ActivityLevel']
-    numeric_features = [col for col in ['Age', 'BMI'] if col in df.columns]
-    features = ['DII_food'] + numeric_features + categorical_features
-    X = df[features]
-    y = df['Epilepsy']
-    categorical_transformer = OneHotEncoder(drop='first', sparse_output=False)
-    numeric_transformer = StandardScaler()
-    preprocessor = ColumnTransformer([
-        ('num', numeric_transformer, ['DII_food'] + numeric_features),
-        ('cat', categorical_transformer, categorical_features)
-    ])
+    
+    # 检查数据是否有缺失值
+    print(f"\n原始数据中缺失值统计: \n{df[features].isna().sum()}")
+    
+    # 分离数值特征和类别特征
+    numeric_data = df[['DII_food'] + numeric_features].copy()
+    categorical_data = df[categorical_features].copy()
+    
+    # 独热编码处理类别特征
+    encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
+    encoded_cats = encoder.fit_transform(categorical_data)
+    
+    # 获取独热编码后的特征名称
+    encoded_feature_names = []
+    for i, feature in enumerate(categorical_features):
+        categories = encoder.categories_[i]
+        for category in categories:
+            encoded_feature_names.append(f"{feature}_{category}")
+    
+    # 创建独热编码后的DataFrame
+    encoded_df = pd.DataFrame(encoded_cats, columns=encoded_feature_names)
+    
+    # 合并数值特征和独热编码后的特征
+    X = pd.concat([numeric_data.reset_index(drop=True), encoded_df.reset_index(drop=True)], axis=1)
+    y = df['Epilepsy'].reset_index(drop=True)
+    
+    # 检查处理后的数据是否有NaN
+    print(f"\n独热编码后的数据缺失值统计: \n{X.isna().sum().sum()}")
+    
+    # 数据分割
+    from sklearn.model_selection import train_test_split
     if weights is not None:
         X_train, X_test, y_train, y_test, weights_train, weights_test = train_test_split(
-            X, y, weights, test_size=0.2, random_state=42, stratify=y
+            X, y, weights, test_size=0.3, random_state=42, stratify=y
         )
+        X_train = X_train.reset_index(drop=True)
+        X_test = X_test.reset_index(drop=True)
+        y_train = y_train.reset_index(drop=True)
+        y_test = y_test.reset_index(drop=True)
+        weights_train = weights_train.reset_index(drop=True)
+        weights_test = weights_test.reset_index(drop=True)
     else:
         X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=0.2, random_state=42, stratify=y
+            X, y, test_size=0.3, random_state=42, stratify=y
         )
+        X_train = X_train.reset_index(drop=True)
+        X_test = X_test.reset_index(drop=True)
+        y_train = y_train.reset_index(drop=True)
+        y_test = y_test.reset_index(drop=True)
         weights_train = weights_test = None
-    return X_train, X_test, y_train, y_test, weights_train, weights_test, preprocessor, features
+    
+    # 保存编码器和编码后的特征名称，便于后续使用
+    model_dir.mkdir(exist_ok=True)
+    with open(model_dir / 'encoder.pkl', 'wb') as f:
+        pickle.dump(encoder, f)
+    
+    # 替代原来的categorical_features传递编码后的特征名称
+    return X_train, X_test, y_train, y_test, weights_train, weights_test, encoded_feature_names
 
-# 4. 指标与目标函数
-def calculate_calibration_metrics(y_true, y_prob, weights=None, n_bins=10):
-    bin_boundaries = np.linspace(0, 1, n_bins + 1)
-    bin_lowers = bin_boundaries[:-1]
-    bin_uppers = bin_boundaries[1:]
-    if weights is None:
-        weights = np.ones_like(y_true)
-    ece = 0
-    mce = 0
-    for bin_lower, bin_upper in zip(bin_lowers, bin_uppers):
-        in_bin = np.logical_and(y_prob > bin_lower, y_prob <= bin_upper)
-        if np.any(in_bin):
-            bin_weights = weights[in_bin]
-            bin_total_weight = np.sum(bin_weights)
-            if bin_total_weight > 0:
-                actual_prob = np.average(y_true[in_bin], weights=bin_weights)
-                predicted_prob = np.average(y_prob[in_bin], weights=bin_weights)
-                bin_weight = bin_total_weight / np.sum(weights)
-                ece += np.abs(actual_prob - predicted_prob) * bin_weight
-                mce = max(mce, np.abs(actual_prob - predicted_prob))
-    return ece, mce
+# 4. 目标函数配置和指标
+import yaml
+
+def load_objective_config(config_path='config.yaml'):
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
+    weights = config.get('objective_weights', {})
+    constraints = config.get('objective_constraints', {})
+    return weights, constraints
 
 def calculate_metrics(y_true, y_pred, y_prob, weights=None):
-    precision = precision_score(y_true, y_pred, zero_division=0)
-    recall = recall_score(y_true, y_pred, zero_division=0)
+    precision = precision_score(y_true, y_pred)
+    recall = recall_score(y_true, y_pred)
     sensitivity = recall
-    specificity = recall_score(y_true, y_pred, pos_label=0, zero_division=0)
-    f1 = f1_score(y_true, y_pred, zero_division=0)
+    specificity = recall_score(y_true, y_pred, pos_label=0)
+    f1 = f1_score(y_true, y_pred)
     roc_auc = roc_auc_score(y_true, y_prob)
     precision_curve, recall_curve, _ = precision_recall_curve(y_true, y_prob)
     pr_auc = auc(recall_curve, precision_curve)
-    ece, mce = calculate_calibration_metrics(y_true, y_prob, weights)
+    ece = np.mean(np.abs(y_prob - y_true))
+    mce = np.max(np.abs(y_prob - y_true))
     brier = np.mean((y_prob - y_true) ** 2)
     logloss = log_loss(y_true, y_prob)
     return {
@@ -117,13 +208,6 @@ def calculate_metrics(y_true, y_pred, y_prob, weights=None):
         'Brier': brier,
         'LogLoss': logloss
     }
-
-def load_objective_config(config_path='config.yaml'):
-    with open(config_path, 'r') as f:
-        config = yaml.safe_load(f)
-    weights = config.get('objective_weights', {})
-    constraints = config.get('objective_constraints', {})
-    return weights, constraints
 
 def objective_function(metrics, config_path='config.yaml'):
     weights, constraints = load_objective_config(config_path)
@@ -144,89 +228,240 @@ def objective_function(metrics, config_path='config.yaml'):
     score = sum(weights.get(metric, 0) * metrics.get(metric, 0) for metric in weights)
     return score
 
-# 5. Optuna + SMOTE 优化
-def objective(trial):
-    X_train, X_test, y_train, y_test, weights_train, weights_test, preprocessor, features = load_and_preprocess_data()
-    smote = SMOTE(random_state=42)
-    X_train_res, y_train_res = smote.fit_resample(X_train, y_train)
-    if weights_train is not None:
-        weights_train_res = weights_train.iloc[X_train_res.index]
-    else:
-        weights_train_res = None
-    params = {
-        'objective': 'binary',
-        'metric': 'binary_logloss',
-        'boosting_type': 'gbdt',
-        'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3, log=True),
-        'num_leaves': trial.suggest_int('num_leaves', 15, 63),
-        'max_depth': trial.suggest_int('max_depth', 3, 10),
-        'feature_fraction': trial.suggest_float('feature_fraction', 0.7, 1.0),
-        'bagging_fraction': trial.suggest_float('bagging_fraction', 0.7, 1.0),
-        'bagging_freq': trial.suggest_int('bagging_freq', 1, 10),
-        'min_child_samples': trial.suggest_int('min_child_samples', 5, 30),
-        'lambda_l1': trial.suggest_float('lambda_l1', 0, 5.0),
-        'lambda_l2': trial.suggest_float('lambda_l2', 0, 5.0),
-        'random_state': 42,
-        'verbosity': -1
-    }
-    lgb_train = lgb.Dataset(X_train_res, y_train_res, weight=weights_train_res)
-    lgb_valid = lgb.Dataset(X_test, y_test, weight=weights_test, reference=lgb_train)
-    model = lgb.train(params, lgb_train, num_boost_round=1000, valid_sets=[lgb_valid], early_stopping_rounds=50, verbose_eval=False)
-    y_prob = model.predict(X_test, num_iteration=model.best_iteration)
-    y_pred = (y_prob >= 0.5).astype(int)
-    metrics = calculate_metrics(y_test, y_pred, y_prob, weights_test)
-    score = objective_function(metrics)
-    trial.set_user_attr('params', params)
-    trial.set_user_attr('metrics', metrics)
-    return score
+# 5. Optuna目标函数
+# 注意：主流程 optuna_objective 里调用 calculate_metrics + objective_function
 
-# 6. 主流程
+# 5. 主流程
 def main():
     model_name = "LightGBM"
     logger = setup_logger(model_name)
-    logger.info("Starting LightGBM model training")
-    X_train, X_test, y_train, y_test, weights_train, weights_test, preprocessor, features = load_and_preprocess_data()
-    n_trials = config.get('n_trials', 100)
-    study = optuna.create_study(direction='maximize')
-    # 断点恢复机制：每发现更优模型立即保存
+    logger.info(f"Starting LightGBM model training")
+    logger.info("[并行调参说明] 本脚本支持Optuna多进程/多机并行调参，只需多开终端运行本脚本即可，Optuna会自动分配trial。")
+    X_train, X_test, y_train, y_test, weights_train, weights_test, categorical_features_names = load_and_preprocess_data()
+    # 只在训练集做 SMOTE，test/val 集绝不采样
+    smote = SMOTE(random_state=42)
+    if weights_train is not None:
+        Xy = X_train.copy()
+        Xy['__label__'] = y_train
+        Xy['__weight__'] = weights_train
+        X_res, y_res = smote.fit_resample(Xy.drop(['__label__'], axis=1), Xy['__label__'])
+        weights_train_res = X_res['__weight__'].reset_index(drop=True)
+        X_train_res = X_res.drop(['__weight__'], axis=1)
+        y_train_res = y_res.reset_index(drop=True)
+    else:
+        X_train_res, y_train_res = smote.fit_resample(X_train, y_train)
+        weights_train_res = None
+    # test set 绝不做采样，且所有划分都 stratify=y，保证分层
+    # 变量提前初始化，避免作用域报错
+    best_params = None
+    best_metrics = None
+    best_score = float('-inf')
+    import concurrent.futures
+    import traceback
+    def optuna_objective(trial):
+        # 动态参数空间（以历史最优参数为中心微调）
+        def get_suggested_param(trial, name, default_low, default_high, best=None, pct=0.2, is_int=False, log=False):
+            if best is not None:
+                low = max(default_low, best * (1 - pct))
+                high = min(default_high, best * (1 + pct))
+                # 确保low始终小于high
+                if low >= high:
+                    # 如果冲突，优先保持high，将low设为high的一个较小比例
+                    low = high * 0.9
+                if is_int:
+                    low = int(round(low))
+                    high = int(round(high))
+                    # 整数情况下确保至少差1
+                    if low >= high:
+                        high = low + 1
+            else:
+                low, high = default_low, default_high
+            if is_int:
+                return trial.suggest_int(name, low, high)
+            else:
+                return trial.suggest_float(name, low, high, log=log)
+        # 若有历史最优参数，动态调整参数空间
+        best_params_for_search = best_params if best_params is not None else {}
+        params = {
+            # 增加n_estimators上限，降低学习率
+            'n_estimators': get_suggested_param(trial, 'n_estimators', 200, 1000, best_params_for_search.get('n_estimators'), is_int=True),
+            'learning_rate': get_suggested_param(trial, 'learning_rate', 0.005, 0.1, best_params_for_search.get('learning_rate'), log=True),
+            
+            # 控制模型复杂度，降低过拟合
+            'max_depth': get_suggested_param(trial, 'max_depth', 3, 7, best_params_for_search.get('max_depth'), is_int=True),
+            'num_leaves': get_suggested_param(trial, 'num_leaves', 10, 50, best_params_for_search.get('num_leaves'), is_int=True),
+            
+            # 增加最小样本数，减少过拟合
+            'min_child_samples': get_suggested_param(trial, 'min_child_samples', 10, 50, best_params_for_search.get('min_child_samples'), is_int=True),
+            'min_child_weight': get_suggested_param(trial, 'min_child_weight', 0.001, 10.0, best_params_for_search.get('min_child_weight'), log=True),
+            
+            # 增强正则化
+            'reg_alpha': get_suggested_param(trial, 'reg_alpha', 0.1, 20.0, best_params_for_search.get('reg_alpha'), log=True),
+            'reg_lambda': get_suggested_param(trial, 'reg_lambda', 0.1, 20.0, best_params_for_search.get('reg_lambda'), log=True),
+            
+            # 子采样参数，降低过拟合
+            'subsample': get_suggested_param(trial, 'subsample', 0.6, 0.9, best_params_for_search.get('subsample')),
+            'colsample_bytree': get_suggested_param(trial, 'colsample_bytree', 0.6, 0.9, best_params_for_search.get('colsample_bytree')),
+            'subsample_freq': get_suggested_param(trial, 'subsample_freq', 1, 7, best_params_for_search.get('subsample_freq'), is_int=True),
+            
+            # 针对类别不平衡的参数
+            'scale_pos_weight': get_suggested_param(trial, 'scale_pos_weight', 1.0, 10.0, best_params_for_search.get('scale_pos_weight')),
+            
+            'random_state': 42,
+            'verbose': -1,
+            'boosting_type': 'gbdt',  # 可尝试 'dart'
+            'class_weight': 'balanced'
+        }
+        # 5折交叉验证并行
+        kf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+        def train_fold(fold, train_idx, val_idx):
+            try:
+                # 每个fold再做一次SMOTE，保证分层且仅在train fold内采样
+                X_tr, X_val = X_train_res.iloc[train_idx], X_train_res.iloc[val_idx]
+                y_tr, y_val = y_train_res.iloc[train_idx], y_train_res.iloc[val_idx]
+                w_tr = weights_train_res.iloc[train_idx] if weights_train_res is not None else None
+                smote_fold = SMOTE(random_state=42)
+                if w_tr is not None:
+                    Xy_tr = X_tr.copy()
+                    Xy_tr['__label__'] = y_tr
+                    Xy_tr['__weight__'] = w_tr
+                    X_res_fold, y_res_fold = smote_fold.fit_resample(Xy_tr.drop(['__label__'], axis=1), Xy_tr['__label__'])
+                    w_tr_res = X_res_fold['__weight__'].reset_index(drop=True)
+                    X_tr_res = X_res_fold.drop(['__weight__'], axis=1)
+                    y_tr_res = y_res_fold.reset_index(drop=True)
+                else:
+                    X_tr_res, y_tr_res = smote_fold.fit_resample(X_tr, y_tr)
+                    w_tr_res = None
+                model = LGBMClassifier(**params)
+                model.fit(X_tr_res, y_tr_res, sample_weight=w_tr_res)
+                y_prob = model.predict_proba(X_val)[:, 1]
+                y_pred = (y_prob >= 0.5).astype(int)
+                metrics = calculate_metrics(y_val, y_pred, y_prob)
+                score = objective_function(metrics)
+                return metrics, score
+            except Exception as e:
+                logger.error(f"[Trial {getattr(trial,'number','?')}][Fold {fold+1}/5] Exception: {e}\n{traceback.format_exc()}")
+                return None, float('-inf')
+        metrics_list = []
+        scores = []
+        for fold, (train_idx, val_idx) in enumerate(kf.split(X_train_res, y_train_res)):
+            metrics, score = train_fold(fold, train_idx, val_idx)
+            if metrics is not None:
+                metrics_list.append(metrics)
+                scores.append(score)
+        # 只输出5折平均值日志
+        if metrics_list:
+            avg_metrics_3 = {k: (round(np.mean([m[k] for m in metrics_list]), 3) if isinstance(metrics_list[0][k], float) else metrics_list[0][k]) for k in metrics_list[0]}
+            logger.info(f"[Trial {getattr(trial,'number','?')}] 5-fold mean metrics: {avg_metrics_3}")
+        # 计算平均指标和分数
+        if metrics_list:
+            avg_metrics = {k: float(np.mean([m[k] for m in metrics_list])) for k in metrics_list[0]}
+            avg_score = float(np.mean(scores))
+        else:
+            avg_metrics = {}
+            avg_score = float('-inf')
+        # 记录所有关键指标到 Optuna trial
+        for k, v in avg_metrics.items():
+            trial.set_user_attr(k, float(v))
+        return avg_score
+    from tqdm import tqdm
+    n_trials = config['n_trials'] if 'n_trials' in config else 30
+    # Optuna study SQLite resume
+    optuna_db_dir = Path(__file__).parent.parent / "optuna" / "LightGBM"
+    optuna_db_dir.mkdir(parents=True, exist_ok=True)
+    sqlite_path = optuna_db_dir / "LightGBM_optuna.db"
+    study = optuna.create_study(
+        direction='maximize',
+        study_name="lightgbm_optuna",
+        storage=f"sqlite:///{sqlite_path}",
+        load_if_exists=True
+    )
+    # 先检查是否有历史最佳参数，若有则用其在当前训练集做5折CV得初始分数
     best_score = float('-inf')
     best_params = None
     best_metrics = None
-    for trial in range(n_trials):
+    best_param_path = model_dir / 'LightGBM_best_params.json'
+    if best_param_path.exists():
+        logger.info('Found existing LightGBM_best_params.json, evaluating initial score...')
+        with open(best_param_path, 'r') as f:
+            prev_params = json.load(f)
+        prev_params['random_state'] = 42
+        prev_params['verbose'] = -1
+        prev_params['class_weight'] = 'balanced'
+        kf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+        metrics_list = []
+        scores = []
+        for fold, (train_idx, val_idx) in enumerate(kf.split(X_train_res, y_train_res)):
+            X_tr, X_val = X_train_res.iloc[train_idx], X_train_res.iloc[val_idx]
+            y_tr, y_val = y_train_res.iloc[train_idx], y_train_res.iloc[val_idx]
+            w_tr = weights_train_res.iloc[train_idx] if weights_train_res is not None else None
+            model = LGBMClassifier(**prev_params)
+            model.fit(X_tr, y_tr, sample_weight=w_tr)
+            y_prob = model.predict_proba(X_val)[:, 1]
+            y_pred = (y_prob >= 0.5).astype(int)
+            metrics = calculate_metrics(y_val, y_pred, y_prob)
+            score = objective_function(metrics)
+            metrics_list.append(metrics)
+            scores.append(score)
+            
+        avg_metrics = {k: float(np.mean([m[k] for m in metrics_list])) for k in metrics_list[0]}
+        best_score = float(np.mean(scores))
+        best_params = prev_params
+        best_metrics = avg_metrics
+        logger.info(f"Initial best score from LightGBM_best_params.json: {best_score}")
+        logger.info(f"Initial best metrics: {avg_metrics}")
+    else:
+        logger.info('No existing LightGBM_best_params.json found, starting from scratch.')
+    for trial in tqdm(range(n_trials), desc='Optuna Trials'):
         optuna_trial = study.ask()
-        score = objective(optuna_trial)
+        score = optuna_objective(optuna_trial)
         study.tell(optuna_trial, score)
-        trial_metrics = optuna_trial.user_attrs['metrics']
-        trial_params = optuna_trial.user_attrs['params']
+        trial_metrics = {k: optuna_trial.user_attrs[k] for k in optuna_trial.user_attrs if k not in ('params',)}
+        trial_params = optuna_trial.params if hasattr(optuna_trial, 'params') and optuna_trial.params else optuna_trial.user_attrs.get('params', {})
+
+        # 日志结构优化：时间戳、trial编号、AUC-ROC、AUC-PR、sensitivity、specificity、precision、score
+        now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        auc_roc = trial_metrics.get('AUC-ROC', float('nan'))
+        auc_pr = trial_metrics.get('AUC-PR', float('nan'))
+        sens = trial_metrics.get('Sensitivity', float('nan'))
+        spec = trial_metrics.get('Specificity', float('nan'))
+        prec = trial_metrics.get('Precision', float('nan'))
+        score_val = score if score is not None else float('nan')
+        logger.info(f"[{now_str}][Trial {trial+1}/{n_trials}] AUC-ROC={auc_roc:.3f} AUC-PR={auc_pr:.3f} Sens={sens:.3f} Spec={spec:.3f} Prec={prec:.3f} Score={score_val:.3f}")
+
         if score > best_score:
             best_score = score
             best_params = trial_params
             best_metrics = trial_metrics
             # 训练并保存当前最佳模型
-            smote = SMOTE(random_state=42)
-            X_train_res, y_train_res = smote.fit_resample(X_train, y_train)
-            if weights_train is not None:
-                weights_train_res = weights_train.iloc[X_train_res.index]
-            else:
-                weights_train_res = None
-            lgb_train = lgb.Dataset(X_train_res, y_train_res, weight=weights_train_res)
-            model = lgb.train(best_params, lgb_train, num_boost_round=1000, valid_sets=[lgb_train], verbose_eval=False)
+            best_params['random_state'] = 42
+            best_params['verbose'] = -1
+            best_params['class_weight'] = 'balanced'
+            # 为LightGBM创建模型
+            final_model = LGBMClassifier(**best_params)
+            final_model.fit(X_train_res, y_train_res, sample_weight=weights_train_res)
+            # 保存模型
             model_path = model_dir / f'LightGBM_model.pkl'
             with open(model_path, 'wb') as f:
-                pickle.dump(model, f)
+                pickle.dump(final_model, f)
             # 保存最佳参数
             def convert_np(obj):
-                if isinstance(obj, (np.integer, np.int32, np.int64)):
-                    return int(obj)
-                elif isinstance(obj, (np.floating, np.float32, np.float64)):
-                    return float(obj)
-                elif isinstance(obj, np.ndarray):
+                if isinstance(obj, np.generic):
+                    return obj.item()
+                if isinstance(obj, np.ndarray):
                     return obj.tolist()
                 return obj
             params_serializable = {k: convert_np(v) for k, v in best_params.items()}
             param_path = model_dir / f'LightGBM_best_params.json'
             with open(param_path, 'w') as f:
                 json.dump(params_serializable, f, indent=4)
+            # 保存特征顺序和类别特征索引
+            feature_info = {
+                'features': features,
+                'categorical_features': categorical_features_names
+            }
+            with open(model_dir / 'LightGBM_feature_info.json', 'w') as f:
+                json.dump(feature_info, f, indent=4)
             # 保存最佳指标
             metrics_path = model_dir / f'LightGBM_best_metrics.json'
             with open(metrics_path, 'w') as f:
@@ -237,14 +472,60 @@ def main():
                 logger.info(f"{k}: {v}")
             logger.info("Best metrics:")
             for metric, value in best_metrics.items():
-                logger.info(f"{metric}: {value:.4f}")
+                logger.info(f"{metric}: {value}")
     logger.info(f"Training finished. Best score: {best_score}")
-    logger.info("Final best parameters:")
-    for k, v in best_params.items():
-        logger.info(f"{k}: {v}")
-    logger.info("Final best metrics:")
-    for metric, value in best_metrics.items():
-        logger.info(f"{metric}: {value:.4f}")
+    if best_params is not None:
+        logger.info("Final best parameters:")
+        for k, v in best_params.items():
+            logger.info(f"{k}: {v}")
+        logger.info("Final best metrics (CV mean):")
+        for metric, value in best_metrics.items():
+            if isinstance(value, float):
+                logger.info(f"{metric}: {value:.3f}")
+            else:
+                logger.info(f"{metric}: {value}")
+        # 用最终最优参数在训练集做采样训练模型，并在test set评估
+        logger.info("Evaluating on held-out test set (never seen during training/tuning)...")
+        # 重新采样整个训练集
+        smote_final = SMOTE(random_state=42)
+        if weights_train is not None:
+            Xy_train = X_train.copy()
+            Xy_train['__label__'] = y_train
+            Xy_train['__weight__'] = weights_train
+            X_res_final, y_res_final = smote_final.fit_resample(Xy_train.drop(['__label__'], axis=1), Xy_train['__label__'])
+            weights_train_res_final = X_res_final['__weight__'].reset_index(drop=True)
+            X_train_res_final = X_res_final.drop(['__weight__'], axis=1)
+            y_train_res_final = y_res_final.reset_index(drop=True)
+        else:
+            X_train_res_final, y_train_res_final = smote_final.fit_resample(X_train, y_train)
+            weights_train_res_final = None
+        # 用最优参数训练模型
+        best_params['random_state'] = 42
+        best_params['verbose'] = -1
+        best_params['class_weight'] = 'balanced'
+        final_model = LGBMClassifier(**best_params)
+        final_model.fit(X_train_res_final, y_train_res_final, sample_weight=weights_train_res_final)
+        # 在test set评估
+        y_prob_test = final_model.predict_proba(X_test)[:, 1]
+        y_pred_test = (y_prob_test >= 0.5).astype(int)
+        test_metrics = calculate_metrics(y_test, y_pred_test, y_prob_test, weights_test)
+        logger.info("Test set metrics (never seen during training/tuning):")
+        for metric, value in test_metrics.items():
+            logger.info(f"{metric}: {value:.4f}")
+        # 保存模型和参数到 model_dir
+        model_path = model_dir / 'LightGBM_best_model.pkl'
+        with open(model_path, 'wb') as f:
+            pickle.dump(final_model, f)
+        best_param_path = model_dir / 'LightGBM_best_params.json'
+        with open(best_param_path, 'w') as f:
+            json.dump(best_params, f, indent=4)
+        # 保存最终测试集指标到 output_dir
+        test_metrics_path = output_dir / 'LightGBM_metrics.json'
+        with open(test_metrics_path, 'w') as f:
+            json.dump(test_metrics, f, indent=4)
+    else:
+        logger.warning("No valid model found that meets the constraints.")
+        logger.warning("Check your objective constraints and data.")
 
 if __name__ == "__main__":
     main()

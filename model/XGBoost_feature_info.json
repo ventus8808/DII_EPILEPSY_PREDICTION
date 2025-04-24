@@ -1,0 +1,14 @@
+{
+    "features": [
+        "DII_food",
+        "Age",
+        "BMI",
+        "Gender",
+        "Education",
+        "Marriage",
+        "Smoke",
+        "Alcohol",
+        "Employment",
+        "ActivityLevel"
+    ]
+}

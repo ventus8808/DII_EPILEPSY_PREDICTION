@@ -36,3 +36,570 @@
 2025-04-22 19:11:40,098 - INFO - ECE: 0.3228
 2025-04-22 19:11:40,098 - INFO - MCE: 0.7561
 2025-04-22 19:11:40,098 - INFO - Brier: 0.1638
+2025-04-23 14:18:59,228 - INFO - Starting Random Forest model training
+2025-04-23 14:19:03,841 - ERROR - [Trial 0][Fold 1/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:19:07,939 - ERROR - [Trial 0][Fold 2/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:19:12,234 - ERROR - [Trial 0][Fold 3/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:19:16,322 - ERROR - [Trial 0][Fold 4/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:19:20,421 - ERROR - [Trial 0][Fold 5/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:19:20,426 - INFO - [2025-04-23 14:19:20][Trial 1/10] AUC-ROC=nan AUC-PR=nan Sens=nan Spec=nan Prec=nan Score=-inf
+2025-04-23 14:19:23,723 - ERROR - [Trial 1][Fold 1/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:19:27,041 - ERROR - [Trial 1][Fold 2/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:19:30,476 - ERROR - [Trial 1][Fold 3/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:19:33,859 - ERROR - [Trial 1][Fold 4/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:19:37,334 - ERROR - [Trial 1][Fold 5/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:19:37,341 - INFO - [2025-04-23 14:19:37][Trial 2/10] AUC-ROC=nan AUC-PR=nan Sens=nan Spec=nan Prec=nan Score=-inf
+2025-04-23 14:19:40,887 - ERROR - [Trial 2][Fold 1/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:19:44,324 - ERROR - [Trial 2][Fold 2/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:19:47,744 - ERROR - [Trial 2][Fold 3/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:19:51,186 - ERROR - [Trial 2][Fold 4/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:19:54,615 - ERROR - [Trial 2][Fold 5/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:19:54,619 - INFO - [2025-04-23 14:19:54][Trial 3/10] AUC-ROC=nan AUC-PR=nan Sens=nan Spec=nan Prec=nan Score=-inf
+2025-04-23 14:19:58,763 - ERROR - [Trial 3][Fold 1/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:02,753 - ERROR - [Trial 3][Fold 2/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:06,731 - ERROR - [Trial 3][Fold 3/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:10,730 - ERROR - [Trial 3][Fold 4/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:14,770 - ERROR - [Trial 3][Fold 5/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:14,776 - INFO - [2025-04-23 14:20:14][Trial 4/10] AUC-ROC=nan AUC-PR=nan Sens=nan Spec=nan Prec=nan Score=-inf
+2025-04-23 14:20:15,237 - ERROR - [Trial 4][Fold 1/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:15,683 - ERROR - [Trial 4][Fold 2/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:16,126 - ERROR - [Trial 4][Fold 3/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:16,579 - ERROR - [Trial 4][Fold 4/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:17,034 - ERROR - [Trial 4][Fold 5/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:17,038 - INFO - [2025-04-23 14:20:17][Trial 5/10] AUC-ROC=nan AUC-PR=nan Sens=nan Spec=nan Prec=nan Score=-inf
+2025-04-23 14:20:20,488 - ERROR - [Trial 5][Fold 1/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:23,894 - ERROR - [Trial 5][Fold 2/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:27,364 - ERROR - [Trial 5][Fold 3/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:30,952 - ERROR - [Trial 5][Fold 4/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:34,403 - ERROR - [Trial 5][Fold 5/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:34,407 - INFO - [2025-04-23 14:20:34][Trial 6/10] AUC-ROC=nan AUC-PR=nan Sens=nan Spec=nan Prec=nan Score=-inf
+2025-04-23 14:20:34,674 - ERROR - [Trial 6][Fold 1/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:34,943 - ERROR - [Trial 6][Fold 2/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:35,200 - ERROR - [Trial 6][Fold 3/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:35,460 - ERROR - [Trial 6][Fold 4/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:35,723 - ERROR - [Trial 6][Fold 5/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:35,727 - INFO - [2025-04-23 14:20:35][Trial 7/10] AUC-ROC=nan AUC-PR=nan Sens=nan Spec=nan Prec=nan Score=-inf
+2025-04-23 14:20:36,872 - ERROR - [Trial 7][Fold 1/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:37,984 - ERROR - [Trial 7][Fold 2/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:39,135 - ERROR - [Trial 7][Fold 3/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:40,272 - ERROR - [Trial 7][Fold 4/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:41,537 - ERROR - [Trial 7][Fold 5/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:41,541 - INFO - [2025-04-23 14:20:41][Trial 8/10] AUC-ROC=nan AUC-PR=nan Sens=nan Spec=nan Prec=nan Score=-inf
+2025-04-23 14:20:42,331 - ERROR - [Trial 8][Fold 1/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:43,104 - ERROR - [Trial 8][Fold 2/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:43,877 - ERROR - [Trial 8][Fold 3/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:44,657 - ERROR - [Trial 8][Fold 4/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:45,423 - ERROR - [Trial 8][Fold 5/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:45,427 - INFO - [2025-04-23 14:20:45][Trial 9/10] AUC-ROC=nan AUC-PR=nan Sens=nan Spec=nan Prec=nan Score=-inf
+2025-04-23 14:20:46,553 - ERROR - [Trial 9][Fold 1/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:47,678 - ERROR - [Trial 9][Fold 2/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:48,810 - ERROR - [Trial 9][Fold 3/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:49,958 - ERROR - [Trial 9][Fold 4/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:51,114 - ERROR - [Trial 9][Fold 5/5] Exception: calculate_metrics() takes 3 positional arguments but 4 were given
+2025-04-23 14:20:51,118 - INFO - [2025-04-23 14:20:51][Trial 10/10] AUC-ROC=nan AUC-PR=nan Sens=nan Spec=nan Prec=nan Score=-inf
+2025-04-23 14:20:51,118 - INFO - Training finished. Best score: -inf
+2025-04-23 14:20:51,118 - WARNING - No valid model found that meets the constraints.
+2025-04-23 14:20:51,118 - WARNING - Check your objective constraints and data.
+2025-04-23 14:21:31,893 - INFO - Starting Random Forest model training
+2025-04-23 14:21:34,376 - ERROR - [Trial 10][Fold 1/5] Exception: calculate_metrics() got an unexpected keyword argument 'weights'
+2025-04-23 14:21:36,437 - ERROR - [Trial 10][Fold 2/5] Exception: calculate_metrics() got an unexpected keyword argument 'weights'
+2025-04-23 14:21:38,476 - ERROR - [Trial 10][Fold 3/5] Exception: calculate_metrics() got an unexpected keyword argument 'weights'
+2025-04-23 14:21:40,664 - ERROR - [Trial 10][Fold 4/5] Exception: calculate_metrics() got an unexpected keyword argument 'weights'
+2025-04-23 14:22:46,055 - INFO - Starting Random Forest model training
+2025-04-23 14:22:52,493 - INFO - [2025-04-23 14:22:52][Trial 1/10] AUC-ROC=nan AUC-PR=0.076 Sens=0.438 Spec=0.882 Prec=0.064 Score=-inf
+2025-04-23 14:23:08,882 - INFO - [2025-04-23 14:23:08][Trial 2/10] AUC-ROC=nan AUC-PR=0.056 Sens=0.573 Spec=0.795 Prec=0.048 Score=-inf
+2025-04-23 14:24:36,276 - INFO - Starting Random Forest model training
+2025-04-23 14:24:36,700 - INFO - [Trial 14][Fold 1/5] y_val分布: {0: 1813, 1: 33}
+2025-04-23 14:24:40,007 - INFO - [Trial 14][Fold 2/5] y_val分布: {0: 1813, 1: 33}
+2025-04-23 14:24:43,233 - INFO - [Trial 14][Fold 3/5] y_val分布: {0: 1813, 1: 33}
+2025-04-23 14:24:46,486 - INFO - [Trial 14][Fold 4/5] y_val分布: {0: 1813, 1: 32}
+2025-04-23 14:24:49,777 - INFO - [Trial 14][Fold 5/5] y_val分布: {0: 1812, 1: 33}
+2025-04-23 14:24:53,051 - INFO - [2025-04-23 14:24:53][Trial 1/10] AUC-ROC=nan AUC-PR=0.056 Sens=0.573 Spec=0.795 Prec=0.048 Score=-inf
+2025-04-23 14:24:53,062 - INFO - [Trial 15][Fold 1/5] y_val分布: {0: 1813, 1: 33}
+2025-04-23 14:24:57,084 - INFO - [Trial 15][Fold 2/5] y_val分布: {0: 1813, 1: 33}
+2025-04-23 14:25:01,260 - INFO - [Trial 15][Fold 3/5] y_val分布: {0: 1813, 1: 33}
+2025-04-23 14:25:05,380 - INFO - [Trial 15][Fold 4/5] y_val分布: {0: 1813, 1: 32}
+2025-04-23 14:25:09,479 - INFO - [Trial 15][Fold 5/5] y_val分布: {0: 1812, 1: 33}
+2025-04-23 14:25:13,639 - INFO - [2025-04-23 14:25:13][Trial 2/10] AUC-ROC=nan AUC-PR=0.086 Sens=0.426 Spec=0.890 Prec=0.067 Score=-inf
+2025-04-23 14:25:13,650 - INFO - [Trial 16][Fold 1/5] y_val分布: {0: 1813, 1: 33}
+2025-04-23 14:25:16,950 - INFO - [Trial 16][Fold 2/5] y_val分布: {0: 1813, 1: 33}
+2025-04-23 14:34:08,796 - INFO - Starting Random Forest model training
+2025-04-23 14:34:08,796 - INFO - [并行调参说明] 本脚本支持Optuna多进程/多机并行调参，只需多开终端运行本脚本即可，Optuna会自动分配trial。
+2025-04-23 14:34:08,821 - INFO - Found existing RF_best_params.json, evaluating initial score...
+2025-04-23 14:34:24,212 - INFO - Initial best score from RF_best_params.json: -inf
+2025-04-23 14:34:24,213 - INFO - Initial best metrics: {'Accuracy': 0.7911511421343934, 'Sensitivity': 0.8196152633238727, 'Specificity': 0.762686946982122, 'Precision': 0.7755847411514875, 'NPV': 0.8087313338619471, 'F1 Score': 0.7969513075406129, "Youden's Index": 0.5823022103059947, "Cohen's Kappa": 0.5823023706100423, 'AUC-ROC': 0.8853134801268772, 'AUC-PR': 0.8841449428993611, 'Log Loss': 0.43966535389038136, 'Brier': 0.14147676850185015, 'ECE': 0.06687387377092063, 'MCE': 0.15264929337699856}
+2025-04-23 20:21:13,616 - INFO - Starting Random Forest model training
+2025-04-23 20:21:13,617 - INFO - [并行调参说明] 本脚本支持Optuna多进程/多机并行调参，只需多开终端运行本脚本即可，Optuna会自动分配trial。
+2025-04-23 20:21:13,638 - INFO - Found existing RF_best_params.json, evaluating initial score...
+2025-04-23 20:21:29,009 - INFO - Initial best score from RF_best_params.json: -inf
+2025-04-23 20:21:29,010 - INFO - Initial best metrics: {'Accuracy': 0.7911511421343934, 'Sensitivity': 0.8196152633238727, 'Specificity': 0.762686946982122, 'Precision': 0.7755847411514875, 'NPV': 0.8087313338619471, 'F1 Score': 0.7969513075406129, "Youden's Index": 0.5823022103059947, "Cohen's Kappa": 0.5823023706100423, 'AUC-ROC': 0.8853134801268772, 'AUC-PR': 0.8841449428993611, 'Log Loss': 0.43966535389038136, 'Brier': 0.14147676850185015, 'ECE': 0.06687387377092063, 'MCE': 0.15264929337699856}
+2025-04-24 09:35:14,570 - INFO - Starting Random Forest model training
+2025-04-24 09:35:14,571 - INFO - [并行调参说明] 本脚本支持Optuna多进程/多机并行调参，只需多开终端运行本脚本即可，Optuna会自动分配trial。
+2025-04-24 09:35:14,586 - INFO - Found existing RF_best_params.json, evaluating initial score...
+2025-04-24 09:35:29,390 - INFO - Initial best score from RF_best_params.json: -inf
+2025-04-24 09:35:29,390 - INFO - Initial best metrics: {'Accuracy': 0.7911511421343934, 'Sensitivity': 0.8196152633238727, 'Specificity': 0.762686946982122, 'Precision': 0.7755847411514875, 'NPV': 0.8087313338619471, 'F1 Score': 0.7969513075406129, "Youden's Index": 0.5823022103059947, "Cohen's Kappa": 0.5823023706100423, 'AUC-ROC': 0.8853134801268772, 'AUC-PR': 0.8841449428993611, 'Log Loss': 0.43966535389038136, 'Brier': 0.14147676850185015, 'ECE': 0.06687387377092063, 'MCE': 0.15264929337699856}
+2025-04-24 09:38:23,184 - INFO - Starting Random Forest model training
+2025-04-24 09:38:23,184 - INFO - [并行调参说明] 本脚本支持Optuna多进程/多机并行调参，只需多开终端运行本脚本即可，Optuna会自动分配trial。
+2025-04-24 09:38:23,202 - INFO - Found existing RF_best_params.json, evaluating initial score...
+2025-04-24 09:38:37,966 - INFO - Initial best score from RF_best_params.json: -inf
+2025-04-24 09:38:37,967 - INFO - Initial best metrics: {'Accuracy': 0.7911511421343934, 'Sensitivity': 0.8196152633238727, 'Specificity': 0.762686946982122, 'Precision': 0.7755847411514875, 'NPV': 0.8087313338619471, 'F1 Score': 0.7969513075406129, "Youden's Index": 0.5823022103059947, "Cohen's Kappa": 0.5823023706100423, 'AUC-ROC': 0.8853134801268772, 'AUC-PR': 0.8841449428993611, 'Log Loss': 0.43966535389038136, 'Brier': 0.14147676850185015, 'ECE': 0.06687387377092063, 'MCE': 0.15264929337699856}
+2025-04-24 09:38:40,442 - ERROR - [Trial 0][Fold 1/5] Exception: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 267, in train_fold
+    metrics = calculate_metrics(y_val, y_pred, y_prob, weights=w_tr_res)
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 118, in calculate_metrics
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 216, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/metrics/_classification.py", line 228, in accuracy_score
+    check_consistent_length(y_true, y_pred, sample_weight)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 475, in check_consistent_length
+    raise ValueError(
+ValueError: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+
+2025-04-24 09:38:42,674 - ERROR - [Trial 0][Fold 2/5] Exception: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 267, in train_fold
+    metrics = calculate_metrics(y_val, y_pred, y_prob, weights=w_tr_res)
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 118, in calculate_metrics
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 216, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/metrics/_classification.py", line 228, in accuracy_score
+    check_consistent_length(y_true, y_pred, sample_weight)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 475, in check_consistent_length
+    raise ValueError(
+ValueError: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+
+2025-04-24 09:38:44,942 - ERROR - [Trial 0][Fold 3/5] Exception: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 267, in train_fold
+    metrics = calculate_metrics(y_val, y_pred, y_prob, weights=w_tr_res)
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 118, in calculate_metrics
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 216, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/metrics/_classification.py", line 228, in accuracy_score
+    check_consistent_length(y_true, y_pred, sample_weight)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 475, in check_consistent_length
+    raise ValueError(
+ValueError: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+
+2025-04-24 09:38:47,186 - ERROR - [Trial 0][Fold 4/5] Exception: Found input variables with inconsistent numbers of samples: [3625, 3625, 14504]
+Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 267, in train_fold
+    metrics = calculate_metrics(y_val, y_pred, y_prob, weights=w_tr_res)
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 118, in calculate_metrics
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 216, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/metrics/_classification.py", line 228, in accuracy_score
+    check_consistent_length(y_true, y_pred, sample_weight)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 475, in check_consistent_length
+    raise ValueError(
+ValueError: Found input variables with inconsistent numbers of samples: [3625, 3625, 14504]
+
+2025-04-24 09:38:49,454 - ERROR - [Trial 0][Fold 5/5] Exception: Found input variables with inconsistent numbers of samples: [3625, 3625, 14504]
+Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 267, in train_fold
+    metrics = calculate_metrics(y_val, y_pred, y_prob, weights=w_tr_res)
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 118, in calculate_metrics
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 216, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/metrics/_classification.py", line 228, in accuracy_score
+    check_consistent_length(y_true, y_pred, sample_weight)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 475, in check_consistent_length
+    raise ValueError(
+ValueError: Found input variables with inconsistent numbers of samples: [3625, 3625, 14504]
+
+2025-04-24 09:38:49,461 - INFO - [2025-04-24 09:38:49][Trial 1/10] AUC-ROC=nan AUC-PR=nan Sens=nan Spec=nan Prec=nan Score=-inf
+2025-04-24 09:38:51,883 - ERROR - [Trial 1][Fold 1/5] Exception: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 267, in train_fold
+    metrics = calculate_metrics(y_val, y_pred, y_prob, weights=w_tr_res)
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 118, in calculate_metrics
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 216, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/metrics/_classification.py", line 228, in accuracy_score
+    check_consistent_length(y_true, y_pred, sample_weight)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 475, in check_consistent_length
+    raise ValueError(
+ValueError: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+
+2025-04-24 09:38:54,371 - ERROR - [Trial 1][Fold 2/5] Exception: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 267, in train_fold
+    metrics = calculate_metrics(y_val, y_pred, y_prob, weights=w_tr_res)
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 118, in calculate_metrics
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 216, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/metrics/_classification.py", line 228, in accuracy_score
+    check_consistent_length(y_true, y_pred, sample_weight)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 475, in check_consistent_length
+    raise ValueError(
+ValueError: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+
+2025-04-24 09:38:56,783 - ERROR - [Trial 1][Fold 3/5] Exception: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 267, in train_fold
+    metrics = calculate_metrics(y_val, y_pred, y_prob, weights=w_tr_res)
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 118, in calculate_metrics
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 216, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/metrics/_classification.py", line 228, in accuracy_score
+    check_consistent_length(y_true, y_pred, sample_weight)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 475, in check_consistent_length
+    raise ValueError(
+ValueError: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+
+2025-04-24 09:38:59,233 - ERROR - [Trial 1][Fold 4/5] Exception: Found input variables with inconsistent numbers of samples: [3625, 3625, 14504]
+Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 267, in train_fold
+    metrics = calculate_metrics(y_val, y_pred, y_prob, weights=w_tr_res)
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 118, in calculate_metrics
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 216, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/metrics/_classification.py", line 228, in accuracy_score
+    check_consistent_length(y_true, y_pred, sample_weight)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 475, in check_consistent_length
+    raise ValueError(
+ValueError: Found input variables with inconsistent numbers of samples: [3625, 3625, 14504]
+
+2025-04-24 09:39:01,692 - ERROR - [Trial 1][Fold 5/5] Exception: Found input variables with inconsistent numbers of samples: [3625, 3625, 14504]
+Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 267, in train_fold
+    metrics = calculate_metrics(y_val, y_pred, y_prob, weights=w_tr_res)
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 118, in calculate_metrics
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 216, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/metrics/_classification.py", line 228, in accuracy_score
+    check_consistent_length(y_true, y_pred, sample_weight)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 475, in check_consistent_length
+    raise ValueError(
+ValueError: Found input variables with inconsistent numbers of samples: [3625, 3625, 14504]
+
+2025-04-24 09:39:01,696 - INFO - [2025-04-24 09:39:01][Trial 2/10] AUC-ROC=nan AUC-PR=nan Sens=nan Spec=nan Prec=nan Score=-inf
+2025-04-24 09:39:08,793 - ERROR - [Trial 2][Fold 1/5] Exception: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 267, in train_fold
+    metrics = calculate_metrics(y_val, y_pred, y_prob, weights=w_tr_res)
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 118, in calculate_metrics
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 216, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/metrics/_classification.py", line 228, in accuracy_score
+    check_consistent_length(y_true, y_pred, sample_weight)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 475, in check_consistent_length
+    raise ValueError(
+ValueError: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+
+2025-04-24 09:39:15,945 - ERROR - [Trial 2][Fold 2/5] Exception: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 267, in train_fold
+    metrics = calculate_metrics(y_val, y_pred, y_prob, weights=w_tr_res)
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 118, in calculate_metrics
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 216, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/metrics/_classification.py", line 228, in accuracy_score
+    check_consistent_length(y_true, y_pred, sample_weight)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 475, in check_consistent_length
+    raise ValueError(
+ValueError: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+
+2025-04-24 09:39:23,112 - ERROR - [Trial 2][Fold 3/5] Exception: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 267, in train_fold
+    metrics = calculate_metrics(y_val, y_pred, y_prob, weights=w_tr_res)
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 118, in calculate_metrics
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 216, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/metrics/_classification.py", line 228, in accuracy_score
+    check_consistent_length(y_true, y_pred, sample_weight)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 475, in check_consistent_length
+    raise ValueError(
+ValueError: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+
+2025-04-24 09:39:30,283 - ERROR - [Trial 2][Fold 4/5] Exception: Found input variables with inconsistent numbers of samples: [3625, 3625, 14504]
+Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 267, in train_fold
+    metrics = calculate_metrics(y_val, y_pred, y_prob, weights=w_tr_res)
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 118, in calculate_metrics
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 216, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/metrics/_classification.py", line 228, in accuracy_score
+    check_consistent_length(y_true, y_pred, sample_weight)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 475, in check_consistent_length
+    raise ValueError(
+ValueError: Found input variables with inconsistent numbers of samples: [3625, 3625, 14504]
+
+2025-04-24 09:39:37,423 - ERROR - [Trial 2][Fold 5/5] Exception: Found input variables with inconsistent numbers of samples: [3625, 3625, 14504]
+Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 267, in train_fold
+    metrics = calculate_metrics(y_val, y_pred, y_prob, weights=w_tr_res)
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 118, in calculate_metrics
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 216, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/metrics/_classification.py", line 228, in accuracy_score
+    check_consistent_length(y_true, y_pred, sample_weight)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 475, in check_consistent_length
+    raise ValueError(
+ValueError: Found input variables with inconsistent numbers of samples: [3625, 3625, 14504]
+
+2025-04-24 09:39:37,428 - INFO - [2025-04-24 09:39:37][Trial 3/10] AUC-ROC=nan AUC-PR=nan Sens=nan Spec=nan Prec=nan Score=-inf
+2025-04-24 09:39:43,161 - ERROR - [Trial 3][Fold 1/5] Exception: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 267, in train_fold
+    metrics = calculate_metrics(y_val, y_pred, y_prob, weights=w_tr_res)
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 118, in calculate_metrics
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 216, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/metrics/_classification.py", line 228, in accuracy_score
+    check_consistent_length(y_true, y_pred, sample_weight)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 475, in check_consistent_length
+    raise ValueError(
+ValueError: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+
+2025-04-24 09:39:48,841 - ERROR - [Trial 3][Fold 2/5] Exception: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 267, in train_fold
+    metrics = calculate_metrics(y_val, y_pred, y_prob, weights=w_tr_res)
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 118, in calculate_metrics
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 216, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/metrics/_classification.py", line 228, in accuracy_score
+    check_consistent_length(y_true, y_pred, sample_weight)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 475, in check_consistent_length
+    raise ValueError(
+ValueError: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+
+2025-04-24 09:39:54,703 - ERROR - [Trial 3][Fold 3/5] Exception: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 267, in train_fold
+    # 使用验证集的样本权重，而非训练集的权重
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 118, in calculate_metrics
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 216, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/metrics/_classification.py", line 228, in accuracy_score
+    check_consistent_length(y_true, y_pred, sample_weight)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 475, in check_consistent_length
+    raise ValueError(
+ValueError: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+
+2025-04-24 09:40:00,439 - ERROR - [Trial 3][Fold 4/5] Exception: Found input variables with inconsistent numbers of samples: [3625, 3625, 14504]
+Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 267, in train_fold
+    # 使用验证集的样本权重，而非训练集的权重
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 118, in calculate_metrics
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 216, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/metrics/_classification.py", line 228, in accuracy_score
+    check_consistent_length(y_true, y_pred, sample_weight)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 475, in check_consistent_length
+    raise ValueError(
+ValueError: Found input variables with inconsistent numbers of samples: [3625, 3625, 14504]
+
+2025-04-24 09:40:06,153 - ERROR - [Trial 3][Fold 5/5] Exception: Found input variables with inconsistent numbers of samples: [3625, 3625, 14504]
+Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 267, in train_fold
+    # 使用验证集的样本权重，而非训练集的权重
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 118, in calculate_metrics
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 216, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/metrics/_classification.py", line 228, in accuracy_score
+    check_consistent_length(y_true, y_pred, sample_weight)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 475, in check_consistent_length
+    raise ValueError(
+ValueError: Found input variables with inconsistent numbers of samples: [3625, 3625, 14504]
+
+2025-04-24 09:40:06,157 - INFO - [2025-04-24 09:40:06][Trial 4/10] AUC-ROC=nan AUC-PR=nan Sens=nan Spec=nan Prec=nan Score=-inf
+2025-04-24 09:40:07,252 - ERROR - [Trial 4][Fold 1/5] Exception: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 267, in train_fold
+    # 使用验证集的样本权重，而非训练集的权重
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 118, in calculate_metrics
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 216, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/metrics/_classification.py", line 228, in accuracy_score
+    check_consistent_length(y_true, y_pred, sample_weight)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 475, in check_consistent_length
+    raise ValueError(
+ValueError: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+
+2025-04-24 09:40:08,321 - ERROR - [Trial 4][Fold 2/5] Exception: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 267, in train_fold
+    # 使用验证集的样本权重，而非训练集的权重
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 118, in calculate_metrics
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 216, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/metrics/_classification.py", line 228, in accuracy_score
+    check_consistent_length(y_true, y_pred, sample_weight)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 475, in check_consistent_length
+    raise ValueError(
+ValueError: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+
+2025-04-24 09:40:09,429 - ERROR - [Trial 4][Fold 3/5] Exception: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 267, in train_fold
+    # 使用验证集的样本权重，而非训练集的权重
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 118, in calculate_metrics
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 216, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/metrics/_classification.py", line 228, in accuracy_score
+    check_consistent_length(y_true, y_pred, sample_weight)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 475, in check_consistent_length
+    raise ValueError(
+ValueError: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+
+2025-04-24 09:40:10,518 - ERROR - [Trial 4][Fold 4/5] Exception: Found input variables with inconsistent numbers of samples: [3625, 3625, 14504]
+Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 267, in train_fold
+    # 使用验证集的样本权重，而非训练集的权重
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 118, in calculate_metrics
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 216, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/metrics/_classification.py", line 228, in accuracy_score
+    check_consistent_length(y_true, y_pred, sample_weight)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 475, in check_consistent_length
+    raise ValueError(
+ValueError: Found input variables with inconsistent numbers of samples: [3625, 3625, 14504]
+
+2025-04-24 09:40:11,610 - ERROR - [Trial 4][Fold 5/5] Exception: Found input variables with inconsistent numbers of samples: [3625, 3625, 14504]
+Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 267, in train_fold
+    # 使用验证集的样本权重，而非训练集的权重
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 118, in calculate_metrics
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 216, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/metrics/_classification.py", line 228, in accuracy_score
+    check_consistent_length(y_true, y_pred, sample_weight)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 475, in check_consistent_length
+    raise ValueError(
+ValueError: Found input variables with inconsistent numbers of samples: [3625, 3625, 14504]
+
+2025-04-24 09:40:11,614 - INFO - [2025-04-24 09:40:11][Trial 5/10] AUC-ROC=nan AUC-PR=nan Sens=nan Spec=nan Prec=nan Score=-inf
+2025-04-24 09:40:17,338 - ERROR - [Trial 5][Fold 1/5] Exception: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 267, in train_fold
+    # 使用验证集的样本权重，而非训练集的权重
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 118, in calculate_metrics
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 216, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/metrics/_classification.py", line 228, in accuracy_score
+    check_consistent_length(y_true, y_pred, sample_weight)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 475, in check_consistent_length
+    raise ValueError(
+ValueError: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+
+2025-04-24 09:40:23,026 - ERROR - [Trial 5][Fold 2/5] Exception: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 267, in train_fold
+    # 使用验证集的样本权重，而非训练集的权重
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 118, in calculate_metrics
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 216, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/metrics/_classification.py", line 228, in accuracy_score
+    check_consistent_length(y_true, y_pred, sample_weight)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 475, in check_consistent_length
+    raise ValueError(
+ValueError: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+
+2025-04-24 09:40:28,874 - ERROR - [Trial 5][Fold 3/5] Exception: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 267, in train_fold
+    # 使用验证集的样本权重，而非训练集的权重
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/RF_Train.py", line 118, in calculate_metrics
+    accuracy = accuracy_score(y_true, y_pred, sample_weight=weights)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 216, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/metrics/_classification.py", line 228, in accuracy_score
+    check_consistent_length(y_true, y_pred, sample_weight)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 475, in check_consistent_length
+    raise ValueError(
+ValueError: Found input variables with inconsistent numbers of samples: [3626, 3626, 14502]
+
+2025-04-24 09:40:39,000 - INFO - Starting Random Forest model training
+2025-04-24 09:40:39,000 - INFO - [并行调参说明] 本脚本支持Optuna多进程/多机并行调参，只需多开终端运行本脚本即可，Optuna会自动分配trial。
+2025-04-24 09:40:39,016 - INFO - Found existing RF_best_params.json, evaluating initial score...
+2025-04-24 09:40:54,391 - INFO - Initial best score from RF_best_params.json: -inf
+2025-04-24 09:40:54,391 - INFO - Initial best metrics: {'Accuracy': 0.7911511421343934, 'Sensitivity': 0.8196152633238727, 'Specificity': 0.762686946982122, 'Precision': 0.7755847411514875, 'NPV': 0.8087313338619471, 'F1 Score': 0.7969513075406129, "Youden's Index": 0.5823022103059947, "Cohen's Kappa": 0.5823023706100423, 'AUC-ROC': 0.8853134801268772, 'AUC-PR': 0.8841449428993611, 'Log Loss': 0.43966535389038136, 'Brier': 0.14147676850185015, 'ECE': 0.06687387377092063, 'MCE': 0.15264929337699856}
+2025-04-24 09:41:09,876 - INFO - [Trial 6] 5-fold mean metrics: {'Accuracy': 0.904, 'Sensitivity': 0.922, 'Specificity': 0.87, 'Precision': 0.876, 'NPV': 0.908, 'F1 Score': 0.898, "Youden's Index": 0.793, "Cohen's Kappa": 0.808, 'AUC-ROC': 0.965, 'AUC-PR': 0.957, 'Log Loss': 0.272, 'Brier': 0.079, 'ECE': 0.076, 'MCE': 0.191}
+2025-04-24 09:41:09,892 - INFO - [2025-04-24 09:41:09][Trial 1/10] AUC-ROC=0.965 AUC-PR=0.957 Sens=0.922 Spec=0.870 Prec=0.876 Score=-inf
+2025-04-24 09:41:19,425 - INFO - [Trial 7] 5-fold mean metrics: {'Accuracy': 0.845, 'Sensitivity': 0.837, 'Specificity': 0.832, 'Precision': 0.826, 'NPV': 0.832, 'F1 Score': 0.832, "Youden's Index": 0.67, "Cohen's Kappa": 0.687, 'AUC-ROC': 0.925, 'AUC-PR': 0.913, 'Log Loss': 0.391, 'Brier': 0.12, 'ECE': 0.094, 'MCE': 0.155}
+2025-04-24 09:41:19,440 - INFO - [2025-04-24 09:41:19][Trial 2/10] AUC-ROC=0.925 AUC-PR=0.913 Sens=0.837 Spec=0.832 Prec=0.826 Score=-inf
+2025-04-24 09:41:48,539 - INFO - [Trial 8] 5-fold mean metrics: {'Accuracy': 0.901, 'Sensitivity': 0.925, 'Specificity': 0.864, 'Precision': 0.868, 'NPV': 0.907, 'F1 Score': 0.896, "Youden's Index": 0.789, "Cohen's Kappa": 0.802, 'AUC-ROC': 0.964, 'AUC-PR': 0.955, 'Log Loss': 0.27, 'Brier': 0.079, 'ECE': 0.07, 'MCE': 0.16}
+2025-04-24 09:41:48,555 - INFO - [2025-04-24 09:41:48][Trial 3/10] AUC-ROC=0.964 AUC-PR=0.955 Sens=0.925 Spec=0.864 Prec=0.868 Score=-inf
+2025-04-24 09:42:37,532 - INFO - [Trial 9] 5-fold mean metrics: {'Accuracy': 0.922, 'Sensitivity': 0.94, 'Specificity': 0.891, 'Precision': 0.896, 'NPV': 0.925, 'F1 Score': 0.917, "Youden's Index": 0.831, "Cohen's Kappa": 0.844, 'AUC-ROC': 0.976, 'AUC-PR': 0.968, 'Log Loss': 0.218, 'Brier': 0.062, 'ECE': 0.053, 'MCE': 0.193}
+2025-04-24 09:42:37,548 - INFO - [2025-04-24 09:42:37][Trial 4/10] AUC-ROC=0.976 AUC-PR=0.968 Sens=0.940 Spec=0.891 Prec=0.896 Score=-inf
+2025-04-24 09:43:02,613 - INFO - [Trial 10] 5-fold mean metrics: {'Accuracy': 0.843, 'Sensitivity': 0.858, 'Specificity': 0.8, 'Precision': 0.812, 'NPV': 0.84, 'F1 Score': 0.834, "Youden's Index": 0.658, "Cohen's Kappa": 0.686, 'AUC-ROC': 0.925, 'AUC-PR': 0.906, 'Log Loss': 0.354, 'Brier': 0.111, 'ECE': 0.042, 'MCE': 0.11}
+2025-04-24 09:43:02,629 - INFO - [2025-04-24 09:43:02][Trial 5/10] AUC-ROC=0.925 AUC-PR=0.906 Sens=0.858 Spec=0.800 Prec=0.812 Score=-inf
+2025-04-24 09:43:15,973 - INFO - [Trial 11] 5-fold mean metrics: {'Accuracy': 0.931, 'Sensitivity': 0.936, 'Specificity': 0.914, 'Precision': 0.916, 'NPV': 0.927, 'F1 Score': 0.925, "Youden's Index": 0.85, "Cohen's Kappa": 0.861, 'AUC-ROC': 0.981, 'AUC-PR': 0.976, 'Log Loss': 0.227, 'Brier': 0.061, 'ECE': 0.086, 'MCE': 0.219}
+2025-04-24 09:43:15,989 - INFO - [2025-04-24 09:43:15][Trial 6/10] AUC-ROC=0.981 AUC-PR=0.976 Sens=0.936 Spec=0.914 Prec=0.916 Score=-inf
+2025-04-24 09:43:25,504 - INFO - [Trial 12] 5-fold mean metrics: {'Accuracy': 0.809, 'Sensitivity': 0.82, 'Specificity': 0.771, 'Precision': 0.777, 'NPV': 0.812, 'F1 Score': 0.798, "Youden's Index": 0.591, "Cohen's Kappa": 0.617, 'AUC-ROC': 0.898, 'AUC-PR': 0.882, 'Log Loss': 0.427, 'Brier': 0.135, 'ECE': 0.073, 'MCE': 0.129}
+2025-04-24 09:43:25,518 - INFO - [2025-04-24 09:43:25][Trial 7/10] AUC-ROC=0.898 AUC-PR=0.882 Sens=0.820 Spec=0.771 Prec=0.777 Score=-inf
+2025-04-24 09:43:36,662 - INFO - [Trial 13] 5-fold mean metrics: {'Accuracy': 0.932, 'Sensitivity': 0.937, 'Specificity': 0.914, 'Precision': 0.916, 'NPV': 0.927, 'F1 Score': 0.926, "Youden's Index": 0.851, "Cohen's Kappa": 0.862, 'AUC-ROC': 0.981, 'AUC-PR': 0.976, 'Log Loss': 0.227, 'Brier': 0.061, 'ECE': 0.086, 'MCE': 0.219}
+2025-04-24 09:43:36,679 - INFO - [2025-04-24 09:43:36][Trial 8/10] AUC-ROC=0.981 AUC-PR=0.976 Sens=0.937 Spec=0.914 Prec=0.916 Score=-inf
+2025-04-24 09:43:49,207 - INFO - [Trial 14] 5-fold mean metrics: {'Accuracy': 0.918, 'Sensitivity': 0.92, 'Specificity': 0.905, 'Precision': 0.903, 'NPV': 0.906, 'F1 Score': 0.911, "Youden's Index": 0.824, "Cohen's Kappa": 0.834, 'AUC-ROC': 0.976, 'AUC-PR': 0.97, 'Log Loss': 0.252, 'Brier': 0.07, 'ECE': 0.089, 'MCE': 0.199}
+2025-04-24 09:43:49,224 - INFO - [2025-04-24 09:43:49][Trial 9/10] AUC-ROC=0.976 AUC-PR=0.970 Sens=0.920 Spec=0.905 Prec=0.903 Score=-inf
+2025-04-24 09:43:56,239 - INFO - [Trial 15] 5-fold mean metrics: {'Accuracy': 0.769, 'Sensitivity': 0.831, 'Specificity': 0.683, 'Precision': 0.712, 'NPV': 0.798, 'F1 Score': 0.767, "Youden's Index": 0.514, "Cohen's Kappa": 0.54, 'AUC-ROC': 0.858, 'AUC-PR': 0.834, 'Log Loss': 0.501, 'Brier': 0.163, 'ECE': 0.085, 'MCE': 0.217}
+2025-04-24 09:43:56,255 - INFO - [2025-04-24 09:43:56][Trial 10/10] AUC-ROC=0.858 AUC-PR=0.834 Sens=0.831 Spec=0.683 Prec=0.712 Score=-inf
+2025-04-24 09:43:56,255 - INFO - Training finished. Best score: -inf
+2025-04-24 09:43:56,255 - INFO - Final best parameters:
+2025-04-24 09:43:56,255 - INFO - n_estimators: 400
+2025-04-24 09:43:56,255 - INFO - max_depth: 5
+2025-04-24 09:43:56,255 - INFO - min_samples_split: 3
+2025-04-24 09:43:56,255 - INFO - min_samples_leaf: 5
+2025-04-24 09:43:56,255 - INFO - max_features: 0.7
+2025-04-24 09:43:56,255 - INFO - Final best metrics (CV mean):
+2025-04-24 09:43:56,255 - INFO - Accuracy: 0.791
+2025-04-24 09:43:56,255 - INFO - Sensitivity: 0.820
+2025-04-24 09:43:56,255 - INFO - Specificity: 0.763
+2025-04-24 09:43:56,255 - INFO - Precision: 0.776
+2025-04-24 09:43:56,255 - INFO - NPV: 0.809
+2025-04-24 09:43:56,255 - INFO - F1 Score: 0.797
+2025-04-24 09:43:56,255 - INFO - Youden's Index: 0.582
+2025-04-24 09:43:56,255 - INFO - Cohen's Kappa: 0.582
+2025-04-24 09:43:56,255 - INFO - AUC-ROC: 0.885
+2025-04-24 09:43:56,255 - INFO - AUC-PR: 0.884
+2025-04-24 09:43:56,255 - INFO - Log Loss: 0.440
+2025-04-24 09:43:56,255 - INFO - Brier: 0.141
+2025-04-24 09:43:56,255 - INFO - ECE: 0.067
+2025-04-24 09:43:56,255 - INFO - MCE: 0.153
+2025-04-24 09:43:56,255 - INFO - Evaluating on held-out test set (never seen during training/tuning)...
+2025-04-24 09:44:00,186 - INFO - Test set metrics (never seen during training/tuning):
+2025-04-24 09:44:00,186 - INFO - Accuracy: 0.7728
+2025-04-24 09:44:00,186 - INFO - Sensitivity: 0.3914
+2025-04-24 09:44:00,186 - INFO - Specificity: 0.7587
+2025-04-24 09:44:00,186 - INFO - Precision: 0.0314
+2025-04-24 09:44:00,186 - INFO - NPV: 0.9874
+2025-04-24 09:44:00,186 - INFO - F1 Score: 0.0582
+2025-04-24 09:44:00,186 - INFO - Youden's Index: 0.1501
+2025-04-24 09:44:00,186 - INFO - Cohen's Kappa: 0.0258
+2025-04-24 09:44:00,186 - INFO - AUC-ROC: 0.7145
+2025-04-24 09:44:00,186 - INFO - AUC-PR: 0.0814
+2025-04-24 09:44:00,186 - INFO - Log Loss: 0.4049
+2025-04-24 09:44:00,186 - INFO - Brier: 0.1334
+2025-04-24 09:44:00,186 - INFO - ECE: 0.2636
+2025-04-24 09:44:00,186 - INFO - MCE: 0.8133

@@ -16,8 +16,8 @@ from datetime import datetime
 from tqdm import tqdm
 import warnings
 
-# 过滤XGBoost的特定警告
-warnings.filterwarnings('ignore', message='.*use_label_encoder.*')
+# 过滤通用警告
+warnings.filterwarnings('ignore')
 
 def setup_logger(model_name):
     """Set up logger for the model."""

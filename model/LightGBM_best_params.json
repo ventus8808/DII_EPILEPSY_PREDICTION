@@ -1,0 +1,15 @@
+{
+    "n_estimators": 200,
+    "max_depth": null,
+    "learning_rate": 0.25673295923989387,
+    "subsample": 0.6917143005172701,
+    "colsample_bytree": 0.4053913137500732,
+    "reg_alpha": 4.958276734975511,
+    "reg_lambda": 1.311395670705573,
+    "scale_pos_weight": 9.373836706331513,
+    "min_child_weight": 8.232078261961604,
+    "gamma": 3.0169739103474047,
+    "random_state": 42,
+    "verbose": -1,
+    "class_weight": "balanced"
+}
