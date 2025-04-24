@@ -1,0 +1,11 @@
+{
+    "best_params": {
+        "C": 0.8604822844358474,
+        "kernel": "rbf",
+        "gamma": "auto",
+        "class_weight": "balanced",
+        "max_iter": 5000,
+        "tol": 0.001
+    }
+
+}

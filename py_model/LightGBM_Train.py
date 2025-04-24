@@ -176,11 +176,17 @@ def load_and_preprocess_data():
 # 4. 目标函数配置和指标
 import yaml
 
-def load_objective_config(config_path='config.yaml'):
+def load_objective_config(config_path='config.yaml', constraint_type='objective_constraints'):
+    """加载目标函数配置，包括权重和约束
+    
+    Args:
+        config_path: 配置文件路径
+        constraint_type: 约束类型，可选 'cv_constraints', 'test_constraints' 或默认的 'objective_constraints'
+    """
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
     weights = config.get('objective_weights', {})
-    constraints = config.get('objective_constraints', {})
+    constraints = config.get(constraint_type, {})
     return weights, constraints
 
 def calculate_metrics(y_true, y_pred, y_prob, weights=None):
@@ -209,24 +215,53 @@ def calculate_metrics(y_true, y_pred, y_prob, weights=None):
         'LogLoss': logloss
     }
 
-def objective_function(metrics, config_path='config.yaml'):
-    weights, constraints = load_objective_config(config_path)
-    # 硬约束
-    if 'AUC_min' in constraints and metrics.get('AUC', 0) < constraints['AUC_min']:
-        return float('-inf')
-    if 'AUC_max' in constraints and metrics.get('AUC', 1) > constraints['AUC_max']:
-        return float('-inf')
-    if 'ECE_max' in constraints and metrics.get('ECE', 0) >= constraints['ECE_max']:
-        return float('-inf')
-    if 'F1_min' in constraints and metrics.get('F1', 0) <= constraints['F1_min']:
-        return float('-inf')
-    if 'Sensitivity_min' in constraints and metrics.get('Sensitivity', 0) < constraints['Sensitivity_min']:
-        return float('-inf')
-    if 'Specificity_min' in constraints and metrics.get('Specificity', 0) < constraints['Specificity_min']:
-        return float('-inf')
+def objective_function(metrics, config_path='config.yaml', constraint_type='objective_constraints'):
+    """定制目标函数，使用config中的硬约束及自定义权重
+    
+    Args:
+        metrics: 评估指标字典
+        config_path: 配置文件路径
+        constraint_type: 约束类型，可选 'cv_constraints', 'test_constraints' 或默认的 'objective_constraints'
+    """
+    # 获取配置文件中的约束条件
+    weights, constraints = load_objective_config(config_path, constraint_type)
+    
+    # 关键指标
+    auc_roc = metrics.get('AUC-ROC', 0)  # AUC-ROC在metrics中是'AUC-ROC'
+    sensitivity = metrics.get('Sensitivity', 0)
+    specificity = metrics.get('Specificity', 0)
+    f1 = metrics.get('F1 Score', 0)  # F1在metrics中是'F1 Score'
+    kappa = metrics.get('Cohen\'s Kappa', 0)
+    ece = metrics.get('ECE', 0)
+    
+    # 创建约束检查失败的原因列表，用于调试
+    failed_constraints = []
+    
+    # 应用配置文件中的硬约束
+    if 'AUC_min' in constraints and auc_roc < constraints['AUC_min']:
+        failed_constraints.append(f"AUC过低: {auc_roc:.4f} < {constraints['AUC_min']}")
+    if 'AUC_max' in constraints and auc_roc > constraints['AUC_max']:
+        failed_constraints.append(f"AUC过高: {auc_roc:.4f} > {constraints['AUC_max']}")
+    if 'Sensitivity_min' in constraints and sensitivity < constraints['Sensitivity_min']:
+        failed_constraints.append(f"敏感度过低: {sensitivity:.4f} < {constraints['Sensitivity_min']}")
+    if 'Specificity_min' in constraints and specificity < constraints['Specificity_min']:
+        failed_constraints.append(f"特异度过低: {specificity:.4f} < {constraints['Specificity_min']}")
+    
+    # 如果有任何约束失败，返回负无穷和失败原因
+    if failed_constraints:
+        return float('-inf'), failed_constraints
+    
     # 线性加权
-    score = sum(weights.get(metric, 0) * metrics.get(metric, 0) for metric in weights)
-    return score
+    score = (
+        weights.get('AUC', 0) * auc_roc +
+        weights.get('Sensitivity', 0) * sensitivity +
+        weights.get('Specificity', 0) * specificity +
+        weights.get('F1', 0) * f1 +
+        weights.get('Kappa', 0) * kappa +
+        weights.get('ECE', 0) * ece
+    )
+    
+    return score, []  # 成功时返回计算出的目标函数值和空的失败原因列表
 
 # 5. Optuna目标函数
 # 注意：主流程 optuna_objective 里调用 calculate_metrics + objective_function
@@ -337,7 +372,7 @@ def main():
                 y_prob = model.predict_proba(X_val)[:, 1]
                 y_pred = (y_prob >= 0.5).astype(int)
                 metrics = calculate_metrics(y_val, y_pred, y_prob)
-                score = objective_function(metrics)
+                score, _ = objective_function(metrics, constraint_type='cv_constraints')  # 使用交叉验证约束，忽略失败原因
                 return metrics, score
             except Exception as e:
                 logger.error(f"[Trial {getattr(trial,'number','?')}][Fold {fold+1}/5] Exception: {e}\n{traceback.format_exc()}")
@@ -400,7 +435,7 @@ def main():
             y_prob = model.predict_proba(X_val)[:, 1]
             y_pred = (y_prob >= 0.5).astype(int)
             metrics = calculate_metrics(y_val, y_pred, y_prob)
-            score = objective_function(metrics)
+            score, _ = objective_function(metrics, constraint_type='cv_constraints')  # 使用交叉验证约束，忽略失败原因
             metrics_list.append(metrics)
             scores.append(score)
             

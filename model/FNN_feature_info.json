@@ -1,0 +1,28 @@
+{
+    "features": [
+        "DII_food",
+        "Age",
+        "BMI",
+        "Gender",
+        "Education",
+        "Marriage",
+        "Smoke",
+        "Alcohol",
+        "Employment",
+        "ActivityLevel"
+    ],
+    "categorical_features": [
+        "Gender",
+        "Education",
+        "Marriage",
+        "Smoke",
+        "Alcohol",
+        "Employment",
+        "ActivityLevel"
+    ],
+    "numeric_features": [
+        "Age",
+        "BMI"
+    ],
+    "input_dim": 22
+}

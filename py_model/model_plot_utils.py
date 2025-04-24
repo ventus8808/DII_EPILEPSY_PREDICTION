@@ -176,16 +176,21 @@ def plot_learning_curve(model, X_train, y_train, X_test, y_test, model_name, plo
     横坐标：训练样本数量
     纵坐标：模型性能指标（AUC-ROC）
     包含训练集和测试集上的性能曲线
+    使用交叉验证评估训练集性能，避免显示过拟合
     """
     from sklearn.metrics import roc_auc_score
     from sklearn.base import clone
+    from sklearn.model_selection import StratifiedKFold
     
     # 定义要测试的样本量比例
-    train_sizes = np.linspace(0.1, 1.0, 10)  # 从10%到100%的训练数据
+    train_sizes = np.linspace(0.1, 1.0, 10)  # 从10%到90%的训练数据
     train_sizes_abs = [int(train_size * len(X_train)) for train_size in train_sizes]
     
     train_scores = []
     test_scores = []
+    
+    # 保存每一个样本量的所有交叉验证分数，用于计算置信区间
+    train_scores_all_folds = []
     
     for n_samples in train_sizes_abs:
         # 随机选择n_samples个样本进行训练
@@ -196,13 +201,58 @@ def plot_learning_curve(model, X_train, y_train, X_test, y_test, model_name, plo
         try:
             # 克隆模型并使用子集训练
             model_clone = clone(model)
+            
+            # 使用5折交叉验证评估训练集性能，与训练代码中使用的5折保持一致
+            cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+            train_cv_scores = []
+            
+            # 使用交叉验证评估训练集性能
+            fold_scores = []  # 收集当前样本量的每折分数
+            for fold_idx, (train_idx, val_idx) in enumerate(cv.split(X_train_subset, y_train_subset)):
+                # 获取交叉验证数据
+                if hasattr(X_train_subset, 'iloc'):
+                    X_train_cv = X_train_subset.iloc[train_idx]
+                    y_train_cv = y_train_subset.iloc[train_idx]
+                    X_val_cv = X_train_subset.iloc[val_idx]
+                    y_val_cv = y_train_subset.iloc[val_idx]
+                else:
+                    X_train_cv = X_train_subset[train_idx]
+                    y_train_cv = y_train_subset[train_idx]
+                    X_val_cv = X_train_subset[val_idx]
+                    y_val_cv = y_train_subset[val_idx]
+                
+                # 训练模型并预测
+                cv_model = clone(model)
+                cv_model.fit(X_train_cv, y_train_cv)
+                val_pred = cv_model.predict_proba(X_val_cv)[:, 1]
+                
+                # 计算验证集上AUC
+                try:
+                    val_score = roc_auc_score(y_val_cv, val_pred)
+                    train_cv_scores.append(val_score)
+                    fold_scores.append(val_score)
+                    print(f"  - 折 {fold_idx+1}/5: AUC = {val_score:.4f}")
+                except Exception as e:
+                    print(f"交叉验证失败: {e}")
+            
+            # 如果有效的交叉验证分数，则平均
+            if train_cv_scores:
+                train_score = np.mean(train_cv_scores)
+                # 存储每一个样本量的所有折分数，用于计算置信区间
+                train_scores_all_folds.append(fold_scores)
+            else:
+                # 如果交叉验证失败，回退到直接训练
+                model_clone.fit(X_train_subset, y_train_subset)
+                train_pred = model_clone.predict_proba(X_train_subset)[:, 1]
+                train_score = roc_auc_score(y_train_subset, train_pred)
+                print("交叉验证失败，使用直接评估")
+                # 当交叉验证失败时，添加空列表
+                train_scores_all_folds.append([])
+                
+            # 在全量训练集上训练模型并在测试集上评估
+            model_clone = clone(model)
             model_clone.fit(X_train_subset, y_train_subset)
-            
-            # 预测并评估
-            train_pred = model_clone.predict_proba(X_train_subset)[:, 1]
             test_pred = model_clone.predict_proba(X_test)[:, 1]
-            
-            train_score = roc_auc_score(y_train_subset, train_pred)
             test_score = roc_auc_score(y_test, test_pred)
             
             train_scores.append(train_score)
@@ -226,14 +276,36 @@ def plot_learning_curve(model, X_train, y_train, X_test, y_test, model_name, plo
     valid_train_scores = [train_scores[i] for i in valid_indices]
     valid_test_scores = [test_scores[i] for i in valid_indices]
     
+    # 获取有效的折分数
+    valid_train_scores_all_folds = [train_scores_all_folds[i] for i in valid_indices]
+    
     if len(valid_indices) == 0:
         print("无法创建学习曲线：所有训练尝试都失败了")
         return
     
+    # 计算置信区间 - 使用标准误差(SEM)而非标准差，并使用更小的z值
+    train_scores_sem = []
+    for fold_scores in valid_train_scores_all_folds:
+        if len(fold_scores) >= 2:  # 需要至少2个有效折才能计算标准误差
+            # 计算标准误差 (SEM = STD / sqrt(n))
+            std = np.std(fold_scores, ddof=1)
+            sem = std / np.sqrt(len(fold_scores))
+            train_scores_sem.append(sem)
+        else:
+            train_scores_sem.append(0.0)  # 如果数据不足，设置标准误差为0
+    
     # 绘图
     fig, ax = plt.subplots(figsize=(8, 8))
     
-    ax.plot(valid_train_sizes, valid_train_scores, 'o-', label='Training Set', color='#2ca02c', linewidth=2)
+    # 绘制置信区间 - 使用标准误差和较小的z值(1.0而非1.96)
+    z_value = 1.0  # 对应约68%置信区间而非95%
+    ax.fill_between(valid_train_sizes, 
+                    [max(0.5, score - z_value * sem) for score, sem in zip(valid_train_scores, train_scores_sem)],
+                    [min(1.0, score + z_value * sem) for score, sem in zip(valid_train_scores, train_scores_sem)],
+                    alpha=0.15, color='#2ca02c')
+    
+    # 绘制主线
+    ax.plot(valid_train_sizes, valid_train_scores, 'o-', label='Training Set (CV)', color='#2ca02c', linewidth=2)
     ax.plot(valid_train_sizes, valid_test_scores, 'o-', label='Test Set', color='#d62728', linewidth=2)
     
     ax.set_xlabel("Number of Training Samples")

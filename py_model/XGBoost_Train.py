@@ -141,17 +141,37 @@ def calculate_metrics(y_true, y_pred, y_prob, weights=None, n_bins=10):
 
 import yaml
 
-def load_objective_config(config_path='config.yaml'):
+def load_objective_config(config_path='config.yaml', constraint_type='objective_constraints'):
+    """加载目标函数配置，支持不同阶段的约束
+    
+    Args:
+        config_path: 配置文件路径
+        constraint_type: 约束类型，可选 'cv', 'test' 或默认的 'objective_constraints'
+    """
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
     weights = config.get('objective_weights', {})
-    constraints = config.get('objective_constraints', {})
+    
+    # 根据不同阶段使用不同的约束
+    if constraint_type == 'cv':
+        constraints = config.get('cv_constraints', {})
+    elif constraint_type == 'test':
+        constraints = config.get('test_constraints', {})
+    else:  # 默认使用原有约束
+        constraints = config.get('objective_constraints', {})
+        
     return weights, constraints
 
-def objective_function(metrics, config_path='config.yaml'):
-    """定制目标函数，使用config中的硬约束及自定义权重"""
+def objective_function(metrics, config_path='config.yaml', constraint_type='objective_constraints'):
+    """定制目标函数，使用config中的硬约束及自定义权重
+    
+    Args:
+        metrics: 评估指标字典
+        config_path: 配置文件路径
+        constraint_type: 约束类型，可选 'cv', 'test' 或默认的 'objective_constraints'
+    """
     # 获取配置文件中的约束条件
-    weights, constraints = load_objective_config(config_path)
+    weights, constraints = load_objective_config(config_path, constraint_type)
     
     # 关键指标
     auc_roc = metrics.get('AUC-ROC', 0)  # AUC-ROC在metrics中是'AUC-ROC'
@@ -161,25 +181,32 @@ def objective_function(metrics, config_path='config.yaml'):
     kappa = metrics.get('Cohen\'s Kappa', 0)
     ece = metrics.get('ECE', 0)
     
+    # 创建约束检查失败的原因列表，用于调试
+    failed_constraints = []
+    
     # 应用配置文件中的硬约束
     if 'AUC_min' in constraints and auc_roc < constraints['AUC_min']:
-        return float('-inf')
+        failed_constraints.append(f"AUC过低: {auc_roc:.4f} < {constraints['AUC_min']}")
     if 'AUC_max' in constraints and auc_roc > constraints['AUC_max']:
-        return float('-inf')
+        failed_constraints.append(f"AUC过高: {auc_roc:.4f} > {constraints['AUC_max']}")
     if 'ECE_max' in constraints and ece >= constraints['ECE_max']:
-        return float('-inf')
+        failed_constraints.append(f"ECE过高: {ece:.4f} >= {constraints['ECE_max']}")
     if 'F1_min' in constraints and f1 <= constraints['F1_min']:
-        return float('-inf')
+        failed_constraints.append(f"F1过低: {f1:.4f} <= {constraints['F1_min']}")
     if 'Sensitivity_min' in constraints and sensitivity < constraints['Sensitivity_min']:
-        return float('-inf')
+        failed_constraints.append(f"敏感度过低: {sensitivity:.4f} < {constraints['Sensitivity_min']}")
     if 'Specificity_min' in constraints and specificity < constraints['Specificity_min']:
-        return float('-inf')
+        failed_constraints.append(f"特异度过低: {specificity:.4f} < {constraints['Specificity_min']}")
+    
+    # 如果有约束检查失败，返回负无穷和失败原因
+    if failed_constraints:
+        return float('-inf'), failed_constraints
     
     # 定制权重 - 特别提高敏感度的重要性
     # 使用自定义权重，能提高敏感度
     score = 0.25 * auc_roc + 0.5 * sensitivity + 0.1 * specificity + 0.1 * f1 + 0.05 * kappa
     
-    return score
+    return score, []  # 返回分数和空的失败原因列表
 
 # 5. Optuna + SMOTE 优化
 
@@ -241,39 +268,98 @@ def main():
         trial_metrics_list = []
         try:
             # 平均K折交叉验证指标
+            metrics_list = []
+            scores = []
+            cv_failed_reasons_list = []
+            
             for fold, (train_idx, val_idx) in enumerate(kf.split(X_train, y_train)):
-                train_fold_metrics = train_fold(fold, train_idx, val_idx, params)
-                if train_fold_metrics is not None:
-                    trial_metrics_list.append(train_fold_metrics)
+                metrics, score, failed_reasons = train_fold(fold, train_idx, val_idx, params)
+                if metrics is not None:
+                    metrics_list.append(metrics)
+                    scores.append(score)
+                    if failed_reasons:  # 收集失败的原因
+                        cv_failed_reasons_list.extend(failed_reasons)
                     # 针对在缓冲区显示常见关键指标，第一折结束后展示
-                    if fold == 0:
-                        auc_roc = train_fold_metrics.get('AUC-ROC', 0)
-                        sens = train_fold_metrics.get('Sensitivity', 0)
-                        spec = train_fold_metrics.get('Specificity', 0)
+                    if fold == 0 and not failed_reasons:
+                        auc_roc = metrics.get('AUC-ROC', 0)
+                        sens = metrics.get('Sensitivity', 0)
+                        spec = metrics.get('Specificity', 0)
                         print(f"\r[Fold 1/5] AUC={auc_roc:.3f} Sens={sens:.3f} Spec={spec:.3f}", end="")
             
-            if not trial_metrics_list:  # 所有折数都失败
+            # 只输出5折平均值日志
+            if not metrics_list:
+                logger.warning(f"[Trial {getattr(trial,'number','?')}] 无有效交叉验证结果, 原因: {cv_failed_reasons_list}")
                 return float('-inf')
             
             # 计算平均指标
             avg_metrics = {}
-            for key in trial_metrics_list[0].keys():
-                avg_metrics[key] = sum(m[key] for m in trial_metrics_list) / len(trial_metrics_list)
+            for key in metrics_list[0].keys():
+                avg_metrics[key] = sum(m[key] for m in metrics_list) / len(metrics_list)
             
-            # 记录当前试验的指标和参数
-            trial.set_user_attr("metrics", avg_metrics)
-            trial.set_user_attr("params", params)
+            # 如果存在失败原因，返回负无穷
+            if cv_failed_reasons_list:
+                logger.warning(f"[Trial {getattr(trial,'number','?')}] 交叉验证失败原因: {cv_failed_reasons_list}")
+                return float('-inf')
             
-            # 计算目标函数值
-            score = objective_function(avg_metrics)
+            # 保存交叉验证指标到trial属性
+            for k, v in avg_metrics.items():
+                trial.set_user_attr(f"cv_{k}", float(v) if isinstance(v, (float, int)) else v)
+            
+            avg_cv_score = float(np.mean(scores))
+            
+            # 交叉验证结果记录
             logger.info(f"[Trial {getattr(trial,'number','?')}] 5-fold mean metrics: {avg_metrics}")
             auc_roc = avg_metrics.get('AUC-ROC', 0)
             auc_pr = avg_metrics.get('AUC-PR', 0)
             sens = avg_metrics.get('Sensitivity', 0)
             spec = avg_metrics.get('Specificity', 0)
             prec = avg_metrics.get('Precision', 0)
-            logger.info(f"Trial {trial.number}: AUC-ROC={auc_roc:.3f} AUC-PR={auc_pr:.3f} Sens={sens:.3f} Spec={spec:.3f} Prec={prec:.3f} Score={score:.3f}")
-            return score
+            
+            # 在过了交叉验证约束后，训练完整模型并在测试集上评估
+            logger.info(f"[Trial {getattr(trial,'number','?')}] 交叉验证通过，开始在测试集上评估...")
+            
+            try:
+                # 使用全部训练数据训练最终模型
+                # SMOTE处理整个训练集
+                smote_final = SMOTE(random_state=42)
+                X_train_res, y_train_res = smote_final.fit_resample(X_train, y_train)
+                
+                # 构建并训练模型
+                full_pipeline = Pipeline([
+                    ('preprocessor', preprocessor),
+                    ('classifier', XGBClassifier(**params))
+                ])
+                full_pipeline.fit(X_train_res, y_train_res)
+                
+                # 在测试集上评估
+                test_preds = full_pipeline.predict(X_test)
+                test_probs = full_pipeline.predict_proba(X_test)[:, 1]
+                test_metrics = calculate_metrics(y_test, test_preds, test_probs, weights=weights_test)
+                
+                # 使用测试集约束进行评估
+                test_score, test_failed_reasons = objective_function(test_metrics, constraint_type='test')
+                
+                # 记录测试集指标
+                for k, v in test_metrics.items():
+                    trial.set_user_attr(f"test_{k}", float(v) if isinstance(v, (int, float)) else v)
+                
+                # 如果测试集约束检查失败
+                if test_failed_reasons:
+                    logger.warning(f"[Trial {getattr(trial,'number','?')}] 测试集约束检查失败: {test_failed_reasons}")
+                    return float('-inf')
+                
+                # 输出测试集结果
+                test_metrics_3 = {k: (round(v, 3) if isinstance(v, float) else v) for k, v in test_metrics.items()}
+                logger.info(f"[Trial {getattr(trial,'number','?')}] 测试集指标: {test_metrics_3}")
+                
+                # 记录试验的完整信息
+                logger.info(f"Trial {trial.number}: CV AUC={auc_roc:.3f} Sens={sens:.3f} Spec={spec:.3f} | Test AUC={test_metrics.get('AUC-ROC', 0):.3f} Sens={test_metrics.get('Sensitivity', 0):.3f} Spec={test_metrics.get('Specificity', 0):.3f}")
+                
+                # 返回交叉验证分数
+                return avg_cv_score
+            except Exception as e:
+                logger.error(f"[Trial {getattr(trial,'number','?')}] 测试集评估错误: {e}\n{traceback.format_exc()}")
+                return float('-inf')
         
         except Exception as e:
             logger.error(f"Error in trial {trial.number}: {e}")
@@ -288,6 +374,11 @@ def main():
             y_train_fold, y_val_fold = y_train.iloc[train_idx], y_train.iloc[val_idx]
             w_train_fold = weights_train.iloc[train_idx] if weights_train is not None else None
             w_val_fold = weights_train.iloc[val_idx] if weights_train is not None else None
+            
+            # 检查验证集中的类别分布
+            if len(np.unique(y_val_fold)) < 2:
+                logger.warning(f"[Trial {getattr(trial,'number','?')}][Fold {fold+1}/5] y_val仅有单一类别，跳过该fold")
+                return None, float('-inf'), ["y_val仅有单一类别"]
             
             # SMOTE处理训练集
             smote = SMOTE(random_state=42)
@@ -304,12 +395,16 @@ def main():
             y_val_pred = pipeline.predict(X_val_fold)
             y_val_prob = pipeline.predict_proba(X_val_fold)[:, 1]
             
-            # 计算验证指标
-            metrics = calculate_metrics(y_val_fold, y_val_pred, y_val_prob, w_val_fold)
-            return metrics
+            # 计算指标
+            metrics = calculate_metrics(y_val_fold, y_val_pred, y_val_prob, weights=w_val_fold)
+            
+            # 使用交叉验证约束
+            score, failed_reasons = objective_function(metrics, constraint_type='cv')
+            
+            return metrics, score, failed_reasons
         except Exception as e:
-            logger.error(f"Error in fold {fold+1}: {e}")
-            return None
+            logger.error(f"Error in fold {fold}: {e}")
+            return None, float('-inf'), [f"Exception: {str(e)}"]
     
     # 运行Optuna优化
     best_score = float('-inf')

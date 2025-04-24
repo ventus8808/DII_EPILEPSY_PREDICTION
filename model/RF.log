@@ -603,3 +603,40 @@ ValueError: Found input variables with inconsistent numbers of samples: [3626, 3
 2025-04-24 09:44:00,186 - INFO - Brier: 0.1334
 2025-04-24 09:44:00,186 - INFO - ECE: 0.2636
 2025-04-24 09:44:00,186 - INFO - MCE: 0.8133
+2025-04-24 16:33:03,038 - INFO - Starting Random Forest model training
+2025-04-24 16:33:03,063 - INFO - Found existing RF_best_params.json, evaluating initial score...
+2025-04-24 16:33:18,242 - INFO - 在测试集上评估历史最优参数...
+2025-04-24 16:33:22,026 - INFO - 历史最优参数在测试集上的指标: {'Accuracy': 0.773, 'Sensitivity': 0.391, 'Specificity': 0.759, 'Precision': 0.031, 'NPV': 0.987, 'F1 Score': 0.058, "Youden's Index": 0.15, "Cohen's Kappa": 0.026, 'AUC-ROC': 0.714, 'AUC-PR': 0.081, 'Log Loss': 0.405, 'Brier': 0.133, 'ECE': 0.264, 'MCE': 0.813}
+2025-04-24 16:33:22,027 - WARNING - 历史最优参数在测试集上不符合约束: ['敏感度过低: 0.3914 < 0.5']
+2025-04-24 16:33:22,027 - INFO - 由于历史最优参数在测试集上不满足约束，将重新从头开始
+2025-04-24 16:33:22,027 - INFO - Initial best score from RF_best_params.json: -inf
+2025-04-24 16:33:22,027 - INFO - Initial best metrics: {'Accuracy': 0.8037495355679907, 'Sensitivity': 0.8144697319739997, 'Specificity': 0.762686946982122, 'Precision': 0.770591947581176, 'NPV': 0.8087313338619471, 'F1 Score': 0.7918356423570524, "Youden's Index": 0.5771566789561218, "Cohen's Kappa": 0.6064890825518711, 'AUC-ROC': 0.8963284108520533, 'AUC-PR': 0.8788977758364158, 'Log Loss': 0.4223055395265797, 'Brier': 0.13479400406270875, 'ECE': 0.06326590433174872, 'MCE': 0.13325877016118598}
+2025-04-24 16:33:58,428 - INFO - [Trial 16] 5-fold mean metrics: {'Accuracy': 0.797, 'Sensitivity': 0.81, 'Specificity': 0.75, 'Precision': 0.763, 'NPV': 0.804, 'F1 Score': 0.785, "Youden's Index": 0.559, "Cohen's Kappa": 0.594, 'AUC-ROC': 0.89, 'AUC-PR': 0.868, 'Log Loss': 0.425, 'Brier': 0.137, 'ECE': 0.051, 'MCE': 0.125}
+2025-04-24 16:33:58,439 - INFO - [Trial 16] 交叉验证通过，开始在测试集上评估...
+2025-04-24 16:34:07,555 - WARNING - [Trial 16] 测试集约束检查失败: ['AUC过低: 0.6991 < 0.7', '敏感度过低: 0.3935 < 0.5']
+2025-04-24 16:34:07,560 - INFO - [2025-04-24 16:34:07][Trial 1/100] AUC-ROC=nan AUC-PR=nan Sens=nan Spec=nan Prec=nan Score=-inf
+2025-04-24 16:34:23,935 - INFO - [Trial 17] 5-fold mean metrics: {'Accuracy': 0.93, 'Sensitivity': 0.938, 'Specificity': 0.91, 'Precision': 0.912, 'NPV': 0.926, 'F1 Score': 0.925, "Youden's Index": 0.848, "Cohen's Kappa": 0.859, 'AUC-ROC': 0.979, 'AUC-PR': 0.973, 'Log Loss': 0.215, 'Brier': 0.06, 'ECE': 0.066, 'MCE': 0.185}
+2025-04-24 16:34:23,936 - WARNING - [Trial 17] 交叉验证失败原因: ['AUC过高: 0.9791 > 0.95', 'AUC过高: 0.9778 > 0.95', 'AUC过高: 0.9788 > 0.95', 'AUC过高: 0.9770 > 0.95', 'AUC过高: 0.9804 > 0.95']
+2025-04-24 16:34:23,940 - INFO - [2025-04-24 16:34:23][Trial 2/100] AUC-ROC=nan AUC-PR=nan Sens=nan Spec=nan Prec=nan Score=-inf
+2025-04-24 16:34:57,411 - INFO - [Trial 18] 5-fold mean metrics: {'Accuracy': 0.92, 'Sensitivity': 0.93, 'Specificity': 0.9, 'Precision': 0.9, 'NPV': 0.909, 'F1 Score': 0.914, "Youden's Index": 0.829, "Cohen's Kappa": 0.84, 'AUC-ROC': 0.976, 'AUC-PR': 0.97, 'Log Loss': 0.237, 'Brier': 0.067, 'ECE': 0.076, 'MCE': 0.188}
+2025-04-24 16:34:57,412 - WARNING - [Trial 18] 交叉验证失败原因: ['AUC过高: 0.9768 > 0.95', 'AUC过高: 0.9732 > 0.95', 'AUC过高: 0.9780 > 0.95', 'AUC过高: 0.9720 > 0.95', 'AUC过高: 0.9794 > 0.95']
+2025-04-24 16:34:57,420 - INFO - [2025-04-24 16:34:57][Trial 3/100] AUC-ROC=nan AUC-PR=nan Sens=nan Spec=nan Prec=nan Score=-inf
+2025-04-24 16:35:01,863 - INFO - [Trial 19] 5-fold mean metrics: {'Accuracy': 0.842, 'Sensitivity': 0.835, 'Specificity': 0.83, 'Precision': 0.824, 'NPV': 0.831, 'F1 Score': 0.829, "Youden's Index": 0.665, "Cohen's Kappa": 0.683, 'AUC-ROC': 0.924, 'AUC-PR': 0.913, 'Log Loss': 0.392, 'Brier': 0.12, 'ECE': 0.094, 'MCE': 0.16}
+2025-04-24 16:35:01,874 - INFO - [Trial 19] 交叉验证通过，开始在测试集上评估...
+2025-04-24 16:35:02,946 - WARNING - [Trial 19] 测试集约束检查失败: ['敏感度过低: 0.3116 < 0.5']
+2025-04-24 16:35:02,950 - INFO - [2025-04-24 16:35:02][Trial 4/100] AUC-ROC=nan AUC-PR=nan Sens=nan Spec=nan Prec=nan Score=-inf
+2025-04-24 16:36:01,139 - INFO - [Trial 20] 5-fold mean metrics: {'Accuracy': 0.949, 'Sensitivity': 0.953, 'Specificity': 0.939, 'Precision': 0.938, 'NPV': 0.958, 'F1 Score': 0.945, "Youden's Index": 0.892, "Cohen's Kappa": 0.898, 'AUC-ROC': 0.987, 'AUC-PR': 0.985, 'Log Loss': 0.174, 'Brier': 0.046, 'ECE': 0.065, 'MCE': 0.195}
+2025-04-24 16:36:01,140 - WARNING - [Trial 20] 交叉验证失败原因: ['AUC过高: 0.9885 > 0.95', 'AUC过高: 0.9850 > 0.95', 'AUC过高: 0.9869 > 0.95', 'AUC过高: 0.9862 > 0.95', 'AUC过高: 0.9903 > 0.95']
+2025-04-24 16:36:01,158 - INFO - [2025-04-24 16:36:01][Trial 5/100] AUC-ROC=nan AUC-PR=nan Sens=nan Spec=nan Prec=nan Score=-inf
+2025-04-24 16:36:19,616 - INFO - [Trial 21] 5-fold mean metrics: {'Accuracy': 0.933, 'Sensitivity': 0.936, 'Specificity': 0.922, 'Precision': 0.92, 'NPV': 0.926, 'F1 Score': 0.928, "Youden's Index": 0.858, "Cohen's Kappa": 0.866, 'AUC-ROC': 0.982, 'AUC-PR': 0.978, 'Log Loss': 0.219, 'Brier': 0.059, 'ECE': 0.083, 'MCE': 0.209}
+2025-04-24 16:36:19,617 - WARNING - [Trial 21] 交叉验证失败原因: ['AUC过高: 0.9832 > 0.95', 'AUC过高: 0.9792 > 0.95', 'AUC过高: 0.9838 > 0.95', 'AUC过高: 0.9795 > 0.95', 'AUC过高: 0.9841 > 0.95']
+2025-04-24 16:36:19,627 - INFO - [2025-04-24 16:36:19][Trial 6/100] AUC-ROC=nan AUC-PR=nan Sens=nan Spec=nan Prec=nan Score=-inf
+2025-04-24 16:37:18,222 - INFO - [Trial 22] 5-fold mean metrics: {'Accuracy': 0.94, 'Sensitivity': 0.952, 'Specificity': 0.919, 'Precision': 0.92, 'NPV': 0.953, 'F1 Score': 0.936, "Youden's Index": 0.871, "Cohen's Kappa": 0.88, 'AUC-ROC': 0.984, 'AUC-PR': 0.98, 'Log Loss': 0.184, 'Brier': 0.05, 'ECE': 0.056, 'MCE': 0.192}
+2025-04-24 16:37:18,223 - WARNING - [Trial 22] 交叉验证失败原因: ['AUC过高: 0.9847 > 0.95', 'AUC过高: 0.9829 > 0.95', 'AUC过高: 0.9828 > 0.95', 'AUC过高: 0.9824 > 0.95', 'AUC过高: 0.9864 > 0.95']
+2025-04-24 16:37:18,232 - INFO - [2025-04-24 16:37:18][Trial 7/100] AUC-ROC=nan AUC-PR=nan Sens=nan Spec=nan Prec=nan Score=-inf
+2025-04-24 16:37:43,378 - INFO - [Trial 23] 5-fold mean metrics: {'Accuracy': 0.924, 'Sensitivity': 0.937, 'Specificity': 0.898, 'Precision': 0.901, 'NPV': 0.92, 'F1 Score': 0.919, "Youden's Index": 0.835, "Cohen's Kappa": 0.847, 'AUC-ROC': 0.977, 'AUC-PR': 0.971, 'Log Loss': 0.22, 'Brier': 0.062, 'ECE': 0.06, 'MCE': 0.173}
+2025-04-24 16:37:43,379 - WARNING - [Trial 23] 交叉验证失败原因: ['AUC过高: 0.9772 > 0.95', 'AUC过高: 0.9748 > 0.95', 'AUC过高: 0.9783 > 0.95', 'AUC过高: 0.9747 > 0.95', 'AUC过高: 0.9791 > 0.95']
+2025-04-24 16:37:43,385 - INFO - [2025-04-24 16:37:43][Trial 8/100] AUC-ROC=nan AUC-PR=nan Sens=nan Spec=nan Prec=nan Score=-inf
+2025-04-24 16:38:53,904 - INFO - [Trial 24] 5-fold mean metrics: {'Accuracy': 0.937, 'Sensitivity': 0.949, 'Specificity': 0.915, 'Precision': 0.916, 'NPV': 0.943, 'F1 Score': 0.932, "Youden's Index": 0.864, "Cohen's Kappa": 0.873, 'AUC-ROC': 0.982, 'AUC-PR': 0.978, 'Log Loss': 0.193, 'Brier': 0.053, 'ECE': 0.057, 'MCE': 0.184}
+2025-04-24 16:38:53,905 - WARNING - [Trial 24] 交叉验证失败原因: ['AUC过高: 0.9828 > 0.95', 'AUC过高: 0.9815 > 0.95', 'AUC过高: 0.9811 > 0.95', 'AUC过高: 0.9810 > 0.95', 'AUC过高: 0.9848 > 0.95']
+2025-04-24 16:38:53,915 - INFO - [2025-04-24 16:38:53][Trial 9/100] AUC-ROC=nan AUC-PR=nan Sens=nan Spec=nan Prec=nan Score=-inf

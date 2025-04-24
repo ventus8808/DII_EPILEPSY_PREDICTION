@@ -1,0 +1,12 @@
+{
+    "units_1": 225,
+    "units_2": 184,
+    "dropout_1": 0.23893903917679157,
+    "dropout_2": 0.1483684370836635,
+    "activation": "gelu",
+    "use_batch_norm": false,
+    "epochs": 82,
+    "optimizer": "sgd",
+    "learning_rate": 0.0019882503841287887,
+    "batch_size": 16
+}
