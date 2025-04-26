@@ -90,8 +90,16 @@ numeric_data = df[['DII_food'] + numeric_features].copy()
 categorical_data = df[categorical_features].copy()
 
 # 对类别特征进行独热编码
-encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
+try:
+    # 新版sklearn使用sparse_output
+    encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
+except TypeError:
+    # 兼容旧版sklearn
+    encoder = OneHotEncoder(sparse=False, handle_unknown='ignore')
 encoded_cats = encoder.fit_transform(categorical_data)
+# 处理旧版sklearn返回稀疏矩阵的情况
+if hasattr(encoded_cats, 'toarray'):
+    encoded_cats = encoded_cats.toarray()
 
 # 获取独热编码后的特征名称
 encoded_feature_names = []

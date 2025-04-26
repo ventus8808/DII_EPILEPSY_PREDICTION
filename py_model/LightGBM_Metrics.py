@@ -5,7 +5,6 @@ import yaml
 import numpy as np
 from pathlib import Path
 from model_metrics_utils import calculate_metrics
-from sklearn.model_selection import train_test_split
 
 # 读取配置文件
 yaml_path = 'config.yaml'
@@ -17,54 +16,24 @@ model_dir = Path(config['model_dir'])
 result_dir = Path(config['output_dir']) if 'output_dir' in config else Path('result')
 result_dir.mkdir(exist_ok=True)
 
-# 检查模型和编码器文件
-model_path = model_dir / 'LightGBM_best_model.pkl'
-encoder_path = model_dir / 'encoder.pkl'
-
-if not model_path.exists():
-    print(f"错误: 未找到模型文件 {model_path}")
-    print("请先运行LightGBM_Train.py")
-    exit(1)
-
-if not encoder_path.exists():
-    print(f"错误: 未找到编码器文件 {encoder_path}")
-    print("请先运行LightGBM_Train.py")
-    exit(1)
-
-# 加载模型和编码器
+# 加载模型
+model_path = model_dir / 'LightGBM_model.pkl'
 with open(model_path, 'rb') as f:
     model = pickle.load(f)
 
-with open(encoder_path, 'rb') as f:
-    encoder = pickle.load(f)
-
-# 加载原始数据
+# 加载数据
 df = pd.read_csv(data_path)
 
-print("注意：LightGBM模型使用Pipeline处理原始数据，与XGBoost保持一致...")
-
-# 从特征信息文件加载特征列表
-try:
-    with open(model_dir / 'LightGBM_feature_info.json', 'r') as f:
-        feature_info = json.load(f)
-    numeric_features = feature_info.get('numeric_features', ['DII_food', 'Age', 'BMI'])
-    categorical_features = feature_info.get('categorical_features', ['Gender', 'Education', 'Marriage', 'Smoke', 'Alcohol', 'Employment', 'ActivityLevel'])
-    features = numeric_features + categorical_features
-    print(f"从特征信息文件读取到: {features}")
-except FileNotFoundError:
-    print("未找到特征信息文件，使用默认特征列表")
-    numeric_features = ['DII_food', 'Age', 'BMI']
-    categorical_features = ['Gender', 'Education', 'Marriage', 'Smoke', 'Alcohol', 'Employment', 'ActivityLevel']
-    features = numeric_features + categorical_features
+print("注意：LightGBM模型特别依赖特征名称和顺序，直接使用原始数据集进行评估...")
 
 # 检查是否有outcome配置
 outcome = config.get('outcome', 'Epilepsy')
 y = df[outcome]
 weights = df['WTDRD1'] if 'WTDRD1' in df.columns else None
 
-# 使用保存的索引进行数据分割以保持一致性
+# 测试直接导入将数据切分成训练集和测试集
 def split_data(y, weights=None, test_size=0.3, random_state=42, stratify=True):
-    """与XGBoost_Metrics.py保持一致的分割函数"""
+    from sklearn.model_selection import train_test_split
     stratify_param = y if stratify else None
     
     # 创建索引数组
@@ -82,63 +51,78 @@ def split_data(y, weights=None, test_size=0.3, random_state=42, stratify=True):
     
     return train_indices, test_indices, y_train, y_test, weights_train, weights_test
 
-# 尝试加载训练脚本保存的索引
+# 分割数据
+train_indices, test_indices, y_train, y_test, weights_train, weights_test = split_data(y, weights)
+
+# 我们已经通过索引分割了数据，不需要这个函数了
+
+# 使用索引筛选测试集进行预测
+# 对于LightGBM，我们需要使用原始全量数据，然后将模型应用于测试集索引
+# 先获取测试集
+df_test = df.iloc[test_indices]
+
 try:
-    # 使用保存的数据划分索引
-    indices_path = model_dir / 'LightGBM_train_test_indices.json'
-    if indices_path.exists():
-        print("使用保存的训练/测试索引来得到与训练脚本完全相同的测试集...")
-        with open(indices_path, 'r') as f:
-            indices_data = json.load(f)
-        test_indices = indices_data['test_indices']
-        # 直接使用保存的测试集索引
-        y_test = y.iloc[test_indices]
-        weights_test = weights.iloc[test_indices] if weights is not None else None
-    else:
-        # 如果无法找到保存的索引，则在运行中分割
-        print("未找到保存的索引，使用相同的随机种子进行数据分割...")
-        train_indices, test_indices, y_train, y_test, weights_train, weights_test = split_data(y, weights)
-
-    # 选取测试集
-    df_test = df.iloc[test_indices]
-except FileNotFoundError:
-    # 回退到基本的分割方法
-    print("回退到基本的分割方法...")
-    train_indices, test_indices, y_train, y_test, weights_train, weights_test = split_data(y, weights)
-    df_test = df.iloc[test_indices]
-
-
-
-# 直接使用加载的模型进行预测
-try:
-    # 首先确定要使用的特征列表
-    if 'feature_order' in feature_info:
-        feature_cols = feature_info['feature_order']
-    else:
-        feature_cols = numeric_features + categorical_features
-        
-    # 直接使用测试集预测
-    test_features = df_test[feature_cols]
-    y_pred = model.predict(test_features)
-    y_prob = model.predict_proba(test_features)[:, 1]
-    print("成功使用模型直接预测")
+    # 直接预测
+    y_pred = model.predict(df_test)
+    y_prob = model.predict_proba(df_test)[:, 1]
+    print("成功直接预测")
 except Exception as e:
-    print(f"预测失败: {e}")
-    print("运行失败。请先运行LightGBM_Train.py生成正确格式的模型")
-    import sys
-    sys.exit(1)
+    print(f"直接预测失败: {e}")
+    
+    # 尝试获取模型的预处理器
+    try:
+        if hasattr(model, 'named_steps') and 'preprocessor' in model.named_steps:
+            print("使用模型预处理器...")
+            preprocessor = model.named_steps['preprocessor']
+            # 获取预处理器的特征名称
+            if hasattr(preprocessor, 'feature_names_in_'):
+                feature_names = preprocessor.feature_names_in_
+                print(f"读取到模型的特征名称: {feature_names}")
+                # 仅选择模型需要的列
+                if all(f in df.columns for f in feature_names):
+                    X_test = df_test[feature_names]
+                    
+                    # 使用预处理器转换
+                    if hasattr(model, 'predict'):
+                        y_pred = model.predict(X_test)
+                        y_prob = model.predict_proba(X_test)[:, 1]
+                        print("使用模型原始特征预测成功")
+                    else:
+                        raise Exception("模型没有predict方法")
+                else:
+                    missing_features = [f for f in feature_names if f not in df.columns]
+                    print(f"缺失特征: {missing_features}")
+                    raise Exception(f"数据缺失模型需要的特征: {missing_features}")
+            else:
+                raise Exception("预处理器没有feature_names_in_")
+        else:
+            raise Exception("模型没有预处理器或预处理器不可访问")
+    except Exception as e:
+        print(f"预处理器方法失败: {e}")
+        
+        # 作为最后的尝试，使用所有可能的特征
+        print("尝试使用所有可能的特征...")
+        try:
+            # 定义常见特征集
+            potential_features = ["DII_food", "Age", "BMI", "Gender", "Education", "Marriage", "Smoke", "Alcohol", "Employment", "ActivityLevel"]
+            available_features = [f for f in potential_features if f in df.columns]
+            X_test = df_test[available_features]
+            y_pred = model.predict(X_test)
+            y_prob = model.predict_proba(X_test)[:, 1]
+            print(f"使用以下特征成功预测: {available_features}")
+        except Exception as e:
+            print(f"所有尝试都失败，无法进行预测: {e}")
+            print("运行失败。请先运行LightGBM_Train.py生成模型和特征信息文件")
+            import sys
+            sys.exit(1)
 
-# 计算测试集指标
+# 计算指标
 metrics = calculate_metrics(y_test, y_pred, y_prob, weights_test)
-
-# 输出指标
 print("\nTest Set Metrics:")
 for metric, value in metrics.items():
     print(f"{metric}: {value:.4f}")
-
 
 # 保存指标
 metrics_path = result_dir / 'LightGBM_metrics.json'
 with open(metrics_path, 'w') as f:
     json.dump(metrics, f, indent=4)
-

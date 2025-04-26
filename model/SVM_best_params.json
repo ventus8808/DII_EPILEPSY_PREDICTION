@@ -1,0 +1,15 @@
+{
+    "C": 2.7978145822303566,
+    "kernel": "sigmoid",
+    "gamma": "scale",
+    "probability": true,
+    "class_weight": {
+        "0": 1,
+        "1": 20
+    },
+    "random_state": 42,
+    "max_iter": 1500,
+    "tol": 0.001,
+    "cache_size": 200,
+    "coef0": 0.0
+}

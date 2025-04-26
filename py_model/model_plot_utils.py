@@ -170,20 +170,25 @@ def plot_decision_curve(y_true, y_prob, weights, model_name, plot_dir, plot_data
         'net_benefit_none': [float(nb) for nb in net_benefit_none]
     }, str(Path(plot_data_dir) / f"{model_name}_DCA_data.json"))
 
-def plot_learning_curve(model, X_train, y_train, X_test, y_test, model_name, plot_dir, plot_data_dir):
+def plot_learning_curve(model, X_train, y_train, X_test, y_test, model_name, plot_dir, plot_data_dir, cv=3, scoring='roc_auc'):
     """绘制样本量学习曲线，展示随着训练样本数量的增加，模型性能的变化
     
     横坐标：训练样本数量
     纵坐标：模型性能指标（AUC-ROC）
     包含训练集和测试集上的性能曲线
     使用交叉验证评估训练集性能，避免显示过拟合
+    
+    Parameters:
+    -----------
+    cv : int, 交叉验证折数, 默认3
+    scoring : str, 评分标准, 默认'roc_auc'
     """
     from sklearn.metrics import roc_auc_score
     from sklearn.base import clone
     from sklearn.model_selection import StratifiedKFold
     
-    # 定义要测试的样本量比例
-    train_sizes = np.linspace(0.1, 1.0, 10)  # 从10%到90%的训练数据
+    # 定义要测试的样本量比例 - 保持与XGBoost一致
+    train_sizes = np.linspace(0.1, 1.0, 10)  # 使用10个点，从10%到90%的训练数据
     train_sizes_abs = [int(train_size * len(X_train)) for train_size in train_sizes]
     
     train_scores = []
@@ -202,8 +207,9 @@ def plot_learning_curve(model, X_train, y_train, X_test, y_test, model_name, plo
             # 克隆模型并使用子集训练
             model_clone = clone(model)
             
-            # 使用5折交叉验证评估训练集性能，与训练代码中使用的5折保持一致
-            cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+            # 使用传入的cv参数决定折数，默认为3折以减少计算量
+            cv_splits = cv if isinstance(cv, int) else 3
+            cv = StratifiedKFold(n_splits=cv_splits, shuffle=True, random_state=42)
             train_cv_scores = []
             
             # 使用交叉验证评估训练集性能

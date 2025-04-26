@@ -43,7 +43,17 @@ def calculate_calibration_metrics(y_true, y_prob, weights=None, n_bins=10):
                 })
     if len(observed) >= 2:
         from scipy.stats import chi2_contingency
-        chi2, p_value = chi2_contingency(np.array(observed), np.array(expected))[:2]
+        try:
+            # 尝试使用旧版本的chi2_contingency函数
+            chi2, p_value = chi2_contingency(np.array(observed))[:2]
+        except TypeError:
+            # 如果出错，尝试新版本的调用方式
+            try:
+                chi2, p_value = chi2_contingency(np.array(observed), correction=False)[:2]
+            except Exception as e:
+                # 如果仍然出错，跳过计算
+                print(f"计算chi2统计量时出错: {e}")
+                chi2, p_value = np.nan, np.nan
     else:
         chi2, p_value = np.nan, np.nan
     return ece, mce, bin_metrics, chi2, p_value

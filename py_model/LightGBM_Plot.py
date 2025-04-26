@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import pickle
 import json
 import yaml
@@ -21,81 +22,127 @@ plot_data_dir = Path('plot_original_data')
 plot_data_dir.mkdir(exist_ok=True)
 
 # 加载模型
-model_path = model_dir / 'LightGBM_best_model.pkl'
+model_path = model_dir / 'LightGBM_model.pkl'
 with open(model_path, 'rb') as f:
     model = pickle.load(f)
-
-# 加载编码器
-encoder_path = model_dir / 'encoder.pkl'
-with open(encoder_path, 'rb') as f:
-    encoder = pickle.load(f)
 
 # 加载数据
 df = pd.read_csv(data_path)
 
-# 直接定义特征列表，确保与训练时一致
-categorical_features = ['Gender', 'Education', 'Marriage', 'Smoke', 'Alcohol', 'Employment', 'ActivityLevel']
-numeric_features = [col for col in ['Age', 'BMI'] if col in df.columns]
-features = ['DII_food'] + numeric_features + categorical_features
-
-print(f"类别特征: {categorical_features}")
-print(f"数值特征: {numeric_features}")
-
-# 处理数据，应用独热编码
-numeric_data = df[['DII_food'] + numeric_features].copy()
-categorical_data = df[categorical_features].copy()
-
-print(f"类别数据形状: {categorical_data.shape}")
-
-# 应用独热编码
+# 尝试加载特征信息文件，如果不存在则使用默认特征
 try:
-    encoded_cats = encoder.transform(categorical_data)
-    print(f"独热编码后形状: {encoded_cats.shape}")
-except Exception as e:
-    print(f"编码器转换错误: {e}")
-    # 如果失败，尝试直接应用独热编码
-    from sklearn.preprocessing import OneHotEncoder
-    encoder_new = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
-    encoded_cats = encoder_new.fit_transform(categorical_data)
+    with open(model_dir / 'LightGBM_feature_info.json', 'r') as f:
+        feature_info = json.load(f)
+    features = feature_info['features']
+    print(f"成功加载特征信息文件，模型使用的特征数：{len(features)}")
+except FileNotFoundError:
+    print("未找到特征信息文件，使用默认特征...")
+    # 检查是否有exposure和outcome配置
+    outcome = config.get('outcome', 'Epilepsy')
+    exposure = config.get('exposure', 'DII_food')
+    covariates = config.get('covariates', ["Gender", "Age", "BMI", "Education", "Marriage", "Smoke", "Alcohol", "Employment", "ActivityLevel"])
+    # 与LightGBM原始模型保持一致，添加数值特征
+    numeric_features = [col for col in ['Age', 'BMI'] if col in df.columns]
+    features = [exposure] + numeric_features + covariates
+    print(f"使用默认特征：{features}")
 
-# 获取独热编码后的特征名称
-encoded_feature_names = []
-for i, feature in enumerate(categorical_features):
-    categories = encoder.categories_[i]
-    for category in categories:
-        encoded_feature_names.append(f"{feature}_{category}")
+# 确保所有需要的特征都在数据集中
+valid_features = [f for f in features if f in df.columns]
+if len(valid_features) != len(features):
+    print(f"警告：部分特征不在数据集中，仅使用有效特征。原始特征数：{len(features)}，有效特征数：{len(valid_features)}")
 
-# 创建独热编码后的DataFrame
-encoded_df = pd.DataFrame(encoded_cats, columns=encoded_feature_names)
+# 注意LightGBM模型特别依赖特征名称和顺序
+print("注意：LightGBM模型特别依赖特征名称和顺序，直接使用原始数据集进行评估...")
 
-# 合并数值特征和独热编码后的特征
-X = pd.concat([numeric_data.reset_index(drop=True), encoded_df.reset_index(drop=True)], axis=1)
-y = df['Epilepsy']
+outcome = config.get('outcome', 'Epilepsy')
+y = df[outcome]
 weights = df['WTDRD1'] if 'WTDRD1' in df.columns else None
 
-# 数据分割
-def split_data(X, y, weights=None, test_size=0.3, random_state=42, stratify=True):
+# 创建分割数据的函数
+def split_data(y, weights=None, test_size=0.3, random_state=42, stratify=True):
     from sklearn.model_selection import train_test_split
     stratify_param = y if stratify else None
+    
+    # 创建索引数组
+    indices = np.arange(len(y))
+    
     if weights is not None:
-        X_train, X_test, y_train, y_test, weights_train, weights_test = train_test_split(
-            X, y, weights, test_size=test_size, random_state=random_state, stratify=stratify_param
+        train_indices, test_indices, y_train, y_test, weights_train, weights_test = train_test_split(
+            indices, y, weights, test_size=test_size, random_state=random_state, stratify=stratify_param
         )
     else:
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=test_size, random_state=random_state, stratify=stratify_param
+        train_indices, test_indices, y_train, y_test = train_test_split(
+            indices, y, test_size=test_size, random_state=random_state, stratify=stratify_param
         )
         weights_train = weights_test = None
-    return X_train, X_test, y_train, y_test, weights_train, weights_test
+    
+    return train_indices, test_indices, y_train, y_test, weights_train, weights_test
 
-X_train, X_test, y_train, y_test, weights_train, weights_test = split_data(X, y, weights)
+# 分割数据
+train_indices, test_indices, y_train, y_test, weights_train, weights_test = split_data(y, weights)
 
-# 预测
-y_prob = model.predict_proba(X_test)[:, 1]
-y_pred = (y_prob >= 0.5).astype(int)
+# 使用索引筛选测试集进行预测
+# 对于LightGBM，我们需要使用原始全量数据，然后将模型应用于测试集索引
+# 先获取测试集
+df_test = df.iloc[test_indices]
+
+try:
+    # 直接预测
+    y_pred = model.predict(df_test)
+    y_prob = model.predict_proba(df_test)[:, 1]
+    print("成功直接预测")
+except Exception as e:
+    print(f"直接预测失败: {e}")
+    
+    # 尝试获取模型的预处理器
+    try:
+        if hasattr(model, 'named_steps') and 'preprocessor' in model.named_steps:
+            print("使用模型预处理器...")
+            preprocessor = model.named_steps['preprocessor']
+            # 获取预处理器的特征名称
+            if hasattr(preprocessor, 'feature_names_in_'):
+                feature_names = preprocessor.feature_names_in_
+                print(f"读取到模型的特征名称: {feature_names}")
+                # 仅选择模型需要的列
+                if all(f in df.columns for f in feature_names):
+                    X_test = df_test[feature_names]
+                    
+                    # 使用预处理器转换
+                    if hasattr(model, 'predict'):
+                        y_pred = model.predict(X_test)
+                        y_prob = model.predict_proba(X_test)[:, 1]
+                        print("使用模型原始特征预测成功")
+                    else:
+                        raise Exception("模型没有predict方法")
+                else:
+                    missing_features = [f for f in feature_names if f not in df.columns]
+                    print(f"缺失特征: {missing_features}")
+                    raise Exception(f"数据缺失模型需要的特征: {missing_features}")
+            else:
+                raise Exception("预处理器没有feature_names_in_")
+        else:
+            raise Exception("模型没有预处理器或预处理器不可访问")
+    except Exception as e:
+        print(f"预处理器方法失败: {e}")
+        
+        # 作为最后的尝试，使用所有可能的特征
+        print("尝试使用所有可能的特征...")
+        try:
+            # 定义常见特征集
+            potential_features = ["DII_food", "Age", "BMI", "Gender", "Education", "Marriage", "Smoke", "Alcohol", "Employment", "ActivityLevel"]
+            available_features = [f for f in potential_features if f in df.columns]
+            X_test = df_test[available_features]
+            y_pred = model.predict(X_test)
+            y_prob = model.predict_proba(X_test)[:, 1]
+            print(f"使用以下特征成功预测: {available_features}")
+        except Exception as e:
+            print(f"所有尝试都失败，无法进行预测: {e}")
+            print("运行失败。请先运行LightGBM_Train.py生成模型和特征信息文件")
+            import sys
+            sys.exit(1)
+
+# 模型名称
 model_name = "LightGBM"
-
-print("绘制模型性能图...")
 
 # 绘图
 plot_roc_curve(y_test, y_prob, weights_test, model_name, plot_dir, plot_data_dir)
@@ -103,7 +150,24 @@ plot_pr_curve(y_test, y_prob, weights_test, model_name, plot_dir, plot_data_dir)
 plot_calibration_curve(y_test, y_prob, weights_test, model_name, plot_dir, plot_data_dir)
 plot_decision_curve(y_test, y_prob, weights_test, model_name, plot_dir, plot_data_dir)
 plot_confusion_matrix(y_test, y_pred, model_name, plot_dir, plot_data_dir, normalize=False)
-plot_learning_curve(model, X_train, y_train, X_test, y_test, model_name, plot_dir, plot_data_dir)
+try:
+    # 设置模型参数来抑制警告
+    if hasattr(model, 'named_steps') and 'classifier' in model.named_steps:
+        # 如果模型是 Pipeline，设置分类器的参数
+        if hasattr(model.named_steps['classifier'], 'set_params'):
+            model.named_steps['classifier'].set_params(verbose=-1, min_data_in_leaf=10, min_gain_to_split=0.01)
+    elif hasattr(model, 'set_params'):
+        # 如果模型直接是分类器
+        model.set_params(verbose=-1, min_data_in_leaf=10, min_gain_to_split=0.01)
+    
+    # 使用优化的参数绘制学习曲线：少的数据点(5)和较少的交叉验证折数(3)
+    import warnings
+    # 暂时忽略警告
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        plot_learning_curve(model, df.iloc[train_indices], y_train, df.iloc[test_indices], y_test, 
+                           model_name, plot_dir, plot_data_dir, cv=3)
+    print("学习曲线绘制成功")
+except Exception as e:
+    print(f"学习曲线绘制失败: {e}")
 plot_threshold_curve(y_test, y_prob, model_name, plot_dir, plot_data_dir)
-
-print(f"所有图表已保存到: {plot_dir}")

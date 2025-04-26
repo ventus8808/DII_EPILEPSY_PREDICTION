@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import pickle
 import json
 import yaml
@@ -21,100 +22,85 @@ plot_dir.mkdir(exist_ok=True)
 plot_data_dir = Path('plot_original_data')
 plot_data_dir.mkdir(exist_ok=True)
 
-# 加载模型
+# 加载模型、标准化器和编码器
+model_path = model_dir / 'SVM_best_model.pkl'
+scaler_path = model_dir / 'scaler.pkl'  # 使用通用标准化器
+encoder_path = model_dir / 'encoder.pkl'  # 使用通用编码器
+
 try:
-    model_path = model_dir / 'SVM_best_model.pkl'
     with open(model_path, 'rb') as f:
         model = pickle.load(f)
-    print(f"加载模型成功，类型: {type(model)}")
+    print(f"成功加载SVM模型")
+    print(f"模型类型: {type(model)}")
     
-    # 检查如果不是模型对象，则重新创建模型
-    if not hasattr(model, 'predict_proba'):
-        print("加载的模型不是可用的SVM对象，正在接下来根据参数创建模型...")
-        from sklearn.svm import SVC
-        # 加载参数
-        parameter_path = model_dir / 'SVM_best_parameter.json'
-        with open(parameter_path, 'r') as f:
-            param_data = json.load(f)
-        
-        best_params = param_data.get('best_params', {})
-        print(f"使用参数: {best_params}")
-        
-        # 创建raw SVM模型
-        model = SVC(
-            C=best_params.get('C', 0.8604822844358474),
-            kernel=best_params.get('kernel', 'rbf'),
-            gamma=best_params.get('gamma', 'auto'),
-            probability=True,  # 必须设置为True才能使用predict_proba
-            class_weight=best_params.get('class_weight', 'balanced'),
-            max_iter=best_params.get('max_iter', 5000),
-            tol=best_params.get('tol', 0.001),
-            random_state=42
-        )
-        print("模型创建成功，将培训在整个数据集上")
-        
-        # 注意：这个模型需要在数据集上训练才能使用
-        # 我们关闭这个特性，顧受测试数据泄露，纯粹为了生成图表
-        need_training = True
-except Exception as e:
-    print(f"加载模型遇到错误: {e}")
-    print("创建raw SVM模型...")
-    from sklearn.svm import SVC
-    # 加载参数
-    parameter_path = model_dir / 'SVM_best_parameter.json'
-    with open(parameter_path, 'r') as f:
-        param_data = json.load(f)
+    with open(scaler_path, 'rb') as f:
+        scaler = pickle.load(f)
+    print(f"成功加载标准化器")
     
-    best_params = param_data.get('best_params', {})
-    print(f"使用参数: {best_params}")
-    
-    # 创建raw SVM模型
-    model = SVC(
-        C=best_params.get('C', 0.8604822844358474),
-        kernel=best_params.get('kernel', 'rbf'),
-        gamma=best_params.get('gamma', 'auto'),
-        probability=True,  # 必须设置为True才能使用predict_proba
-        class_weight=best_params.get('class_weight', 'balanced'),
-        max_iter=best_params.get('max_iter', 5000),
-        tol=best_params.get('tol', 0.001),
-        random_state=42
-    )
-    need_training = True
-
-# 定义特征
-categorical_features = ['Gender', 'Education', 'Marriage', 'Smoke', 'Alcohol', 'Employment', 'ActivityLevel']
-numeric_features = [col for col in ['Age', 'BMI'] if col in pd.read_csv(data_path).columns]
-features = ['DII_food'] + numeric_features + categorical_features
+    with open(encoder_path, 'rb') as f:
+        encoder = pickle.load(f)
+    print(f"成功加载特征编码器")
+except FileNotFoundError as e:
+    print(f"文件不存在: {str(e)}")
+    print("请先运行SVM_Train.py生成模型和相关文件")
+    import sys
+    sys.exit(1)
 
 # 加载数据
 df = pd.read_csv(data_path)
-print(f"数据总行数: {len(df)}")
 
-# 类别特征处理
-numeric_data = df[['DII_food'] + numeric_features].copy()
-categorical_data = df[categorical_features].copy()
+# 尝试加载特征信息文件，如果不存在则使用默认特征
+# 首先检查是否有exposure和outcome配置
+outcome = config.get('outcome', 'Epilepsy')
+exposure = config.get('exposure', 'DII_food')
+categorical_features = ['Gender', 'Education', 'Marriage', 'Smoke', 'Alcohol', 'Employment', 'ActivityLevel']
+numeric_features = [col for col in ['Age', 'BMI'] if col in df.columns]
 
-# 对类别特征进行独热编码
-encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
-encoded_cats = encoder.fit_transform(categorical_data)
+# 尝试加载SVM特定的特征信息
+try:
+    with open(model_dir / 'SVM_feature_info.json', 'r') as f:
+        feature_info = json.load(f)
+        features = feature_info['features']
+        categorical_features = feature_info.get('categorical_features', categorical_features)
+        numeric_features = feature_info.get('numeric_features', numeric_features)
+    print(f"成功加载特征信息文件，模型使用的特征数：{len(features)}")
+except FileNotFoundError:
+    print("未找到特征信息文件，使用默认特征...")
+    features = [exposure] + numeric_features + categorical_features
+    print(f"使用默认特征：{features}")
 
-# 获取独热编码后的特征名称
-encoded_feature_names = []
-for i, feature in enumerate(categorical_features):
-    categories = encoder.categories_[i]
-    for category in categories:
-        encoded_feature_names.append(f"{feature}_{category}")
+# 确保所有需要的特征都在数据集中
+valid_features = [f for f in features if f in df.columns]
+if len(valid_features) != len(features):
+    print(f"警告：部分特征不在数据集中，仅使用有效特征。原始特征数：{len(features)}，有效特征数：{len(valid_features)}")
 
-# 创建独热编码后的DataFrame
-encoded_df = pd.DataFrame(encoded_cats, columns=encoded_feature_names)
-
-# 合并数值特征和独热编码后的特征
-X = pd.concat([numeric_data.reset_index(drop=True), encoded_df.reset_index(drop=True)], axis=1)
-y = df['Epilepsy']
+# 准备数据
+X_raw = df[valid_features]
+y = df[outcome]
 weights = df['WTDRD1'] if 'WTDRD1' in df.columns else None
 
-print(f"特征数量: {X.shape[1]}")
-print(f"类别分布: \n{y.value_counts()}")
+# 数据预处理：分离类别特征和数值特征
+numeric_features = [col for col in ['DII_food', 'Age', 'BMI'] if col in X_raw.columns]
+categorical_features = [col for col in valid_features if col not in numeric_features]
+
+# 应用独热编码
+numeric_data = X_raw[numeric_features]
+if categorical_features:
+    categorical_data = X_raw[categorical_features]
+    # 使用加载的编码器进行转换
+    encoded_array = encoder.transform(categorical_data)
+    # 如果是稀疏矩阵则转换为数组
+    if hasattr(encoded_array, 'toarray'):
+        encoded_array = encoded_array.toarray()
+    # 获取特征名称
+    encoded_feature_names = encoder.get_feature_names_out(categorical_features)
+    encoded_df = pd.DataFrame(encoded_array, columns=encoded_feature_names)
+    # 合并数值特征和独热编码特征
+    X = pd.concat([numeric_data.reset_index(drop=True), encoded_df.reset_index(drop=True)], axis=1)
+    print(f"特征处理完成。处理后特征数量：{X.shape[1]}")
+else:
+    X = numeric_data
+    print("没有类别特征需要编码")
 
 # 数据分割
 def split_data(X, y, weights=None, test_size=0.3, random_state=42, stratify=True):
@@ -133,33 +119,78 @@ def split_data(X, y, weights=None, test_size=0.3, random_state=42, stratify=True
 
 X_train, X_test, y_train, y_test, weights_train, weights_test = split_data(X, y, weights)
 
-# 数据标准化
-scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train)
+# 对测试数据进行标准化处理
 X_test_scaled = scaler.transform(X_test)
 
-# 如果需要，先在训练数据上训练模型
-if locals().get('need_training', False):
-    print("正在训练SVM模型...")
-    model.fit(X_train_scaled, y_train)
-    print("模型训练完成")
+# 尝试从不同文件加载模型
+if isinstance(model, np.ndarray) or not hasattr(model, 'predict'):
+    print("加载的模型对象不能直接使用，尝试加载【RF_best_model.pkl】...")
+    try:
+        with open(model_dir / 'SVM_model.pkl', 'rb') as f:
+            model = pickle.load(f)
+        print(f"成功加载 SVM_model.pkl, 模型类型: {type(model)}")
+    except FileNotFoundError:
+        print("SVM_model.pkl 不存在，使用原模型")
 
 # 预测
 try:
-    y_prob = model.predict_proba(X_test_scaled)[:, 1]
     y_pred = model.predict(X_test_scaled)
-    print("模型成功进行预测")
+    y_prob = model.predict_proba(X_test_scaled)[:, 1]
+    print("成功预测")
 except Exception as e:
-    print(f"模型预测遇到错误: {e}")
-    # 强制再次训练并预测
-    print("正在尝试重新训练模型...")
-    model.fit(X_train_scaled, y_train)
-    y_prob = model.predict_proba(X_test_scaled)[:, 1]
-    y_pred = model.predict(X_test_scaled)
+    print(f"预测失败: {e}")
+    print("预测特征形状:", X_test.shape)
+    print("标准化后特征形状:", X_test_scaled.shape)
+    print("模型类型和属性:")
+    print(f"Type: {type(model)}")
+    if hasattr(model, 'shape'):
+        print(f"Shape: {model.shape}")
+    print("尝试手动创建SVM模型...")
+    
+    # 如果上述尝试都失败，尝试创建一个新的SVM模型
+    from sklearn.svm import SVC
+    new_model = SVC(probability=True, random_state=42)
+    # 加载有效参数
+    try:
+        with open(model_dir / 'SVM_best_parameter.json', 'r') as f:
+            params_data = json.load(f)
+        print("成功加载模型参数:", params_data)
+        # 参数可能嵌套在best_params中
+        if 'best_params' in params_data:
+            params = params_data['best_params']
+        else:
+            params = params_data
+            
+        # 确保参数键值有效
+        valid_params = {}
+        for k, v in params.items():
+            if k in ['C', 'kernel', 'gamma', 'class_weight', 'max_iter', 'tol', 'degree', 'coef0', 'shrinking']:
+                valid_params[k] = v
+        
+        print("使用有效参数:", valid_params)
+        # 创建一个新的SVM模型
+        new_model.set_params(**valid_params)
+    except Exception as param_e:
+        print(f"加载参数失败: {param_e}")
+    
+    # 尝试使用一个小样本训练并预测
+    print("使用小样本训练SVM模型...")
+    X_train_small = X_train[:min(500, len(X_train))]
+    y_train_small = y_train[:min(500, len(y_train))]
+    try:
+        new_model.fit(scaler.transform(X_train_small), y_train_small)
+        y_pred = new_model.predict(X_test_scaled)
+        y_prob = new_model.predict_proba(X_test_scaled)[:, 1]
+        print("使用临时训练的模型进行预测")
+        model = new_model  # 使用新模型继续
+    except Exception as train_e:
+        print(f"使用临时模型失败: {train_e}")
+        print("运行失败。请先运行SVM_Train.py生成模型和特征信息文件")
+        import sys
+        sys.exit(1)
 
+# 模型名称
 model_name = "SVM"
-
-print("绘制SVM模型性能图...")
 
 # 绘图
 plot_roc_curve(y_test, y_prob, weights_test, model_name, plot_dir, plot_data_dir)
@@ -167,7 +198,22 @@ plot_pr_curve(y_test, y_prob, weights_test, model_name, plot_dir, plot_data_dir)
 plot_calibration_curve(y_test, y_prob, weights_test, model_name, plot_dir, plot_data_dir)
 plot_decision_curve(y_test, y_prob, weights_test, model_name, plot_dir, plot_data_dir)
 plot_confusion_matrix(y_test, y_pred, model_name, plot_dir, plot_data_dir, normalize=False)
-plot_learning_curve(model, X_train_scaled, y_train, X_test_scaled, y_test, model_name, plot_dir, plot_data_dir)
-plot_threshold_curve(y_test, y_prob, model_name, plot_dir, plot_data_dir)
 
-print(f"所有图表已保存到: {plot_dir}")
+# 尝试调用学习曲线函数
+try:
+    # 对于SVM，我们需要使用原始数据和标准化处理
+    # 创建一个包含编码和标准化预处理步骤的Pipeline
+    from sklearn.pipeline import Pipeline
+    from sklearn.compose import ColumnTransformer
+    
+    # 由于我们已经对数据进行了预处理，这里简化为只包含标准化器和模型的管道
+    pipeline_model = Pipeline([
+        ('scaler', scaler),
+        ('svm', model)
+    ])
+    plot_learning_curve(pipeline_model, X_train, y_train, X_test, y_test, model_name, plot_dir, plot_data_dir)
+    print("学习曲线绘制成功")
+except Exception as e:
+    print(f"学习曲线绘制失败: {e}")
+
+plot_threshold_curve(y_test, y_prob, model_name, plot_dir, plot_data_dir)

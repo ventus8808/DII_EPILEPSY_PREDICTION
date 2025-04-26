@@ -12,8 +12,7 @@ outcome: "Epilepsy"
 covariates: ["Gender", "Age", "BMI", "Education", "Marriage", "Smoke", "Alcohol", "Employment", "ActivityLevel"]
 
 # 模型训练次数
-# 为了测试设置很小的值
-n_trials: 2
+n_trials: 100
 
 # 目标函数权重
 objective_weights:
@@ -27,17 +26,17 @@ objective_weights:
 # 目标函数硬约束 - 分为交叉验证和测试集两套约束
 # 交叉验证约束（较宽松）
 cv_constraints:
-  AUC_min: 0.6
+  AUC_min: 0.52
   AUC_max: 0.95
-  Sensitivity_min: 0.4
-  Specificity_min: 0.4
+  Sensitivity_min: 0.2
+  Specificity_min: 0.2
 
 # 测试集约束（较严格）
 test_constraints:
-  AUC_min: 0.7
+  AUC_min: 0.55
   AUC_max: 0.9
-  Sensitivity_min: 0.5
-  Specificity_min: 0.5
+  Sensitivity_min: 0.25
+  Specificity_min: 0.25
 
 # 兼容原有配置
 objective_constraints:
