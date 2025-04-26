@@ -12,6 +12,7 @@ outcome: "Epilepsy"
 covariates: ["Gender", "Age", "BMI", "Education", "Marriage", "Smoke", "Alcohol", "Employment", "ActivityLevel"]
 
 # 模型训练次数
+# 为了测试设置很小的值
 n_trials: 2
 
 # 目标函数权重

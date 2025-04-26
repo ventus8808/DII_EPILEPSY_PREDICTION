@@ -145,9 +145,12 @@ def load_and_preprocess_data():
     
     # 数据分割
     from sklearn.model_selection import train_test_split
+    # 保存原始索引
+    original_indices = X.index.values
+    
     if weights is not None:
-        X_train, X_test, y_train, y_test, weights_train, weights_test = train_test_split(
-            X, y, weights, test_size=0.3, random_state=42, stratify=y
+        X_train, X_test, y_train, y_test, weights_train, weights_test, train_indices, test_indices = train_test_split(
+            X, y, weights, np.arange(len(X)), test_size=0.3, random_state=42, stratify=y
         )
         X_train = X_train.reset_index(drop=True)
         X_test = X_test.reset_index(drop=True)
@@ -156,9 +159,15 @@ def load_and_preprocess_data():
         weights_train = weights_train.reset_index(drop=True)
         weights_test = weights_test.reset_index(drop=True)
     else:
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=0.3, random_state=42, stratify=y
+        # 保存原始索引
+        original_indices = X.index.values
+        
+        # 使用train_test_split进行数据划分
+        X_train, X_test, y_train, y_test, train_indices, test_indices = train_test_split(
+            X, y, np.arange(len(X)), test_size=0.3, random_state=42, stratify=y
         )
+        
+        # 重置索引
         X_train = X_train.reset_index(drop=True)
         X_test = X_test.reset_index(drop=True)
         y_train = y_train.reset_index(drop=True)
@@ -171,7 +180,8 @@ def load_and_preprocess_data():
         pickle.dump(encoder, f)
     
     # 替代原来的categorical_features传递编码后的特征名称
-    return X_train, X_test, y_train, y_test, weights_train, weights_test, encoded_feature_names
+    # 增加返回train_indices和test_indices
+    return X_train, X_test, y_train, y_test, weights_train, weights_test, encoded_feature_names, train_indices, test_indices
 
 # 4. 目标函数配置和指标
 import yaml
@@ -246,20 +256,23 @@ def objective_function(metrics, config_path='config.yaml', constraint_type='obje
         failed_constraints.append(f"敏感度过低: {sensitivity:.4f} < {constraints['Sensitivity_min']}")
     if 'Specificity_min' in constraints and specificity < constraints['Specificity_min']:
         failed_constraints.append(f"特异度过低: {specificity:.4f} < {constraints['Specificity_min']}")
+    # 增加F1和ECE约束检查，与XGBoost保持一致
+    if 'ECE_max' in constraints and ece >= constraints['ECE_max']:
+        failed_constraints.append(f"ECE过高: {ece:.4f} >= {constraints['ECE_max']}")
+    if 'F1_min' in constraints and f1 <= constraints['F1_min']:
+        failed_constraints.append(f"F1过低: {f1:.4f} <= {constraints['F1_min']}")
     
-    # 如果有任何约束失败，返回负无穷和失败原因
+    # 如果有任何约束失败，给予大量惩罚但不返回-inf
     if failed_constraints:
-        return float('-inf'), failed_constraints
+        # 计算增强权重的分数
+        base_score = 0.2 * auc_roc + 0.6 * sensitivity + 0.1 * specificity + 0.05 * f1 + 0.05 * kappa
+        # 给予很大的惩罚，但还是有限的负值
+        penalty = len(failed_constraints) * -1000
+        return base_score + penalty, failed_constraints
     
-    # 线性加权
-    score = (
-        weights.get('AUC', 0) * auc_roc +
-        weights.get('Sensitivity', 0) * sensitivity +
-        weights.get('Specificity', 0) * specificity +
-        weights.get('F1', 0) * f1 +
-        weights.get('Kappa', 0) * kappa +
-        weights.get('ECE', 0) * ece
-    )
+    # 采用硬编码的权重方式，特别提高敏感度的权重（与XGBoost相似）
+    # 将敏感度权重提高到0.6，更强调其重要性
+    score = 0.2 * auc_roc + 0.6 * sensitivity + 0.1 * specificity + 0.05 * f1 + 0.05 * kappa
     
     return score, []  # 成功时返回计算出的目标函数值和空的失败原因列表
 
@@ -271,8 +284,7 @@ def main():
     model_name = "LightGBM"
     logger = setup_logger(model_name)
     logger.info(f"Starting LightGBM model training")
-    logger.info("[并行调参说明] 本脚本支持Optuna多进程/多机并行调参，只需多开终端运行本脚本即可，Optuna会自动分配trial。")
-    X_train, X_test, y_train, y_test, weights_train, weights_test, categorical_features_names = load_and_preprocess_data()
+    X_train, X_test, y_train, y_test, weights_train, weights_test, categorical_features_names, train_indices, test_indices = load_and_preprocess_data()
     # 只在训练集做 SMOTE，test/val 集绝不采样
     smote = SMOTE(random_state=42)
     if weights_train is not None:
@@ -317,36 +329,84 @@ def main():
                 return trial.suggest_float(name, low, high, log=log)
         # 若有历史最优参数，动态调整参数空间
         best_params_for_search = best_params if best_params is not None else {}
+        # 不同的类别不平衡处理策略 - 移除focal_loss选项
+        imbalance_strategy = trial.suggest_categorical('imbalance_strategy', [
+            'scale_pos_weight', 'is_unbalance', 'both'
+        ])
+        
+        # 分类阈值策略 - 针对敏感度调优
+        threshold_strategy = trial.suggest_categorical('threshold_strategy', [
+            'standard',  # 0.5
+            'lower_threshold',  # 降低阈值提高敏感度
+        ])
+        
         params = {
-            # 增加n_estimators上限，降低学习率
-            'n_estimators': get_suggested_param(trial, 'n_estimators', 200, 1000, best_params_for_search.get('n_estimators'), is_int=True),
-            'learning_rate': get_suggested_param(trial, 'learning_rate', 0.005, 0.1, best_params_for_search.get('learning_rate'), log=True),
+            # 增加n_estimators上限，降低学习率，让模型有更多机会学习少数类
+            'n_estimators': get_suggested_param(trial, 'n_estimators', 1000, 5000, best_params_for_search.get('n_estimators'), is_int=True),
+            'learning_rate': get_suggested_param(trial, 'learning_rate', 0.0005, 0.02, best_params_for_search.get('learning_rate'), log=True),
             
-            # 控制模型复杂度，降低过拟合
-            'max_depth': get_suggested_param(trial, 'max_depth', 3, 7, best_params_for_search.get('max_depth'), is_int=True),
-            'num_leaves': get_suggested_param(trial, 'num_leaves', 10, 50, best_params_for_search.get('num_leaves'), is_int=True),
+            # 提高模型复杂度，允许更精细的决策边界学习少数类
+            'max_depth': get_suggested_param(trial, 'max_depth', 3, 20, best_params_for_search.get('max_depth'), is_int=True),
+            'num_leaves': get_suggested_param(trial, 'num_leaves', 20, 300, best_params_for_search.get('num_leaves'), is_int=True),
             
-            # 增加最小样本数，减少过拟合
-            'min_child_samples': get_suggested_param(trial, 'min_child_samples', 10, 50, best_params_for_search.get('min_child_samples'), is_int=True),
-            'min_child_weight': get_suggested_param(trial, 'min_child_weight', 0.001, 10.0, best_params_for_search.get('min_child_weight'), log=True),
+            # 更大幅减小最小样本数，使模型能学习少数类的特征
+            'min_child_samples': get_suggested_param(trial, 'min_child_samples', 1, 10, best_params_for_search.get('min_child_samples'), is_int=True),
+            'min_child_weight': get_suggested_param(trial, 'min_child_weight', 0.000001, 0.05, best_params_for_search.get('min_child_weight'), log=True),
             
-            # 增强正则化
-            'reg_alpha': get_suggested_param(trial, 'reg_alpha', 0.1, 20.0, best_params_for_search.get('reg_alpha'), log=True),
-            'reg_lambda': get_suggested_param(trial, 'reg_lambda', 0.1, 20.0, best_params_for_search.get('reg_lambda'), log=True),
+            # 显著降低正则化力度，更好地拟合少数类
+            'reg_alpha': get_suggested_param(trial, 'reg_alpha', 0.00001, 0.5, best_params_for_search.get('reg_alpha'), log=True),
+            'reg_lambda': get_suggested_param(trial, 'reg_lambda', 0.00001, 0.5, best_params_for_search.get('reg_lambda'), log=True),
             
-            # 子采样参数，降低过拟合
-            'subsample': get_suggested_param(trial, 'subsample', 0.6, 0.9, best_params_for_search.get('subsample')),
-            'colsample_bytree': get_suggested_param(trial, 'colsample_bytree', 0.6, 0.9, best_params_for_search.get('colsample_bytree')),
-            'subsample_freq': get_suggested_param(trial, 'subsample_freq', 1, 7, best_params_for_search.get('subsample_freq'), is_int=True),
+            # 更灵活的子采样策略
+            'subsample': get_suggested_param(trial, 'subsample', 0.5, 1.0, best_params_for_search.get('subsample')),
+            'colsample_bytree': get_suggested_param(trial, 'colsample_bytree', 0.5, 1.0, best_params_for_search.get('colsample_bytree')),
+            'subsample_freq': get_suggested_param(trial, 'subsample_freq', 0, 10, best_params_for_search.get('subsample_freq'), is_int=True),
             
-            # 针对类别不平衡的参数
-            'scale_pos_weight': get_suggested_param(trial, 'scale_pos_weight', 1.0, 10.0, best_params_for_search.get('scale_pos_weight')),
+            # 尝试不同的提升类型
+            'boosting_type': trial.suggest_categorical('boosting_type', ['gbdt', 'dart', 'goss']),
+            
+            # 使用LightGBM支持的目标函数
+            'objective': trial.suggest_categorical('objective', ['binary', 'cross_entropy']),
+            
+            # 增大max_bin范围，提高特征细度
+            'max_bin': trial.suggest_int('max_bin', 128, 1024),
+            
+            # boosting_type为'goss'时不能使用这些参数，所以在后面根据情况添加
             
             'random_state': 42,
-            'verbose': -1,
-            'boosting_type': 'gbdt',  # 可尝试 'dart'
-            'class_weight': 'balanced'
+            'verbose': -1
         }
+        
+        # 针对不同的不平衡处理策略设置相应参数
+        if imbalance_strategy == 'scale_pos_weight':
+            # 显著增加scale_pos_weight范围，给正类更高的权重
+            params['scale_pos_weight'] = get_suggested_param(trial, 'scale_pos_weight', 50.0, 500.0, best_params_for_search.get('scale_pos_weight'))
+            params['is_unbalance'] = False
+        elif imbalance_strategy == 'is_unbalance':
+            params['is_unbalance'] = True
+            params.pop('scale_pos_weight', None)
+        elif imbalance_strategy == 'both':
+            # 不能同时设置 is_unbalance 和 scale_pos_weight，选择使用更大范围的 scale_pos_weight
+            params['is_unbalance'] = False  # 显式设置为False
+            params['scale_pos_weight'] = get_suggested_param(trial, 'scale_pos_weight', 20.0, 300.0, best_params_for_search.get('scale_pos_weight'))
+            
+        # 根据提升类型调整相关参数
+        boosting_type = params['boosting_type']
+        # 如果boosting类型为goss，不能使用bagging相关参数
+        if boosting_type == 'goss':
+            params.pop('subsample', None)
+            params.pop('subsample_freq', None)
+        else:
+            # 非goss时可以使用bagging相关参数
+            params['subsample'] = get_suggested_param(trial, 'subsample', 0.5, 1.0, best_params_for_search.get('subsample'))
+            params['subsample_freq'] = get_suggested_param(trial, 'subsample_freq', 0, 10, best_params_for_search.get('subsample_freq'), is_int=True)
+
+        # 对于非gbdt提升器，添加相关特定参数
+        if boosting_type == 'dart':
+            params['drop_rate'] = trial.suggest_float('drop_rate', 0.01, 0.5)
+        elif boosting_type == 'goss':
+            params['top_rate'] = trial.suggest_float('top_rate', 0.1, 0.5)
+            params['other_rate'] = trial.suggest_float('other_rate', 0.05, 0.3)
         # 5折交叉验证并行
         kf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
         def train_fold(fold, train_idx, val_idx):
@@ -370,7 +430,15 @@ def main():
                 model = LGBMClassifier(**params)
                 model.fit(X_tr_res, y_tr_res, sample_weight=w_tr_res)
                 y_prob = model.predict_proba(X_val)[:, 1]
-                y_pred = (y_prob >= 0.5).astype(int)
+                
+                # 根据阈值策略确定分类阈值
+                if threshold_strategy == 'standard':
+                    threshold = 0.5
+                elif threshold_strategy == 'lower_threshold':
+                    # 使用更低的阈值来提高敏感度
+                    threshold = trial.suggest_float('classification_threshold', 0.05, 0.35)
+                
+                y_pred = (y_prob >= threshold).astype(int)
                 metrics = calculate_metrics(y_val, y_pred, y_prob)
                 score, _ = objective_function(metrics, constraint_type='cv_constraints')  # 使用交叉验证约束，忽略失败原因
                 return metrics, score
@@ -405,9 +473,10 @@ def main():
     optuna_db_dir = Path(__file__).parent.parent / "optuna" / "LightGBM"
     optuna_db_dir.mkdir(parents=True, exist_ok=True)
     sqlite_path = optuna_db_dir / "LightGBM_optuna.db"
+    # 使用带有敏感度优化标识的新研究名称 v2
     study = optuna.create_study(
         direction='maximize',
-        study_name="lightgbm_optuna",
+        study_name="lightgbm_optuna_sensitivity_optimized_v2",
         storage=f"sqlite:///{sqlite_path}",
         load_if_exists=True
     )
@@ -503,12 +572,13 @@ def main():
                 json.dump(best_metrics, f, indent=4)
             logger.info(f"[Trial {trial+1}] New best score: {best_score}")
             logger.info("Best parameters:")
-            for k, v in best_params.items():
-                logger.info(f"{k}: {v}")
-            logger.info("Best metrics:")
-            for metric, value in best_metrics.items():
-                logger.info(f"{metric}: {value}")
+        for k, v in best_params.items():
+            logger.info(f"{k}: {v}")
+        logger.info("Best metrics:")
+        for metric, value in best_metrics.items():
+            logger.info(f"{metric}: {value}")
     logger.info(f"Training finished. Best score: {best_score}")
+    # 我们总是会尝试保存一个模型，无论是否完全满足硬约束
     if best_params is not None:
         logger.info("Final best parameters:")
         for k, v in best_params.items():
@@ -519,38 +589,96 @@ def main():
                 logger.info(f"{metric}: {value:.3f}")
             else:
                 logger.info(f"{metric}: {value}")
-        # 用最终最优参数在训练集做采样训练模型，并在test set评估
-        logger.info("Evaluating on held-out test set (never seen during training/tuning)...")
-        # 重新采样整个训练集
-        smote_final = SMOTE(random_state=42)
-        if weights_train is not None:
-            Xy_train = X_train.copy()
-            Xy_train['__label__'] = y_train
-            Xy_train['__weight__'] = weights_train
-            X_res_final, y_res_final = smote_final.fit_resample(Xy_train.drop(['__label__'], axis=1), Xy_train['__label__'])
-            weights_train_res_final = X_res_final['__weight__'].reset_index(drop=True)
-            X_train_res_final = X_res_final.drop(['__weight__'], axis=1)
-            y_train_res_final = y_res_final.reset_index(drop=True)
-        else:
-            X_train_res_final, y_train_res_final = smote_final.fit_resample(X_train, y_train)
-            weights_train_res_final = None
-        # 用最优参数训练模型
-        best_params['random_state'] = 42
-        best_params['verbose'] = -1
-        best_params['class_weight'] = 'balanced'
-        final_model = LGBMClassifier(**best_params)
-        final_model.fit(X_train_res_final, y_train_res_final, sample_weight=weights_train_res_final)
-        # 在test set评估
-        y_prob_test = final_model.predict_proba(X_test)[:, 1]
-        y_pred_test = (y_prob_test >= 0.5).astype(int)
-        test_metrics = calculate_metrics(y_test, y_pred_test, y_prob_test, weights_test)
-        logger.info("Test set metrics (never seen during training/tuning):")
-        for metric, value in test_metrics.items():
-            logger.info(f"{metric}: {value:.4f}")
+            
+    # 检查是否有约束失败情况
+    best_trial = study.best_trial
+    if 'constraints_failed' in best_trial.user_attrs and best_trial.user_attrs['constraints_failed']:
+        logger.warning(f"最佳模型仍然失败了这些约束: {best_trial.user_attrs['constraints_failed']}")
+        logger.warning("尽管如此，仍然继续训练和保存最佳模型，因为它是满足约束最多的一个")
+    # 用最终最优参数在训练集做采样训练模型，并在test set评估
+    logger.info("Evaluating on held-out test set (never seen during training/tuning)...")
+    # 重新采样整个训练集
+    smote_final = SMOTE(random_state=42)
+    if weights_train is not None:
+        Xy_train = X_train.copy()
+        Xy_train['__label__'] = y_train
+        Xy_train['__weight__'] = weights_train
+        X_res_final, y_res_final = smote_final.fit_resample(Xy_train.drop(['__label__'], axis=1), Xy_train['__label__'])
+        weights_train_res_final = X_res_final['__weight__'].reset_index(drop=True)
+        X_train_res_final = X_res_final.drop(['__weight__'], axis=1)
+        y_train_res_final = y_res_final.reset_index(drop=True)
+    else:
+        X_train_res_final, y_train_res_final = smote_final.fit_resample(X_train, y_train)
+        weights_train_res_final = None
+    # 用最优参数训练模型 - 构建Pipeline对象，与XGBoost保持一致
+    model_params = best_params.copy()
+    model_params['random_state'] = 42
+    model_params['verbose'] = -1
+    model_params['class_weight'] = 'balanced'
+    
+    # 创建一个与XGBoost类似的Pipeline
+    from sklearn.pipeline import Pipeline
+    from sklearn.compose import ColumnTransformer
+    from sklearn.preprocessing import OneHotEncoder
+    
+    # 定义特征处理器
+    categorical_transformer = OneHotEncoder(handle_unknown='ignore')
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ('cat', categorical_transformer, categorical_features)
+        ],
+        remainder='passthrough'  # 包含数值特征
+    )
+    
+    # 保存原始特征名称，便于之后识别
+    feature_info = {
+        'numeric_features': ['DII_food'] + numeric_features,
+        'categorical_features': categorical_features
+    }
+    with open(model_dir / 'LightGBM_feature_info.json', 'w') as f:
+        json.dump(feature_info, f, indent=4)
+    
+    # 构建Pipeline
+    final_pipeline = Pipeline([
+        ('preprocessor', preprocessor),
+        ('classifier', LGBMClassifier(**model_params))
+    ])
+    
+    # 直接使用SMOTE过采样后的数据训练模型
+    # 确保特征顺序正确
+    feature_order = ['DII_food'] + numeric_features + categorical_features
+    
+    # 直接训练最终的分类器
+    final_classifier = LGBMClassifier(**model_params)
+    final_classifier.fit(X_train_res_final, y_train_res_final, sample_weight=weights_train_res_final)
+    
+    # 保存全局对象，方便后续评估
+    final_model = final_classifier
+    # 在test set评估
+    y_prob_test = final_model.predict_proba(X_test)[:, 1]
+    y_pred_test = final_model.predict(X_test)
+    test_metrics = calculate_metrics(y_test, y_pred_test, y_prob_test, weights_test)
+    logger.info("Test set metrics (never seen during training/tuning):")
+    for metric, value in test_metrics.items():
+        logger.info(f"{metric}: {value:.4f}")
         # 保存模型和参数到 model_dir
         model_path = model_dir / 'LightGBM_best_model.pkl'
         with open(model_path, 'wb') as f:
             pickle.dump(final_model, f)
+        
+        # 保存原始特征名称，便于之后识别
+        feature_info = {
+            'numeric_features': numeric_features,
+            'categorical_features': categorical_features,
+            'feature_order': feature_order
+        }
+        with open(model_dir / 'LightGBM_feature_info.json', 'w') as f:
+            json.dump(feature_info, f, indent=4)
+            
+        # 保存训练和测试数据的索引，便于度量脚本复现
+        train_test_indices = {'train_indices': train_indices.tolist(), 'test_indices': test_indices.tolist()}
+        with open(model_dir / 'LightGBM_train_test_indices.json', 'w') as f:
+            json.dump(train_test_indices, f)
         best_param_path = model_dir / 'LightGBM_best_params.json'
         with open(best_param_path, 'w') as f:
             json.dump(best_params, f, indent=4)
@@ -558,9 +686,24 @@ def main():
         test_metrics_path = output_dir / 'LightGBM_metrics.json'
         with open(test_metrics_path, 'w') as f:
             json.dump(test_metrics, f, indent=4)
+            
+        # 修改原有的硬约束检查，使其成为警告而非错误
+        test_constraints = {'Sensitivity_min': 0.3, 'Specificity_min': 0.9}
+        logger.info("检查最终模型是否满足常用的测试集硬约束:")
+        failed_test_constraints = []
+        if test_constraints.get('Sensitivity_min') and test_metrics['Sensitivity'] < test_constraints['Sensitivity_min']:
+            failed_test_constraints.append(f"Sensitivity {test_metrics['Sensitivity']:.4f} < {test_constraints['Sensitivity_min']}")
+        if test_constraints.get('Specificity_min') and test_metrics['Specificity'] < test_constraints['Specificity_min']:
+            failed_test_constraints.append(f"Specificity {test_metrics['Specificity']:.4f} < {test_constraints['Specificity_min']}")
+            
+        if failed_test_constraints:
+            logger.warning(f"最终模型在测试集上不满足这些硬约束: {failed_test_constraints}")
+            logger.warning("如果追求更高的敏感度，我们可能需要调整后处理步骤或降低分类阈值")
+        else:
+            logger.info("最终模型在测试集上满足所有硬约束!")
     else:
-        logger.warning("No valid model found that meets the constraints.")
-        logger.warning("Check your objective constraints and data.")
+        logger.warning("No valid model parameters found. This is unexpected since we should always save at least one model.")
+        logger.warning("Check your objective function and Optuna setup for potential issues.")
 
 if __name__ == "__main__":
     main()

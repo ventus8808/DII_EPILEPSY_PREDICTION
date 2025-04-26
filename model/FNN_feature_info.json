@@ -23,6 +23,5 @@
     "numeric_features": [
         "Age",
         "BMI"
-    ],
-    "input_dim": 22
+    ]
 }

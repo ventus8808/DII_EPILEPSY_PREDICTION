@@ -29,7 +29,15 @@ with open(model_path, 'rb') as f:
 
 # FNN模型预测函数
 def fnn_predict(model_data, X):
-    from py_model.FNN_Train import FNNModel  # 导入FNN模型类
+    # 直接从同级目录的FNN_Train模块导入
+    import sys
+    import os
+    # 添加当前目录到系统路径
+    current_path = os.path.dirname(os.path.abspath(__file__))
+    if current_path not in sys.path:
+        sys.path.append(current_path)
+    # 直接从FNN_Train导入FNNModel
+    from FNN_Train import FNNModel
     
     # 重建FNN模型
     model_config = model_data['model_config']
@@ -58,15 +66,47 @@ def fnn_predict(model_data, X):
 # 加载数据
 df = pd.read_csv(data_path)
 
-# 加载特征信息
+# 加载特征信息和编码器
 with open(model_dir / 'FNN_feature_info.json', 'r') as f:
     feature_info = json.load(f)
 
-features = feature_info['features']
-categorical_features = feature_info.get('categorical_features', [])
-numeric_features = feature_info.get('numeric_features', [])
+# 加载独热编码器
+with open(model_dir / 'encoder.pkl', 'rb') as f:
+    encoder = pickle.load(f)
 
-X = df[features]
+# 提取特征信息
+categorical_features = feature_info.get('categorical_features', ['Gender', 'Education', 'Marriage', 'Smoke', 'Alcohol', 'Employment', 'ActivityLevel'])
+numeric_features = feature_info.get('numeric_features', [col for col in ['Age', 'BMI'] if col in df.columns])
+# DII_food也是数值特征
+features = ['DII_food'] + numeric_features + categorical_features
+
+# 检查特征是否存在
+for feature in features:
+    if feature not in df.columns:
+        print(f"警告: 特征 '{feature}' 不在数据集中")
+
+# 处理数据，应用独热编码
+numeric_data = df[['DII_food'] + numeric_features].copy()
+categorical_data = df[categorical_features].copy()
+
+print(f"分类特征: {categorical_features}")
+print(f"数值特征: {numeric_features}")
+
+# 应用独热编码
+encoded_cats = encoder.transform(categorical_data)
+
+# 获取独热编码后的特征名称
+encoded_feature_names = []
+for i, feature in enumerate(categorical_features):
+    categories = encoder.categories_[i]
+    for category in categories:
+        encoded_feature_names.append(f"{feature}_{category}")
+
+# 创建独热编码后的DataFrame
+encoded_df = pd.DataFrame(encoded_cats, columns=encoded_feature_names)
+
+# 合并数值特征和独热编码后的特征
+X = pd.concat([numeric_data.reset_index(drop=True), encoded_df.reset_index(drop=True)], axis=1)
 y = df['Epilepsy']
 weights = df['WTDRD1'] if 'WTDRD1' in df.columns else None
 
@@ -112,17 +152,42 @@ plot_confusion_matrix(y_test, y_pred, model_name, plot_dir, plot_data_dir, norma
 print("绘制学习曲线...")
 
 def custom_fnn_learning_curve(model_data, X, y, weights=None, cv=5, train_sizes=None, random_state=42, plot_dir=None, plot_data_dir=None):
-    """为FNN模型自定义学习曲线实现"""
+    """为FNN模型自定义学习曲线实现
+    
+    横坐标：训练样本数量
+    纵坐标：模型性能指标（AUC-ROC）
+    包含训练集和测试集上的性能曲线
+    使用交叉验证评估训练集性能，避免显示过拟合
+    """
     from sklearn.model_selection import StratifiedKFold
-    from py_model.FNN_Train import FNNModel, train_model, evaluate
+    # 直接从同级目录的FNN_Train模块导入
+    import sys
+    import os
+    # 添加当前目录到系统路径
+    current_path = os.path.dirname(os.path.abspath(__file__))
+    if current_path not in sys.path:
+        sys.path.append(current_path)
+    # 直接从FNN_Train导入需要的类和函数
+    from FNN_Train import FNNModel, train_model, evaluate
     import matplotlib.pyplot as plt
     import numpy as np
     import pickle
     import os
+    from pathlib import Path
+    
+    # 全局字体设置：Monaco 12号
+    plt.rcParams['font.family'] = 'Monaco'
+    plt.rcParams['font.size'] = 12
+    plt.rcParams['axes.titlesize'] = 12
+    plt.rcParams['axes.labelsize'] = 12
+    plt.rcParams['legend.fontsize'] = 12
+    plt.rcParams['xtick.labelsize'] = 12
+    plt.rcParams['ytick.labelsize'] = 12
+    plt.rcParams['axes.unicode_minus'] = False
     
     # 如果没有指定训练集大小比例，使用默认值
     if train_sizes is None:
-        train_sizes = np.linspace(0.1, 1.0, 5)
+        train_sizes = np.linspace(0.1, 1.0, 10)  # 与CatBoost保持一致，使用10个点
     
     # 设置交叉验证
     cv_splitter = StratifiedKFold(n_splits=cv, shuffle=True, random_state=random_state)
@@ -131,6 +196,9 @@ def custom_fnn_learning_curve(model_data, X, y, weights=None, cv=5, train_sizes=
     train_scores = []
     test_scores = []
     train_sizes_abs = []
+    
+    # 保存每一个样本量的所有交叉验证分数，用于计算置信区间
+    train_scores_all_folds = []
     
     # 模型配置
     model_config = model_data['model_config']
@@ -227,45 +295,82 @@ def custom_fnn_learning_curve(model_data, X, y, weights=None, cv=5, train_sizes=
             train_scores.append(np.mean(fold_train_scores))
             test_scores.append(np.mean(fold_test_scores))
             train_sizes_abs.append(np.mean(fold_train_sizes))
+            # 存储当前样本量的所有折迭代分数，用于计算置信区间
+            train_scores_all_folds.append(fold_train_scores)
     
-    # 绘制学习曲线
-    plt.figure(figsize=(10, 6))
-    plt.title(f"FNN Learning Curve")
-    plt.xlabel("Training examples")
-    plt.ylabel("Score (AUC-ROC)")
-    plt.grid()
+    # 过滤掉None值
+    valid_indices = [i for i, (train_score, test_score) in enumerate(zip(train_scores, test_scores))
+                    if train_score is not None and test_score is not None]
+    valid_train_sizes = [train_sizes_abs[i] for i in valid_indices]
+    valid_train_scores = [train_scores[i] for i in valid_indices]
+    valid_test_scores = [test_scores[i] for i in valid_indices]
     
-    plt.plot(train_sizes_abs, train_scores, 'o-', color="r", label="Training score")
-    plt.plot(train_sizes_abs, test_scores, 'o-', color="g", label="Cross-validation score")
+    # 获取有效的折分数
+    valid_train_scores_all_folds = [train_scores_all_folds[i] for i in valid_indices]
     
-    plt.fill_between(
-        train_sizes_abs, 
-        train_scores,
-        test_scores, 
-        alpha=0.1, 
-        color="g"
-    )
+    if len(valid_indices) == 0:
+        print("无法创建学习曲线：所有训练尝试都失败了")
+        return
     
-    plt.legend(loc="best")
-    plt.tight_layout()
+    # 计算置信区间 - 使用标准误差(SEM)而非标准差，并使用更小的z值
+    train_scores_sem = []
+    for fold_scores in valid_train_scores_all_folds:
+        if len(fold_scores) >= 2:  # 需要至少2个有效折才能计算标准误差
+            # 计算标准误差 (SEM = STD / sqrt(n))
+            std = np.std(fold_scores, ddof=1)
+            sem = std / np.sqrt(len(fold_scores))
+            train_scores_sem.append(sem)
+        else:
+            train_scores_sem.append(0.0)  # 如果数据不足，设置标准误差为0
     
-    # 保存图表
-    if plot_dir:
-        plt.savefig(plot_dir / f"FNN_learning_curve.png", dpi=300, bbox_inches='tight')
-        plt.savefig(plot_dir / f"FNN_learning_curve.svg", format='svg', bbox_inches='tight')
+    # 绘图
+    fig, ax = plt.subplots(figsize=(8, 8))
     
-    # 保存原始数据
+    # 绘制置信区间 - 使用标准误差和较小的z值(1.0而非1.96)
+    z_value = 1.0  # 对应68%置信区间而非95%
+    ax.fill_between(valid_train_sizes, 
+                    [max(0.5, score - z_value * sem) for score, sem in zip(valid_train_scores, train_scores_sem)],
+                    [min(1.0, score + z_value * sem) for score, sem in zip(valid_train_scores, train_scores_sem)],
+                    alpha=0.15, color='#2ca02c')
+    
+    # 绘制主线
+    ax.plot(valid_train_sizes, valid_train_scores, 'o-', label='Training Set (CV)', color='#2ca02c', linewidth=2)
+    ax.plot(valid_train_sizes, valid_test_scores, 'o-', label='Test Set', color='#d62728', linewidth=2)
+    
+    ax.set_xlabel("Number of Training Samples")
+    ax.set_ylabel("AUC-ROC")
+    
+    # Set y-axis range from 0.5 to 1.0 with 0.1 intervals
+    ax.set_ylim(0.5, 1.0)
+    ax.set_yticks(np.arange(0.5, 1.01, 0.1))
+    
+    ax.set_title(f"Sample Learning Curve - FNN", pad=30)
+    
+    # 美化图形
+    ax.grid(linestyle='--', alpha=0.3)
+    ax.legend(loc='lower right')
+    
+    for spine in ['top','right']:
+        ax.spines[spine].set_visible(True)
+    
+    fig.tight_layout()
+    fig.savefig(str(Path(plot_dir) / f"FNN_sample_learning_curve.png"), bbox_inches='tight', dpi=300)
+    plt.close(fig)
+    
+    # 保存数据
     if plot_data_dir:
-        data_to_save = {
-            'train_sizes': train_sizes_abs,
-            'train_scores': train_scores,
-            'test_scores': test_scores,
-        }
-        with open(plot_data_dir / f"FNN_learning_curve_data.pkl", 'wb') as f:
-            pickle.dump(data_to_save, f)
-    
-    plt.close()
-    return train_sizes_abs, train_scores, test_scores
+        save_plot_data({
+            'train_sizes': valid_train_sizes,
+            'train_scores': valid_train_scores,
+            'test_scores': valid_test_scores
+        }, str(Path(plot_data_dir) / f"FNN_sample_learning_curve.json"))
+        
+    return valid_train_sizes, valid_train_scores, valid_test_scores
+
+# 定义保存数据的函数，与其他模型保持一致
+def save_plot_data(data, filename):
+    with open(filename, 'w') as f:
+        json.dump(data, f, indent=4)
 
 # 调用自定义学习曲线函数
 train_sizes, train_scores, test_scores = custom_fnn_learning_curve(
@@ -274,7 +379,7 @@ train_sizes, train_scores, test_scores = custom_fnn_learning_curve(
     y_train, 
     weights_train, 
     cv=5, 
-    train_sizes=np.linspace(0.1, 1.0, 5),
+    train_sizes=np.linspace(0.1, 1.0, 10),  # 与CatBoost保持一致，使用10个点
     random_state=42,
     plot_dir=plot_dir,
     plot_data_dir=plot_data_dir

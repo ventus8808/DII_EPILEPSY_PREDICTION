@@ -2,8 +2,10 @@ import pandas as pd
 import pickle
 import json
 import yaml
+import numpy as np
 from pathlib import Path
 from model_metrics_utils import calculate_metrics
+from sklearn.model_selection import train_test_split
 
 # 读取配置文件
 yaml_path = 'config.yaml'
@@ -15,96 +17,128 @@ model_dir = Path(config['model_dir'])
 result_dir = Path(config['output_dir']) if 'output_dir' in config else Path('result')
 result_dir.mkdir(exist_ok=True)
 
-# 加载模型
+# 检查模型和编码器文件
 model_path = model_dir / 'LightGBM_best_model.pkl'
+encoder_path = model_dir / 'encoder.pkl'
+
+if not model_path.exists():
+    print(f"错误: 未找到模型文件 {model_path}")
+    print("请先运行LightGBM_Train.py")
+    exit(1)
+
+if not encoder_path.exists():
+    print(f"错误: 未找到编码器文件 {encoder_path}")
+    print("请先运行LightGBM_Train.py")
+    exit(1)
+
+# 加载模型和编码器
 with open(model_path, 'rb') as f:
     model = pickle.load(f)
 
-# 加载编码器
-encoder_path = model_dir / 'encoder.pkl'
 with open(encoder_path, 'rb') as f:
     encoder = pickle.load(f)
 
-# 加载数据
+# 加载原始数据
 df = pd.read_csv(data_path)
 
-# 直接定义类别特征列，确保与训练时一致
-categorical_features = ['Gender', 'Education', 'Marriage', 'Smoke', 'Alcohol', 'Employment', 'ActivityLevel']
-numeric_features = [col for col in ['Age', 'BMI'] if col in df.columns]
-features = ['DII_food'] + numeric_features + categorical_features
+print("注意：LightGBM模型使用Pipeline处理原始数据，与XGBoost保持一致...")
 
-# 打印特征信息以便调试
-print(f"类别特征: {categorical_features}")
-print(f"数值特征: {numeric_features}")
-print(f"所有特征: {features}")
-
-# 检查所有特征是否在数据集中
-for feature in features:
-    if feature not in df.columns:
-        print(f"警告: 特征 '{feature}' 不在数据集中")
-
-# 处理数据，应用独热编码
-numeric_data = df[['DII_food'] + numeric_features].copy()
-categorical_data = df[categorical_features].copy()
-
-print(f"类别数据形状: {categorical_data.shape}")
-
-# 应用独热编码
+# 从特征信息文件加载特征列表
 try:
-    encoded_cats = encoder.transform(categorical_data)
-    print(f"独热编码后形状: {encoded_cats.shape}")
-except Exception as e:
-    print(f"编码器转换错误: {e}")
-    # 如果失败，尝试直接应用独热编码
-    from sklearn.preprocessing import OneHotEncoder
-    encoder_new = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
-    encoded_cats = encoder_new.fit_transform(categorical_data)
+    with open(model_dir / 'LightGBM_feature_info.json', 'r') as f:
+        feature_info = json.load(f)
+    numeric_features = feature_info.get('numeric_features', ['DII_food', 'Age', 'BMI'])
+    categorical_features = feature_info.get('categorical_features', ['Gender', 'Education', 'Marriage', 'Smoke', 'Alcohol', 'Employment', 'ActivityLevel'])
+    features = numeric_features + categorical_features
+    print(f"从特征信息文件读取到: {features}")
+except FileNotFoundError:
+    print("未找到特征信息文件，使用默认特征列表")
+    numeric_features = ['DII_food', 'Age', 'BMI']
+    categorical_features = ['Gender', 'Education', 'Marriage', 'Smoke', 'Alcohol', 'Employment', 'ActivityLevel']
+    features = numeric_features + categorical_features
 
-# 获取独热编码后的特征名称
-encoded_feature_names = []
-for i, feature in enumerate(categorical_features):
-    categories = encoder.categories_[i]
-    for category in categories:
-        encoded_feature_names.append(f"{feature}_{category}")
-
-# 创建独热编码后的DataFrame
-encoded_df = pd.DataFrame(encoded_cats, columns=encoded_feature_names)
-
-# 合并数值特征和独热编码后的特征
-X = pd.concat([numeric_data.reset_index(drop=True), encoded_df.reset_index(drop=True)], axis=1)
-y = df['Epilepsy']
+# 检查是否有outcome配置
+outcome = config.get('outcome', 'Epilepsy')
+y = df[outcome]
 weights = df['WTDRD1'] if 'WTDRD1' in df.columns else None
 
-# 数据分割
-def split_data(X, y, weights=None, test_size=0.3, random_state=42, stratify=True):
-    from sklearn.model_selection import train_test_split
+# 使用保存的索引进行数据分割以保持一致性
+def split_data(y, weights=None, test_size=0.3, random_state=42, stratify=True):
+    """与XGBoost_Metrics.py保持一致的分割函数"""
     stratify_param = y if stratify else None
+    
+    # 创建索引数组
+    indices = np.arange(len(y))
+    
     if weights is not None:
-        X_train, X_test, y_train, y_test, weights_train, weights_test = train_test_split(
-            X, y, weights, test_size=test_size, random_state=random_state, stratify=stratify_param
+        train_indices, test_indices, y_train, y_test, weights_train, weights_test = train_test_split(
+            indices, y, weights, test_size=test_size, random_state=random_state, stratify=stratify_param
         )
     else:
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=test_size, random_state=random_state, stratify=stratify_param
+        train_indices, test_indices, y_train, y_test = train_test_split(
+            indices, y, test_size=test_size, random_state=random_state, stratify=stratify_param
         )
         weights_train = weights_test = None
-    return X_train, X_test, y_train, y_test, weights_train, weights_test
+    
+    return train_indices, test_indices, y_train, y_test, weights_train, weights_test
 
-X_train, X_test, y_train, y_test, weights_train, weights_test = split_data(X, y, weights)
+# 尝试加载训练脚本保存的索引
+try:
+    # 使用保存的数据划分索引
+    indices_path = model_dir / 'LightGBM_train_test_indices.json'
+    if indices_path.exists():
+        print("使用保存的训练/测试索引来得到与训练脚本完全相同的测试集...")
+        with open(indices_path, 'r') as f:
+            indices_data = json.load(f)
+        test_indices = indices_data['test_indices']
+        # 直接使用保存的测试集索引
+        y_test = y.iloc[test_indices]
+        weights_test = weights.iloc[test_indices] if weights is not None else None
+    else:
+        # 如果无法找到保存的索引，则在运行中分割
+        print("未找到保存的索引，使用相同的随机种子进行数据分割...")
+        train_indices, test_indices, y_train, y_test, weights_train, weights_test = split_data(y, weights)
 
-# 预测
-y_prob = model.predict_proba(X_test)[:, 1]
-y_pred = (y_prob >= 0.5).astype(int)
+    # 选取测试集
+    df_test = df.iloc[test_indices]
+except FileNotFoundError:
+    # 回退到基本的分割方法
+    print("回退到基本的分割方法...")
+    train_indices, test_indices, y_train, y_test, weights_train, weights_test = split_data(y, weights)
+    df_test = df.iloc[test_indices]
 
-# 计算指标
+
+
+# 直接使用加载的模型进行预测
+try:
+    # 首先确定要使用的特征列表
+    if 'feature_order' in feature_info:
+        feature_cols = feature_info['feature_order']
+    else:
+        feature_cols = numeric_features + categorical_features
+        
+    # 直接使用测试集预测
+    test_features = df_test[feature_cols]
+    y_pred = model.predict(test_features)
+    y_prob = model.predict_proba(test_features)[:, 1]
+    print("成功使用模型直接预测")
+except Exception as e:
+    print(f"预测失败: {e}")
+    print("运行失败。请先运行LightGBM_Train.py生成正确格式的模型")
+    import sys
+    sys.exit(1)
+
+# 计算测试集指标
 metrics = calculate_metrics(y_test, y_pred, y_prob, weights_test)
-print("\nLightGBM 测试集评估指标:")
+
+# 输出指标
+print("\nTest Set Metrics:")
 for metric, value in metrics.items():
     print(f"{metric}: {value:.4f}")
+
 
 # 保存指标
 metrics_path = result_dir / 'LightGBM_metrics.json'
 with open(metrics_path, 'w') as f:
     json.dump(metrics, f, indent=4)
 
-print(f"\n指标已保存至 {metrics_path}")

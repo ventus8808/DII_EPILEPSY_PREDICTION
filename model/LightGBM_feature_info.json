@@ -1,5 +1,18 @@
 {
-    "features": [
+    "numeric_features": [
+        "Age",
+        "BMI"
+    ],
+    "categorical_features": [
+        "Gender",
+        "Education",
+        "Marriage",
+        "Smoke",
+        "Alcohol",
+        "Employment",
+        "ActivityLevel"
+    ],
+    "feature_order": [
         "DII_food",
         "Age",
         "BMI",

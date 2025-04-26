@@ -750,9 +750,17 @@ def main():
             
             if isinstance(X_test, pd.DataFrame):
                 X_test = X_test.values
+            
+            # 确保 y_train_res_final 和 y_test 也是 numpy 数组
+            if isinstance(y_train_res_final, pd.Series):
+                y_train_res_final = y_train_res_final.values
+                
+            if isinstance(y_test, pd.Series):
+                y_test = y_test.values
                 
             # 训练最终模型
             logger.info(f"X_train_res_final类型: {type(X_train_res_final)}")
+            logger.info(f"y_train_res_final类型: {type(y_train_res_final)}")
             final_model, _, _, _ = train_model(
                 final_model, X_train_res_final, y_train_res_final, X_test, y_test, best_params
             )

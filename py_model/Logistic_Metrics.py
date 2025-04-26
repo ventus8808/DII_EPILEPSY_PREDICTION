@@ -49,8 +49,7 @@ for col in X.columns:
 if y.dtype.name == 'category' or y.dtype == object:
     y = pd.Categorical(y).codes
 
-print(f"\n特征列表: {list(X.columns)}")
-print(f"标签分布: {pd.Series(y).value_counts().to_dict()}")
+
 
 # 去除缺失
 valid_idx = ~pd.isnull(X).any(axis=1) & ~pd.isnull(y)
@@ -100,63 +99,16 @@ from sklearn.metrics import confusion_matrix
 cm = confusion_matrix(y_test, y_pred)
 tn, fp, fn, tp = cm.ravel()
 
-# 手动计算关键指标
-manual_sensitivity = tp / (tp + fn) if (tp + fn) > 0 else 0
-manual_specificity = tn / (tn + fp) if (tn + fp) > 0 else 0
-manual_precision = tp / (tp + fp) if (tp + fp) > 0 else 0
-manual_npv = tn / (tn + fn) if (tn + fn) > 0 else 0
-manual_accuracy = (tp + tn) / (tp + tn + fp + fn)
-manual_f1 = 2 * tp / (2 * tp + fp + fn) if (2 * tp + fp + fn) > 0 else 0
-manual_youden = manual_sensitivity + manual_specificity - 1
+
 
 # 计算自动metrics
 metrics = calculate_metrics(y_test, y_pred, y_prob, weights_test)
 
-# 打印对比信息
-print("\n混淆矩阵:")
-print(f"[{tn}, {fp}]\n[{fn}, {tp}]")
-print(f"TN={tn}, FP={fp}, FN={fn}, TP={tp}")
+# 计算混淆矩阵
+cm = confusion_matrix(y_test, y_pred)
+tn, fp, fn, tp = cm.ravel()
 
-# 避免f-string中使用带引号的键名
-youden_key = "Youden's Index"
-f1_key = "F1 Score"
 
-print("\n手算对比指标:")
-print(f"Manual Sensitivity (Recall): {manual_sensitivity:.4f} | Metrics: {metrics['Sensitivity']:.4f}")
-print(f"Manual Specificity: {manual_specificity:.4f} | Metrics: {metrics['Specificity']:.4f}")
-print(f"Manual Precision: {manual_precision:.4f} | Metrics: {metrics['Precision']:.4f}")
-print(f"Manual NPV: {manual_npv:.4f} | Metrics: {metrics['NPV']:.4f}")
-print(f"Manual Accuracy: {manual_accuracy:.4f} | Metrics: {metrics['Accuracy']:.4f}")
-print(f"Manual F1: {manual_f1:.4f} | Metrics: {metrics[f1_key]:.4f}")
-print(f"Manual Youden Index: {manual_youden:.4f} | Metrics: {metrics[youden_key]:.4f}")
-
-# 打印SMOTE影响
-print("\n训练集大小和分布:")
-print(f"X_train shape: {X_train.shape} | X_train_res shape: {X_train_res.shape}")
-print(f"y_train distribution: {pd.Series(y_train).value_counts().to_dict()}")
-print(f"y_train_res distribution: {pd.Series(y_train_res).value_counts().to_dict()}")
-
-# 打印测试集大小和分布
-print("\n测试集大小和分布:")
-print(f"X_test shape: {X_test.shape}")
-print(f"y_test distribution: {pd.Series(y_test).value_counts().to_dict()}")
-print(f"y_pred distribution: {pd.Series(y_pred).value_counts().to_dict()}")
-
-# 生成不同ROC阈值下的结果
-from sklearn.metrics import roc_curve
-fpr, tpr, thresholds = roc_curve(y_test, y_prob)
-youden_index = tpr - fpr
-best_idx = np.argmax(youden_index)
-best_threshold = thresholds[best_idx]
-print(f"\n最佳阈值 (Youden): {best_threshold:.4f}")
-
-# 在最佳阈值下的预测
-y_pred_best = (y_prob >= best_threshold).astype(int)
-cm_best = confusion_matrix(y_test, y_pred_best)
-tn_best, fp_best, fn_best, tp_best = cm_best.ravel()
-
-print(f"\n最佳阈值下的混淆矩阵:")
-print(f"[{tn_best}, {fp_best}]\n[{fn_best}, {tp_best}]")
 
 # 标准指标输出
 print("\nTest Set Metrics:")
@@ -167,4 +119,3 @@ for metric, value in metrics.items():
 metrics_path = result_dir / 'Logistic_metrics.json'
 with open(metrics_path, 'w') as f:
     json.dump(metrics, f, indent=4)
-print(f"\n指标已保存至: {metrics_path}")

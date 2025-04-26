@@ -1,12 +1,13 @@
 {
-    "units_1": 225,
-    "units_2": 184,
-    "dropout_1": 0.23893903917679157,
-    "dropout_2": 0.1483684370836635,
-    "activation": "gelu",
+    "units_1": 439,
+    "units_2": 185,
+    "dropout_1": 0.49015472745373256,
+    "dropout_2": 0.354572824524566,
+    "activation": "relu",
     "use_batch_norm": false,
-    "epochs": 82,
-    "optimizer": "sgd",
-    "learning_rate": 0.0019882503841287887,
-    "batch_size": 16
+    "epochs": 100,
+    "optimizer": "adamw",
+    "learning_rate": 0.0006825678586590903,
+    "batch_size": 128,
+    "early_stop_patience": 15
 }
