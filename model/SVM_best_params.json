@@ -1,15 +1,16 @@
 {
-    "C": 2.7978145822303566,
+    "C": 32.28117811832655,
     "kernel": "sigmoid",
-    "gamma": "scale",
+    "gamma": 0.01216783391948547,
     "probability": true,
     "class_weight": {
         "0": 1,
-        "1": 20
+        "1": 7
     },
     "random_state": 42,
-    "max_iter": 1500,
+    "max_iter": 2000,
     "tol": 0.001,
-    "cache_size": 200,
-    "coef0": 0.0
+    "shrinking": true,
+    "cache_size": 250,
+    "coef0": 1.0
 }

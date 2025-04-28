@@ -185,34 +185,106 @@ def load_and_preprocess_data():
 # 4. 目标函数配置和指标
 import yaml
 
-def load_objective_config(config_path='config.yaml'):
+def load_objective_config(config_path='config.yaml', constraint_type='objective_constraints'):
+    """加载目标函数配置，支持不同阶段的约束
+    
+    Args:
+        config_path: 配置文件路径
+        constraint_type: 约束类型，可选 'cv', 'test' 或默认的 'objective_constraints'
+    """
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
-    return config.get('objective_weights', {}), config.get('objective_constraints', {})
+    weights = config.get('objective_weights', {})
+    
+    # 根据不同阶段使用不同的约束
+    if constraint_type == 'cv':
+        constraints = config.get('cv_constraints', {})
+    elif constraint_type == 'test':
+        constraints = config.get('test_constraints', {})
+    else:  # 默认使用原有约束
+        constraints = config.get('objective_constraints', {})
+        
+    return weights, constraints
 
-def objective_function(metrics, config_path='config.yaml'):
-    weights, constraints = load_objective_config(config_path)
-    score = 0
-    for metric, value in metrics.items():
-        if metric in weights:
-            score += weights[metric] * value
+def objective_function(metrics, config_path='config.yaml', constraint_type='objective_constraints'):
+    """定制目标函数，使用config中的硬约束及自定义权重
     
-    # 临时修改: SVM模型先不强制约束条件，而是添加惩罚项
+    Args:
+        metrics: 评估指标字典
+        config_path: 配置文件路径
+        constraint_type: 约束类型，可选 'cv', 'test' 或默认的 'objective_constraints'
+    """
+    # 获取配置文件中的约束条件和权重
+    weights, constraints = load_objective_config(config_path, constraint_type)
+    
+    # 关键指标
+    auc_roc = metrics.get('AUC-ROC', 0.5)
+    sensitivity = metrics.get('Sensitivity', 0.0)
+    specificity = metrics.get('Specificity', 0.0)
+    f1 = metrics.get('F1 Score', 0.0)
+    precision = metrics.get('Precision', 0.0)
+    youdens_index = metrics.get('Youden\'s Index', 0.0)  # 尤登指数(敏感度+特异度-1)
+    
+    # 失败约束列表
     failed_constraints = []
-    for metric, value in metrics.items():
-        if f"{metric}_min" in constraints and value < constraints[f"{metric}_min"]:
-            # 添加惩罚，而不是直接返回-inf
-            diff = constraints[f"{metric}_min"] - value
-            score -= diff * 10  # 根据差距添加惩罚
-            failed_constraints.append(f"{metric} ({value:.4f} < {constraints[f'{metric}_min']:.4f})")
-        if f"{metric}_max" in constraints and value > constraints[f"{metric}_max"]:
-            diff = value - constraints[f"{metric}_max"]
-            score -= diff * 10
-            failed_constraints.append(f"{metric} ({value:.4f} > {constraints[f'{metric}_max']:.4f})")
     
+    # 1. 强制约束检查 - 如果不满足任何一个约束，返回负无穷
+    if 'AUC_min' in constraints and auc_roc < constraints['AUC_min']:
+        failed_constraints.append(f"AUC过低: {auc_roc:.4f} < {constraints['AUC_min']}")
+    
+    if 'Sensitivity_min' in constraints and sensitivity < constraints['Sensitivity_min']:
+        failed_constraints.append(f"敏感度过低: {sensitivity:.4f} < {constraints['Sensitivity_min']}")
+    
+    if 'Specificity_min' in constraints and specificity < constraints['Specificity_min']:
+        failed_constraints.append(f"特异度过低: {specificity:.4f} < {constraints['Specificity_min']}")
+    
+    # 如果有约束检查失败，返回负无穷和失败原因
     if failed_constraints:
-        logging.getLogger().debug(f"未满足约束: {', '.join(failed_constraints)}, 分数调整到: {score:.4f}")
-    return score
+        return float('-inf'), failed_constraints
+    
+    # 2. 计算评分 - 没有违反强制约束才进行
+    # 基础得分 - 使用配置文件中的权重
+    auc_weight = weights.get('AUC', 0.3)      # AUC权重
+    sensitivity_weight = weights.get('Sensitivity', 0.25)  # 敏感度权重
+    specificity_weight = weights.get('Specificity', 0.25)  # 特异度权重
+    f1_weight = weights.get('F1', 0.1)        # F1权重
+    precision_weight = weights.get('Precision', 0.1)  # 精确度权重
+    
+    # 基础得分 - 考虑多个指标的加权平均
+    score = (auc_weight * auc_roc + 
+             f1_weight * f1 + 
+             precision_weight * precision + 
+             sensitivity_weight * sensitivity + 
+             specificity_weight * specificity)
+    
+    # 奖励更高的AUC-ROC
+    if auc_roc > 0.6:
+        score += (auc_roc - 0.6) ** 2 * 8  # 增强对高AUC的奖励
+    
+    # 奖励平衡的敏感度和特异度组合 - 尤登指数
+    score += youdens_index * 1.0  # 增加尤登指数的权重
+    
+    # 奖励敏感度和特异度更接近的平衡状态
+    balance_reward = 1.0 - abs(sensitivity - specificity)
+    score += balance_reward * 0.5
+    
+    # 防止指标间的不平衡（软约束，影响分数但不直接拒绝）
+    ideal_gap = 0.1  # 允许的最大偏差
+    sens_spec_gap = abs(sensitivity - specificity)
+    
+    if sens_spec_gap > ideal_gap:
+        # 对敏感度和特异度的不平衡进行惩罚
+        score -= (sens_spec_gap - ideal_gap) * 3.0
+    
+    # 防止AUC与敏感度/特异度对应关系的异常
+    expected_auc = (sensitivity + specificity) / 2
+    auc_gap = abs(auc_roc - expected_auc)
+    
+    if auc_gap > 0.1:
+        # 惩罚异常的AUC值
+        score -= (auc_gap - 0.1) * 2.0
+    
+    return score, []  # 返回分数和空的失败原因列表
 
 # 5. 主流程
 def main():
@@ -279,43 +351,59 @@ def main():
             n_splits = 5
             skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
             
-            # 确定试验的超参数
+            # 确定试验的超参数 - 针对AUC-ROC优化的参数空间
             if best_params is None:
-                # 第一次试验，基于提高敏感度来调整参数空间
+                # 第一次试验，基于提高AUC-ROC来调整参数空间
                 params = {
-                    # 增大C的范围，大的C值可能有助于提高敏感度
-                    'C': trial.suggest_float('C', 0.5, 50.0, log=True),
-                    # 添加多项式核，可能更适合不平衡数据
+                    # 使用更广泛的C值探索，这对AUC-ROC有显著影响
+                    'C': trial.suggest_float('C', 0.1, 100.0, log=True),
+                    # 扩展核函数选择
                     'kernel': trial.suggest_categorical('kernel', ['linear', 'rbf', 'poly', 'sigmoid']),
-                    # 探索更广的gamma值
-                    'gamma': trial.suggest_categorical('gamma', ['scale', 'auto']),
-                    # 对于多项式核，添加阶数参数
+                    # 增加更细致的gamma值选择，对于rbf和poly核特别重要
+                    'gamma': trial.suggest_float('gamma', 1e-4, 1.0, log=True) if trial.params.get('kernel', None) in ['rbf', 'poly', 'sigmoid'] else 'scale',
+                    # 对于多项式核，添加阶数和coef0参数
                     'degree': trial.suggest_int('degree', 2, 5) if trial.params.get('kernel', None) == 'poly' else 3,
-                    # 关键参数：用于不平衡数据的类别权重
+                    'coef0': trial.suggest_float('coef0', 0.0, 10.0) if trial.params.get('kernel', None) in ['poly', 'sigmoid'] else 0.0,
+                    # 类别权重 - 平衡权重选项，涵盖更多的比例范围
                     'class_weight': trial.suggest_categorical('class_weight', 
-                                                            ['balanced', {0:1, 1:10}, {0:1, 1:20}, {0:1, 1:50}]),
+                                                            ['balanced', {0:1, 1:3}, {0:1, 1:5}, {0:1, 1:8}, {0:1, 1:10}, 
+                                                             {0:1, 1:15}, {0:1, 1:20}, None]),
+                    # 额外参数
+                    'shrinking': trial.suggest_categorical('shrinking', [True, False]),  # 是否使用收缩启发式
                     'probability': True,
-                    'max_iter': 1500,  # 增加最大迭代次数
-                    'tol': 1e-3,      # 适当的容差
+                    'max_iter': 2000,  # 增加最大迭代次数以确保收敛
+                    'tol': trial.suggest_float('tol', 1e-4, 1e-2, log=True),  # 优化容差参数
                     'random_state': 42
                 }
             else:
-                # 使用前一次最佳参数附近搜索，但扩大搜索范围
+                # 使用前一次最佳参数附近搜索，加入自适应参数精细调整
+                best_kernel = best_params.get('kernel', 'rbf')
                 params = {
-                    # 扩大之前最佳参数周围的搜索范围
-                    'C': get_suggested_param(trial, 'C', 0.1, 100.0, best_params.get('C'), 0.5, log=True),
-                    # 尝试更多类型的核函数
-                    'kernel': trial.suggest_categorical('kernel', ['linear', 'rbf', 'poly', 'sigmoid']),
-                    'gamma': trial.suggest_categorical('gamma', ['scale', 'auto']),
+                    # 更精细地探索C值空间，特别关注之前的最佳值
+                    'C': get_suggested_param(trial, 'C', 0.01, 200.0, best_params.get('C'), 0.3, log=True),
+                    # 以最佳核为主，但仍有小概率尝试其他核
+                    'kernel': trial.suggest_categorical('kernel', 
+                                                   [best_kernel] * 3 + ['linear', 'rbf', 'poly', 'sigmoid']),
+                    # gamma参数的精细调整
+                    'gamma': get_suggested_param(trial, 'gamma', 1e-5, 10.0, 
+                                              best_params.get('gamma', 'scale'), 0.4, log=True) 
+                             if best_kernel in ['rbf', 'poly', 'sigmoid'] and not isinstance(best_params.get('gamma', 'scale'), str)
+                             else trial.suggest_categorical('gamma', ['scale', 'auto']),
+                    # 针对特定核的参数调整
                     'degree': trial.suggest_int('degree', 2, 5) if trial.params.get('kernel', None) == 'poly' else 3,
-                    # 类别权重探索，更加强调对少数类的惩罚
+                    'coef0': get_suggested_param(trial, 'coef0', 0.0, 10.0, best_params.get('coef0', 0.0), 0.3) 
+                             if trial.params.get('kernel', None) in ['poly', 'sigmoid'] else 0.0,
+                    # 类别权重探索 - 使用更平衡的权重策略
                     'class_weight': trial.suggest_categorical('class_weight', 
-                                                          ['balanced', {0:1, 1:10}, {0:1, 1:20}, {0:1, 1:50}]),
+                                                         ['balanced', {0:2, 1:5}, {0:1, 1:4}, {0:1, 1:7}, 
+                                                          {0:1, 1:10}, {0:1.5, 1:10}, {0:1, 1:15}, None]),
+                    # 性能相关参数
+                    'shrinking': trial.suggest_categorical('shrinking', [True, False]),
                     'probability': True,
-                    'max_iter': 1500,
-                    'tol': 1e-3,
+                    'max_iter': trial.suggest_int('max_iter', 1000, 3000),
+                    'tol': trial.suggest_float('tol', 1e-4, 1e-2, log=True),
                     'random_state': 42
-                }    
+                }
             
             # 训练函数 - 处理一个交叉验证折叠
             def train_fold(fold, train_idx, val_idx):
@@ -330,14 +418,31 @@ def main():
                 pos_count = (y_fold_train == 1).sum()
                 neg_count = (y_fold_train == 0).sum()
 
-                # 针对提高敏感度的采样策略
-                logger.debug(f"[Trial {getattr(trial, 'number', '?')}][折叠 {fold+1}/5] 采样策略: 0.15 (正样本数量: {pos_count}, 负样本数量: {neg_count}, 比例: 1:{neg_count/pos_count:.1f})")
+                # 专注于提高AUC-ROC的自适应采样策略
+                logger.debug(f"[Trial {getattr(trial, 'number', '?')}][折叠 {fold+1}/5] AUC优化采样 (正样本数量: {pos_count}, 负样本数量: {neg_count}, 比例: 1:{neg_count/pos_count:.1f})")
                 
                 try:
+                    # 引入必要的采样库，确保在正确的作用域中
+                    from imblearn.over_sampling import SMOTE, ADASYN
+                    from imblearn.combine import SMOTETomek
+                    
                     # 设置超时保护
-                    with time_limit(60):  # 给SMOTE操作设置60秒超时
-                        # 使用灵活的SMOTE采样策略，改进对少数类的处理
-                        smote_fold = SMOTE(random_state=42, sampling_strategy=0.15, k_neighbors=5)
+                    with time_limit(60):  # 给采样操作设置60秒超时
+                        # 使用不同的采样策略探索平衡AUC和敏感度/特异度
+                        if fold % 3 == 0:
+                            # 使用标准SMOTE进行平衡采样
+                            smote_fold = SMOTE(random_state=42, sampling_strategy=0.12, 
+                                       k_neighbors=min(5, pos_count-1))
+                        elif fold % 3 == 1:
+                            # 使用ADASYN添加多样性
+                            smote_fold = ADASYN(random_state=42, sampling_strategy=0.12, 
+                                        n_neighbors=min(5, pos_count-1))
+                        else:
+                            # 使用结合技术处理边界样本
+                            smote_fold = SMOTETomek(random_state=42, 
+                                             sampling_strategy=0.12,
+                                             smote=SMOTE(k_neighbors=min(5, pos_count-1), 
+                                                         random_state=42))
                         
                         # 处理加权样本的SMOTE
                         if weights_fold_train is not None:
@@ -386,11 +491,19 @@ def main():
                     
                         # 计算指标
                         metrics = calculate_metrics(y_fold_val, y_pred, y_prob, weights_fold_val)
-                        return metrics
+                        
+                        # 使用交叉验证约束检查
+                        score, failed_reasons = objective_function(metrics, constraint_type='cv')
+                        
+                        # 如果有约束失败，记录原因
+                        if failed_reasons:
+                            logger.debug(f"[Trial {getattr(trial, 'number', '?')}][折叠 {fold+1}/5] 约束检查失败: {failed_reasons}")
+                            
+                        return metrics, score, failed_reasons
                 except (TimeoutException, Exception) as e:
                     logger.warning(f"[Trial {getattr(trial, 'number', '?')}][折叠 {fold+1}/5] SVM训练或评估超时/失败: {str(e)}")
                     # 返回一组较差的评估指标，使得该组参数不会被选中
-                    return {
+                    metrics = {
                         "Accuracy": 0.5,
                         "Sensitivity": 0.0,
                         "Specificity": 1.0,
@@ -406,6 +519,7 @@ def main():
                         "ECE": 0.5,
                         "MCE": 0.5
                     }
+                    return metrics, float('-inf'), [f"训练失败: {str(e)}"]
             
             # 执行交叉验证，使用tqdm显示进度条
             fold_metrics = []
@@ -417,7 +531,14 @@ def main():
                     raise TimeoutException("试验总时间超过限制")
                 
                 # 不再显示每个折叠的进度信息，由tqdm进度条显示
-                fold_metric = train_fold(fold, train_idx, val_idx)
+                fold_metric, fold_score, fold_failed_reasons = train_fold(fold, train_idx, val_idx)
+                
+                # 检查该折叠是否失败
+                if fold_failed_reasons:
+                    logger.warning(f"[Trial {getattr(trial, 'number', '?')}][折叠 {fold+1}/5] 约束检查失败: {fold_failed_reasons}")
+                    # 继续其他折叠训练，可能某些折叠能成功
+                    
+                # 添加到指标列表
                 fold_metrics.append(fold_metric)
             
             # 检查是否所有折叠都完成了
@@ -435,9 +556,18 @@ def main():
                 values = [m[key] for m in fold_metrics]
                 avg_metrics[key] = sum(values) / len(values)
             
-            # 计算目标分数
-            score = objective_function(avg_metrics)
-            logger.info(f"[Trial {getattr(trial, 'number', '?')}] 平均指标: AUC = {avg_metrics['AUC-ROC']:.4f}, F1 = {avg_metrics['F1 Score']:.4f}, 分数 = {score:.4f}")
+            # 使用平均指标计算最终评分，使用test约束条件（可能比CV约束更严格）
+            score, failed_reasons = objective_function(avg_metrics, constraint_type='test')
+            
+            # 记录关键指标到日志
+            logger.info(f"[Trial {getattr(trial, 'number', '?')}] 平均指标: AUC = {avg_metrics['AUC-ROC']:.4f}, 敏感度 = {avg_metrics['Sensitivity']:.4f}, 特异度 = {avg_metrics['Specificity']:.4f}, F1 = {avg_metrics['F1 Score']:.4f}")
+            
+            # 如果有约束失败，记录原因并返回负无穷
+            if failed_reasons:
+                logger.warning(f"[Trial {getattr(trial, 'number', '?')}] 整体约束检查失败: {failed_reasons}")
+                return float('-inf')
+                
+            logger.info(f"[Trial {getattr(trial, 'number', '?')}] 如有评分: {score:.4f}")
             
             # 取消超时报警
             signal.alarm(0)
@@ -511,17 +641,23 @@ def main():
         # 重新采样整个训练集
         pos_count = (y_train == 1).sum()
         neg_count = (y_train == 0).sum()
-        
-        # 采用更平衡的SMOTE策略来提高敏感度
-        logger.info(f"最终模型SMOTE采样策略 (正样本数量: {pos_count}, 负样本数量: {neg_count}, 比例: 1:{neg_count/pos_count:.1f})")
+                # 使用自适应SMOTE+特征增强策略，专注于提高AUC-ROC
+        logger.info(f"最终模型高级采样策略 (正样本数量: {pos_count}, 负样本数量: {neg_count}, 比例: 1:{neg_count/pos_count:.1f})")
         
         try:
-            # 提高采样策略到0.2，增加正样本比例，同时保持效率
-            # 这个值比之前的0.1更高，有助于提高敏感度而不致于数据量过大
-            sampling_strategy = 0.2
-            logger.info(f"使用提高的采样策略: {sampling_strategy}")
+            # 采用平衡的采样比例以同时考虑敏感度和特异度
+            # 适中的采样策略可以平衡识别能力，提高AUC
+            sampling_strategy = 0.12
+            logger.info(f"使用平衡的采样策略，兼顾敏感度和特异度: {sampling_strategy}")
             
-            smote_final = SMOTE(random_state=42, sampling_strategy=sampling_strategy, k_neighbors=5)
+            # 结合使用多种采样策略来平衡各项指标
+            # 选用混合采样技术，改善模型的AUC和平衡性
+            from imblearn.over_sampling import SMOTE, ADASYN
+            from imblearn.combine import SMOTETomek
+            
+            # 使用SMOTETomek结合采样技术，同时进行过采样和清理临界点
+            smote_final = SMOTETomek(random_state=42, sampling_strategy=sampling_strategy,
+                              smote=SMOTE(k_neighbors=5, random_state=42))
             if weights_train is not None:
                 Xy_train = X_train.copy()
                 Xy_train['__label__'] = y_train
@@ -545,28 +681,40 @@ def main():
         X_train_scaled = scaler_final.fit_transform(X_train_res_final)
         X_test_scaled = scaler_final.transform(X_test)
         
-        # 用最优参数训练模型，并进行调整以提高敏感度
+        # 用最优参数训练模型，平衡AUC、敏感度和特异度
         params = {
-            'C': best_params.get('C', 5.0),  # 使用较大的默认值来提高敏感度
+            'C': best_params.get('C', 3.0),  # 适度的正则化
             'kernel': best_params.get('kernel', 'rbf'),
             'gamma': best_params.get('gamma', 'scale'),
-            'probability': True,
-            # 手动调整类别权重，增加对少数类的重视
-            'class_weight': best_params.get('class_weight', {0:1, 1:20}),
+            'probability': True,  # 必须为True以计算AUC
+            # 更平衡的类别权重比例，对应推荐的敏感度/特异度平衡点
+            'class_weight': best_params.get('class_weight', {0:1, 1:7}),
             'random_state': 42,
-            # 添加最大迭代次数限制
-            'max_iter': 1500,
-            # 设置允许的收敛误差
-            'tol': 1e-3,
+            # 收敛相关参数
+            'max_iter': best_params.get('max_iter', 2000),
+            'tol': best_params.get('tol', 1e-3),
+            # 使用收缩启发式可以提高处理效率
+            'shrinking': best_params.get('shrinking', True),
             # 限制内存使用
-            'cache_size': 200
+            'cache_size': 250
         }
         
-        # 对于多项式和余弦核添加特殊参数
+        # 为不同核函数添加优化参数
         if params['kernel'] == 'poly':
             params['degree'] = best_params.get('degree', 3)
+            params['coef0'] = best_params.get('coef0', 1.0)
         if params['kernel'] == 'sigmoid':
-            params['coef0'] = 0.0
+            params['coef0'] = best_params.get('coef0', 1.0)
+        
+        # 添加核函数特定说明日志
+        if params['kernel'] == 'rbf':
+            logger.info(f"使用RBF核: gamma={params['gamma']}")
+        elif params['kernel'] == 'poly':
+            logger.info(f"使用多项式核: 度={params['degree']}, coef0={params['coef0']}")
+        elif params['kernel'] == 'sigmoid':
+            logger.info(f"使用Sigmoid核: gamma={params['gamma']}, coef0={params['coef0']}")
+        elif params['kernel'] == 'linear':
+            logger.info("使用线性核")
         
         logger.info("开始训练最终SVM模型...")
         logger.info("注意: 如果训练时间超过5分钟，将自动终止")
