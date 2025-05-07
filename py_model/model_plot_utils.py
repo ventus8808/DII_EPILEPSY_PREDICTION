@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import json
+import pandas as pd
 from pathlib import Path
 import matplotlib.font_manager as fm
 
@@ -51,10 +52,24 @@ def plot_roc_curve(y_true, y_prob, weights, model_name, plot_dir, plot_data_dir)
     # 使用与阈值曲线相同的上下文设置
     with plt.rc_context({'font.family': 'Monaco', 'font.size': 13}):
         fpr, tpr, _ = roc_curve(y_true, y_prob, sample_weight=weights)
-        # 使用与calculate_metrics函数完全相同的方法计算AUC
+        # 使用与calculate_metrics函数相同的方法计算AUC，供数据保存用
         roc_auc = roc_auc_score(y_true, y_prob, sample_weight=weights)
-        # 四舍五入到3位小数，用于图表显示
-        roc_auc_rounded = round(roc_auc, 3)
+        
+        # 从metrics_comparison.csv读取AUC值用于显示
+        metrics_file = Path('/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/Table&Figure/metrics_comparison.csv')
+        if metrics_file.exists():
+            try:
+                metrics_df = pd.read_csv(metrics_file, index_col=0)
+                if model_name in metrics_df.columns and 'AUC-ROC' in metrics_df.index:
+                    metrics_auc = metrics_df.loc['AUC-ROC', model_name]
+                    roc_auc_rounded = round(metrics_auc, 3)
+                else:
+                    roc_auc_rounded = round(roc_auc, 3)
+            except Exception as e:
+                print(f"读取metrics文件出错: {e}")
+                roc_auc_rounded = round(roc_auc, 3)
+        else:
+            roc_auc_rounded = round(roc_auc, 3)
         # 设置图的大小与阈值曲线相同
         fig, ax = plt.subplots(figsize=(7, 7))
         ax.set_aspect('equal', adjustable='box')
@@ -88,20 +103,31 @@ def plot_roc_curve(y_true, y_prob, weights, model_name, plot_dir, plot_data_dir)
     fig.tight_layout()
     fig.savefig(str(Path(plot_dir) / f"{model_name}_ROC.png"), bbox_inches='tight', dpi=300)
     plt.close(fig)
-    save_plot_data({'fpr': fpr.tolist(), 'tpr': tpr.tolist(), 'roc_auc': float(roc_auc)}, str(Path(plot_data_dir) / f"{model_name}_ROC_data.json"))
+    save_plot_data({'fpr': fpr.tolist(), 'tpr': tpr.tolist(), 'roc_auc': float(roc_auc_score(y_true, y_prob, sample_weight=weights))}, str(Path(plot_data_dir) / f"{model_name}_ROC_data.json"))
 
 def plot_pr_curve(y_true, y_prob, weights, model_name, plot_dir, plot_data_dir):
     # 使用与阈值曲线和ROC曲线相同的上下文设置
     with plt.rc_context({'font.family': 'Monaco', 'font.size': 13}):
-        precision, recall, _ = precision_recall_curve(y_true, y_prob, sample_weight=weights)
-        # 使用与calculate_metrics函数完全相同的方法计算PR-AUC
-        pr_auc = auc(recall, precision)
-        # 四舍五入到3位小数，用于图表显示
-        pr_auc_rounded = round(pr_auc, 3)
+        precision_values, recall_values, _ = precision_recall_curve(y_true, y_prob, sample_weight=weights)
+        # 从metrics_comparison.csv读取AUC-PR值用于显示
+        metrics_file = Path('/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/Table&Figure/metrics_comparison.csv')
+        if metrics_file.exists():
+            try:
+                metrics_df = pd.read_csv(metrics_file, index_col=0)
+                if model_name in metrics_df.columns and 'AUC-PR' in metrics_df.index:
+                    metrics_auc = metrics_df.loc['AUC-PR', model_name]
+                    pr_auc_rounded = round(metrics_auc, 3)
+                else:
+                    pr_auc_rounded = round(auc(recall_values, precision_values), 3)
+            except Exception as e:
+                print(f"读取metrics文件出错: {e}")
+                pr_auc_rounded = round(auc(recall_values, precision_values), 3)
+        else:
+            pr_auc_rounded = round(auc(recall_values, precision_values), 3)
         # 设置图的大小与阈值曲线相同
         fig, ax = plt.subplots(figsize=(7, 7))
         ax.set_aspect('equal', adjustable='box')
-        ax.plot(recall, precision, label=f'PR curve (AUC = {pr_auc_rounded:.3f})', color='green', linewidth=2)
+        ax.plot(recall_values, precision_values, label=f'PR curve (AUC = {pr_auc_rounded:.3f})', color='green', linewidth=2)
         
         # 设置标签和字体
         ax.set_xlabel('Recall', fontproperties=monaco_font)
@@ -130,7 +156,10 @@ def plot_pr_curve(y_true, y_prob, weights, model_name, plot_dir, plot_data_dir):
     fig.tight_layout()
     fig.savefig(str(Path(plot_dir) / f"{model_name}_PR.png"), bbox_inches='tight', dpi=300)
     plt.close(fig)
-    save_plot_data({'recall': recall.tolist(), 'precision': precision.tolist(), 'pr_auc': float(pr_auc)}, str(Path(plot_data_dir) / f"{model_name}_PR_data.json"))
+    
+    # 计算PR-AUC用于保存数据
+    pr_auc = auc(recall_values, precision_values)
+    save_plot_data({'recall': recall_values.tolist(), 'precision': precision_values.tolist(), 'pr_auc': float(pr_auc)}, str(Path(plot_data_dir) / f"{model_name}_PR_data.json"))
 
 def plot_learning_curve(model, X_train, y_train, X_test, y_test, model_name, plot_dir, plot_data_dir, cv=5, scoring='roc_auc'):
     """绘制样本量学习曲线，展示随着训练样本数量的增加，模型性能的变化
