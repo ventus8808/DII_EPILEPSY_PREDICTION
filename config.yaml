@@ -12,7 +12,7 @@ outcome: "Epilepsy"
 covariates: ["Gender", "Age", "BMI", "Education", "Marriage", "Smoke", "Alcohol", "Employment", "ActivityLevel"]
 
 # 模型训练次数
-n_trials: 2000
+n_trials: 10
 
 # 目标函数权重
 objective_weights:
@@ -47,6 +47,16 @@ objective_constraints:
 
 # CatBoost GPU
 catboost_task_type: "GPU"
+
+# 评估与绘图设置
+eval_settings:
+  calc_metrics: 1      # 是否计算评估指标(1:是, 0:否)
+  draw_roc: 1          # 是否绘制ROC曲线(1:是, 0:否)
+  draw_pr: 1           # 是否绘制PR曲线(1:是, 0:否)
+  draw_calibration: 1  # 是否绘制校准曲线(1:是, 0:否)
+  draw_confusion: 1    # 是否绘制混淆矩阵(1:是, 0:否)
+  draw_learning: 0     # 是否绘制学习曲线(1:是, 0:否)
+  draw_threshold: 1    # 是否绘制阈值曲线(1:是, 0:否)
 
 # 输出相关
 output_dir: "result/"

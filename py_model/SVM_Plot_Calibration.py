@@ -20,7 +20,7 @@ plot_data_dir = Path('plot_original_data')
 plot_data_dir.mkdir(exist_ok=True)
 
 # 加载模型、标准化器和编码器
-model_path = model_dir / 'SVM_best_model.pkl'
+model_path = model_dir / 'SVM_model.pkl'
 scaler_path = model_dir / 'scaler.pkl'  # 使用通用标准化器
 encoder_path = model_dir / 'encoder.pkl'  # 使用通用编码器
 

@@ -4,7 +4,7 @@ import json
 import yaml
 from pathlib import Path
 from model_plot_utils import (
-    plot_roc_curve, plot_pr_curve, plot_calibration_curve, plot_decision_curve,
+    plot_roc_curve, plot_pr_curve,
     plot_learning_curve, plot_confusion_matrix, plot_threshold_curve
 )
 
@@ -17,7 +17,7 @@ import json
 import yaml
 from pathlib import Path
 from model_plot_utils import (
-    plot_roc_curve, plot_pr_curve, plot_calibration_curve, plot_decision_curve,
+    plot_roc_curve, plot_pr_curve,
     plot_learning_curve, plot_confusion_matrix, plot_threshold_curve
 )
 
@@ -123,8 +123,7 @@ model_name = "Logistic"
 # 绘图
 plot_roc_curve(y_test, y_prob, weights_test, model_name, plot_dir, plot_data_dir)
 plot_pr_curve(y_test, y_prob, weights_test, model_name, plot_dir, plot_data_dir)
-plot_calibration_curve(y_test, y_prob, weights_test, model_name, plot_dir, plot_data_dir)
-plot_decision_curve(y_test, y_prob, weights_test, model_name, plot_dir, plot_data_dir)
+# 校准曲线和决策曲线已移除
 plot_confusion_matrix(y_test, y_pred, model_name, plot_dir, plot_data_dir, normalize=False)
 plot_learning_curve(model, X_train, y_train, X_test, y_test, model_name, plot_dir, plot_data_dir)
 plot_threshold_curve(y_test, y_prob, model_name, plot_dir, plot_data_dir)

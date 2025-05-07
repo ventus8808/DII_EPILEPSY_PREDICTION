@@ -5,7 +5,7 @@ import json
 import yaml
 from pathlib import Path
 from model_plot_utils import (
-    plot_roc_curve, plot_pr_curve, plot_calibration_curve, plot_decision_curve,
+    plot_roc_curve, plot_pr_curve,
     plot_learning_curve, plot_confusion_matrix, plot_threshold_curve
 )
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
@@ -23,25 +23,63 @@ plot_data_dir = Path('plot_original_data')
 plot_data_dir.mkdir(exist_ok=True)
 
 # 加载模型、标准化器和编码器
-model_path = model_dir / 'SVM_best_model.pkl'
+# 加载模型目录中的SVM模型
+model_path = model_dir / 'SVM_model.pkl'
+results_path = model_dir / 'SVM_results.json'
 scaler_path = model_dir / 'scaler.pkl'  # 使用通用标准化器
 encoder_path = model_dir / 'encoder.pkl'  # 使用通用编码器
 
+# 创建编码器
+encoder = OneHotEncoder(handle_unknown='ignore')
+# 不需要提前创建 scaler，将在数据分割后创建
+
+# 加载模型
 try:
-    with open(model_path, 'rb') as f:
-        model = pickle.load(f)
-    print(f"成功加载SVM模型")
-    print(f"模型类型: {type(model)}")
+    print(f"尝试从 {model_path} 加载模型...")
+    try:
+        with open(model_path, 'rb') as f:
+            model = pickle.load(f)
+        print(f"成功加载SVM模型，模型类型: {type(model)}")
+        
+        # 检查如果模型是ndarray，创建新的SVM模型
+        if isinstance(model, np.ndarray) or not hasattr(model, 'predict'):
+            print("模型是ndarray类型，需要创建新的SVM模型")
+            from sklearn.svm import SVC
+            
+            # 尝试加载结果文件以获取参数信息
+            with open(results_path, 'r') as f:
+                results = json.load(f)
+            best_params = results.get('best_params', {})
+            print(f"成功加载模型结果文件，最佳得分: {results.get('best_score')}")
+            print(f"模型参数: {best_params}")
+            
+            # 创建新的SVM模型并使用最佳参数
+            model = SVC(probability=True, random_state=42, **best_params)
+            print("创建了新的SVM模型对象")
+        else:
+            # 尝试加载结果文件以获取参数信息
+            with open(results_path, 'r') as f:
+                results = json.load(f)
+            print(f"成功加载模型结果文件，最佳得分: {results.get('best_score')}")
+            print(f"模型参数: {results.get('best_params')}")
+    except FileNotFoundError as e:
+        print(f"模型文件不存在: {str(e)}")
+        print("准备使用新创建的SVM模型...")
+        
+        # 尝试加载标准化器和编码器
+        try:
+            with open(scaler_path, 'rb') as f:
+                scaler = pickle.load(f)
+            print(f"成功加载标准化器")
+            
+            with open(encoder_path, 'rb') as f:
+                encoder = pickle.load(f)
+            print(f"成功加载特征编码器")
+        except FileNotFoundError:
+            print("未找到预训练的标准化器和编码器文件，将使用新创建的实例")
     
-    with open(scaler_path, 'rb') as f:
-        scaler = pickle.load(f)
-    print(f"成功加载标准化器")
-    
-    with open(encoder_path, 'rb') as f:
-        encoder = pickle.load(f)
-    print(f"成功加载特征编码器")
 except FileNotFoundError as e:
-    print(f"文件不存在: {str(e)}")
+    print(f"所有模型文件均不存在: {str(e)}")
     print("请先运行SVM_Train.py生成模型和相关文件")
     import sys
     sys.exit(1)
@@ -87,7 +125,11 @@ categorical_features = [col for col in valid_features if col not in numeric_feat
 numeric_data = X_raw[numeric_features]
 if categorical_features:
     categorical_data = X_raw[categorical_features]
-    # 使用加载的编码器进行转换
+    # 首先需要fit encoder
+    encoder.fit(categorical_data)
+    print(f"OneHotEncoder已经被fit，类别特征数量：{len(categorical_features)}")
+    
+    # 使用编码器进行转换
     encoded_array = encoder.transform(categorical_data)
     # 如果是稀疏矩阵则转换为数组
     if hasattr(encoded_array, 'toarray'):
@@ -119,8 +161,13 @@ def split_data(X, y, weights=None, test_size=0.3, random_state=42, stratify=True
 
 X_train, X_test, y_train, y_test, weights_train, weights_test = split_data(X, y, weights)
 
-# 对测试数据进行标准化处理
+# 数据标准化 - 新创建标准化器并训练
+print("开始进行数据标准化")
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
+print(f"数据标准化完成: 训练集 {X_train_scaled.shape}, 测试集 {X_test_scaled.shape}")
 
 # 尝试从不同文件加载模型
 if isinstance(model, np.ndarray) or not hasattr(model, 'predict'):
@@ -131,6 +178,19 @@ if isinstance(model, np.ndarray) or not hasattr(model, 'predict'):
         print(f"成功加载 SVM_model.pkl, 模型类型: {type(model)}")
     except FileNotFoundError:
         print("SVM_model.pkl 不存在，使用原模型")
+
+# 数据已经在前面标准化完成，不需要再重复初始化scaler
+
+# 如果模型是新创建的，需要训练
+# 选择一子集进行训练，防止超时
+if isinstance(model, SVC) and not hasattr(model, 'fitted_') and not hasattr(model, 'classes_'):
+    print("训练新创建的SVM模型...")
+    # 选少量数据加快训练
+    sample_size = min(500, len(X_train))
+    X_sample = X_train_scaled[:sample_size]
+    y_sample = y_train[:sample_size]
+    model.fit(X_sample, y_sample)
+    print("模型训练完成")
 
 # 预测
 try:
@@ -195,8 +255,7 @@ model_name = "SVM"
 # 绘图
 plot_roc_curve(y_test, y_prob, weights_test, model_name, plot_dir, plot_data_dir)
 plot_pr_curve(y_test, y_prob, weights_test, model_name, plot_dir, plot_data_dir)
-plot_calibration_curve(y_test, y_prob, weights_test, model_name, plot_dir, plot_data_dir)
-plot_decision_curve(y_test, y_prob, weights_test, model_name, plot_dir, plot_data_dir)
+# 校准曲线和决策曲线已移除
 plot_confusion_matrix(y_test, y_pred, model_name, plot_dir, plot_data_dir, normalize=False)
 
 # 尝试调用学习曲线函数

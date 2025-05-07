@@ -18,7 +18,7 @@ result_dir.mkdir(exist_ok=True)
 
 # 加载SVM模型
 try:
-    model_path = model_dir / 'SVM_best_model.pkl'
+    model_path = model_dir / 'SVM_model.pkl'
     with open(model_path, 'rb') as f:
         model = pickle.load(f)
     print(f"加载模型成功，类型: {type(model)}")

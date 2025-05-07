@@ -21,22 +21,41 @@ from sklearn.isotonic import IsotonicRegression
 from sklearn.linear_model import LogisticRegression
 
 # 设置matplotlib简约风格
-plt.rcParams['font.family'] = 'monospace'
-plt.rcParams['font.monospace'] = ['Monaco']  # Monaco字体
-plt.rcParams['font.size'] = 12  # 12号字体
+import matplotlib
+from matplotlib import font_manager
+
+# 添加Monaco字体路径
+font_dirs = ['/System/Library/Fonts/', '/Library/Fonts/']
+font_files = font_manager.findSystemFonts(fontpaths=font_dirs)
+for font_file in font_files:
+    if 'monaco' in font_file.lower():
+        font_manager.fontManager.addfont(font_file)
+
+# 强制设置Monaco字体
+matplotlib.rcParams['font.family'] = ['monospace']
+matplotlib.rcParams['font.monospace'] = ['Monaco', 'DejaVu Sans Mono']
+
+# 设置字体大小
+plt.rcParams['font.size'] = 8
+plt.rcParams['axes.labelsize'] = 10
+plt.rcParams['axes.titlesize'] = 10
+plt.rcParams['xtick.labelsize'] = 8
+plt.rcParams['ytick.labelsize'] = 8
+plt.rcParams['legend.fontsize'] = 8
 plt.rcParams['axes.linewidth'] = 1.0  # 细边框
 plt.rcParams['axes.edgecolor'] = '#333333'  # 深灰色边框
 plt.rcParams['figure.facecolor'] = 'white'
 plt.rcParams['axes.facecolor'] = 'white'
-plt.rcParams['axes.spines.top'] = True
-plt.rcParams['axes.spines.right'] = True
-plt.rcParams['axes.spines.bottom'] = True
-plt.rcParams['axes.spines.left'] = True
 plt.rcParams['axes.unicode_minus'] = False
 plt.rcParams['lines.linewidth'] = 1.5  # 更细的线条
 plt.rcParams['lines.markersize'] = 4  # 更小的标记点
 plt.rcParams['lines.antialiased'] = True  # 抗锯齿
 plt.rcParams['figure.dpi'] = 300  # 提高DPI到300
+# 删除坐标轴小刻度线
+plt.rcParams['xtick.major.size'] = 0
+plt.rcParams['xtick.minor.size'] = 0
+plt.rcParams['ytick.major.size'] = 0
+plt.rcParams['ytick.minor.size'] = 0
 
 # 保存图表数据到JSON文件
 def save_plot_data(data, filename):
@@ -44,6 +63,10 @@ def save_plot_data(data, filename):
         json.dump(data, f)
 
 def plot_calibration_all_data(y_true, y_prob, weights, model_name, plot_dir, plot_data_dir, n_bins=30, use_smote=True):
+    # 创建Monaco字体的全局实例供后面使用
+    font_props_title = font_manager.FontProperties(family='Monaco', size=10)
+    font_props_label = font_manager.FontProperties(family='Monaco', size=10)
+    font_props_legend = font_manager.FontProperties(family='Monaco', size=8)
     """在全量数据集上绘制校准曲线，包含多种校准方法
     
     参数：
@@ -56,20 +79,9 @@ def plot_calibration_all_data(y_true, y_prob, weights, model_name, plot_dir, plo
     n_bins : 分箱数量
     use_smote : 是否使用SMOTE过采样
     """
-    # 设置简约风格
-    plt.style.use('seaborn-v0_8-whitegrid')
-    """
-    在全量数据集上绘制校准曲线，包含多种校准方法
+    # 设置简约风格 - 不使用网格线
+    plt.style.use('classic')
     
-    参数：
-    y_true : 真实标签
-    y_prob : 预测概率
-    weights : 样本权重
-    model_name : 模型名称
-    plot_dir : 图表保存目录
-    plot_data_dir : 图表数据保存目录
-    n_bins : 分箱数量
-    """
     # 装饰器用于设置超时
     def timeout_handler(signum, frame):
         raise TimeoutError("Execution timed out")
@@ -104,7 +116,7 @@ def plot_calibration_all_data(y_true, y_prob, weights, model_name, plot_dir, plo
         }
         signal.alarm(0)  # 取消超时
     except Exception as e:
-        print(f"处理方法 platt 时出错: {e}")
+        print(f"Platt缩放校准失败: {e}")
     
     # 2. 等温回归
     method_index += 1
@@ -120,7 +132,7 @@ def plot_calibration_all_data(y_true, y_prob, weights, model_name, plot_dir, plo
         }
         signal.alarm(0)  # 取消超时
     except Exception as e:
-        print(f"处理方法 isotonic 时出错: {e}")
+        print(f"等温回归校准失败: {e}")
     
     # 3. 自适应分箱
     method_index += 1
@@ -146,7 +158,7 @@ def plot_calibration_all_data(y_true, y_prob, weights, model_name, plot_dir, plo
         }
         signal.alarm(0)
     except Exception as e:
-        print(f"处理方法 adaptive 时出错: {e}")
+        print(f"自适应分箱校准失败: {e}")
         
     # 4. 直方图分箱
     method_index += 1
@@ -169,7 +181,7 @@ def plot_calibration_all_data(y_true, y_prob, weights, model_name, plot_dir, plo
         }
         signal.alarm(0)
     except Exception as e:
-        print(f"处理方法 histogram 时出错: {e}")
+        print(f"直方图分箱校准失败: {e}")
         
     # 5. 贝叶斯分箱
     method_index += 1
@@ -187,7 +199,6 @@ def plot_calibration_all_data(y_true, y_prob, weights, model_name, plot_dir, plo
         prior_alpha = 1  # 先验分布的超参数
         prior_beta = 1   # 使用Beta(1,1)作为均匀先验
         
-        
         bin_indices = np.digitize(y_prob, bins) - 1
         
         # 求每个箱中的正例数量和总样本数
@@ -199,49 +210,44 @@ def plot_calibration_all_data(y_true, y_prob, weights, model_name, plot_dir, plo
         posterior_beta = prior_beta + bin_total_counts - bin_positive_counts
         
         # 使用后验平均值作为校准概率
-        bin_probs = posterior_alpha / (posterior_alpha + posterior_beta)
-        
-        # 防止NaN异常
-        bin_probs = np.nan_to_num(bin_probs, nan=0.5)
-        
-        # 映射概率
-        bbq_probs = bin_probs[bin_indices]
+        bayesian_probs = posterior_alpha / (posterior_alpha + posterior_beta)
+        bayesian_probs = bayesian_probs[bin_indices]
         
         calibration_methods['bbq'] = {
-            'prob': bbq_probs,
-            'brier': brier_score_loss(y_true, bbq_probs, sample_weight=weights)
+            'prob': bayesian_probs,
+            'brier': brier_score_loss(y_true, bayesian_probs, sample_weight=weights)
         }
         signal.alarm(0)
     except Exception as e:
-        print(f"处理方法 bbq 时出错: {e}")
+        print(f"贝叶斯分箱校准失败: {e}")
     
     # 6. Sigmoid拟合校准
     method_index += 1
     print(f"[{method_index}/{total_methods}] Sigmoid拟合校准...")
     try:
         signal.alarm(10)
-        # 使用优化器对sigmoid函数进行参数优化
-        from scipy.optimize import minimize
         
+        # 定义sigmoid函数
         def sigmoid(x, a, b):
-            return 1 / (1 + np.exp(-(a * x + b)))
+            return 1 / (1 + np.exp(-(a*x + b)))
         
+        # 定义损失函数
         def sigmoid_loss(params, x, y, weights=None):
             a, b = params
-            p = sigmoid(x, a, b)
-            p = np.clip(p, 1e-15, 1-1e-15)  # 防止数值问题
-            if weights is not None:
-                return -np.sum(weights * (y * np.log(p) + (1-y) * np.log(1-p)))
-            else:
-                return -np.sum(y * np.log(p) + (1-y) * np.log(1-p))
+            pred = sigmoid(x, a, b)
+            # 使用交叉熵损失
+            if weights is None:
+                weights = np.ones_like(y)
+            loss = -np.sum(weights * (y * np.log(pred + 1e-10) + (1 - y) * np.log(1 - pred + 1e-10)))
+            return loss
         
-        # 初始参数猜测
-        result = minimize(sigmoid_loss, [1.0, 0.0], args=(y_prob, y_true, weights),
-                           method='BFGS')
-        a, b = result.x
+        # 使用优化算法找到最佳参数
+        initial_guess = [1.0, 0.0]  # 初始猜测
+        result = minimize(sigmoid_loss, initial_guess, args=(y_prob, y_true, weights), method='Nelder-Mead')
+        a_opt, b_opt = result.x
         
-        # 计算sigmoid校准概率
-        sigmoid_probs = sigmoid(y_prob, a, b)
+        # 计算校准后的概率
+        sigmoid_probs = sigmoid(y_prob, a_opt, b_opt)
         
         calibration_methods['sigmoid'] = {
             'prob': sigmoid_probs,
@@ -249,22 +255,16 @@ def plot_calibration_all_data(y_true, y_prob, weights, model_name, plot_dir, plo
         }
         signal.alarm(0)
     except Exception as e:
-        print(f"处理方法 sigmoid 时出错: {e}")
+        print(f"Sigmoid拟合校准失败: {e}")
         
     # 7. 集成校准 (结合多种方法)
     method_index += 1
     print(f"[{method_index}/{total_methods}] 集成校准...")
     try:
         signal.alarm(10)
-        # 收集所有可用的校准方法
-        available_methods = []
-        for method_name, method_data in calibration_methods.items():
-            if method_name != 'ensemble':  # 排除自身
-                available_methods.append(method_data['prob'])
-        
-        if len(available_methods) > 0:
-            # 简单平均集成
-            ensemble_probs = np.mean(available_methods, axis=0)
+        # 将所有校准方法的结果进行简单平均作为集成结果
+        if len(calibration_methods) >= 2:
+            ensemble_probs = np.mean([m['prob'] for m in calibration_methods.values()], axis=0)
             
             calibration_methods['ensemble'] = {
                 'prob': ensemble_probs,
@@ -272,30 +272,19 @@ def plot_calibration_all_data(y_true, y_prob, weights, model_name, plot_dir, plo
             }
         signal.alarm(0)
     except Exception as e:
-        print(f"处理方法 ensemble 时出错: {e}")
+        print(f"集成校准失败: {e}")
         
     print(f"所有校准方法计算完成，开始绘制图表...")
     
-    # 创建图表 - 使用正常分辨率
-    fig, ax = plt.subplots(figsize=(12, 10), dpi=100)
-    # 调整图形布局，给右侧图例留出足够空间
-    plt.subplots_adjust(right=0.7)  # 右边界保留更多空间
-    
-    # 设置轴标签和标题
-    ax.set_xlabel('Mean predicted probability')
-    ax.set_ylabel('Fraction of positives')
-    ax.set_title(f'Calibration Curve - {model_name}', pad=20)
-    
     # 创建正方形图形，并启用高分辨率
-    fig = plt.figure(figsize=(7, 6), dpi=300)  # 调整整体大小，考虑到图例会占用额外空间
+    fig = plt.figure(figsize=(7, 6), dpi=300)
     ax = fig.add_subplot(111)
     
     # 确保图表区域为正方形
     ax.set_aspect('equal')
     
-    # 设置简约风格的网格线和背景
-    ax.grid(True, linestyle='-', alpha=0.2, color='#cccccc')
-    ax.set_axisbelow(True)  # 网格线在数据点之下
+    # 删除网格线
+    ax.grid(False)
     
     # 启用双对数坐标轴
     use_transform = True
@@ -313,15 +302,14 @@ def plot_calibration_all_data(y_true, y_prob, weights, model_name, plot_dir, plo
             y_ref = x_ref.copy()  # 在双对数图中，完美校准是直线 y=x
             
             # 绘制直线
-            ax.plot(x_ref, y_ref, 'k:', label='Perfectly calibrated', alpha=0.7)
+            ax.plot(x_ref, y_ref, '--', color='gray', alpha=0.8, linewidth=1.2, label='Perfectly calibrated', dashes=(5, 3))
             
             # 设置对数坐标的标签和格式
             ax.xaxis.set_major_formatter(plt.FormatStrFormatter('%.2f'))
             ax.yaxis.set_major_formatter(plt.FormatStrFormatter('%.2f'))
             
-            # 为对数轴添加简约风格的网格线
-            ax.grid(True, which='both', linestyle='-', alpha=0.2, color='#dddddd')
-            ax.set_axisbelow(True)  # 网格线在数据点之下
+            # 删除网格线
+            ax.grid(False)
             
             # 设置刻度格式
             ax.tick_params(axis='both', which='major', labelsize=10)
@@ -335,8 +323,8 @@ def plot_calibration_all_data(y_true, y_prob, weights, model_name, plot_dir, plo
             # 对数变换: log(1+9x) 放大小概率区域
             x_ref_trans = np.log1p(x_ref * 9) / np.log(10)
             
-            # 绘制理想直线
-            ax.plot(x_ref_trans, y_ref, 'k:', label='Perfectly calibrated', alpha=0.7)
+            # 绘制完美校准线（对角线） - 改为长虚线
+            ax.plot([0.001, 1.0], [0.001, 1.0], '--', color='gray', alpha=1.0, linewidth=1.2, zorder=1, label='Perfectly calibrated', dashes=(5, 3))
             
             # 设置分析刻度
             tick_positions = [0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
@@ -347,32 +335,28 @@ def plot_calibration_all_data(y_true, y_prob, weights, model_name, plot_dir, plo
             ax.set_xticklabels(tick_labels)
     else:
         # 不使用变换，直接绘制普通直线
-        ax.plot([0, 1], [0, 1], 'k:', label='Perfectly calibrated', alpha=0.7)
-        
-    # 网格和初始设置    
-    ax.grid(True, alpha=0.3)
-    ax.set_ylim([0.0, 1.0])
+        ax.plot([0, 1], [0, 1], '--', color='gray', alpha=0.8, linewidth=1.2, label='Perfectly calibrated', dashes=(5, 3))
     
-    # 定义颜色
+    # 定义颜色映射和标记样式
     colors = {
-        'platt': 'blue',
-        'isotonic': 'green',
-        'adaptive': 'orange',
-        'histogram': 'darkgreen',
-        'bbq': 'pink',
-        'sigmoid': 'gold',
-        'ensemble': 'darkblue'
+        'platt': '#1f77b4',       # 蓝色
+        'isotonic': '#2ca02c',    # 绿色
+        'adaptive': '#ff7f0e',    # 橙色
+        'histogram': '#2ca02c',   # 绿色
+        'bbq': '#e377c2',         # 粉色
+        'sigmoid': '#ffff33',     # 黄色
+        'ensemble': '#17becf'     # 青色
     }
     
-    # 定义方法标签映射
+    # 方法名称映射
     method_labels = {
-        'platt': 'Platt Scaling',
-        'isotonic': 'Isotonic Regression',
-        'adaptive': 'Adaptive Binning',
-        'histogram': 'Histogram Binning',
-        'bbq': 'Bayesian Binning',
-        'sigmoid': 'Sigmoid Fitting',
-        'ensemble': 'Ensemble Calibration'
+        'platt': 'Platt',
+        'isotonic': 'Isotonic',
+        'adaptive': 'Adaptive',
+        'histogram': 'Histogram',
+        'bbq': 'Bayesian',
+        'sigmoid': 'Sigmoid',
+        'ensemble': 'Ensemble'
     }
     
     print(f"开始绘制校准曲线...")
@@ -382,86 +366,61 @@ def plot_calibration_all_data(y_true, y_prob, weights, model_name, plot_dir, plo
     
     # 按Brier分数排序方法
     sorted_methods = sorted([(name, data) for name, data in calibration_methods.items()],
-                          key=lambda x: x[1]['brier'])
+                           key=lambda x: x[1]['brier'])
+    
+    # 定义更小的marker size提高清晰度
+    marker_size = 2.5
     
     # 绘制每个校准方法的曲线
     for method_name, method_data in sorted_methods:
         try:
-            # 设置超时为3秒
-            signal.alarm(3)
+            signal.alarm(3)  # 设置3秒超时
             
             y_cal = method_data['prob']
             brier = method_data['brier']
             
             # 使用更稳定的分箱方法，考虑样本数量
-            # 定义最小样本数要求
-            min_samples_per_bin = max(20, len(y_true) // 100)  # 最少样本数
+            # 减少分箱数量，降低平滑度
+            additional_bins = min(n_bins, 8)  # 使用更少的分箱
             
-            if method_name in ['sigmoid', 'platt', 'isotonic', 'ensemble']:
-                # 为减少波动大的方法使用分位数策略
-                strategy = 'quantile'
-            else:
-                strategy = 'uniform'
-                
             # 首先使用sklearn的原生分箱方法
             prob_true, prob_pred = calibration_curve(
-                y_true, y_cal,
-                n_bins=n_bins, strategy=strategy
-            )
-            
-            # 减少分箱数量，降低平滑度
-            additional_bins = min(n_bins, 10)  # 使用更少的分箱，最多10个
-            prob_true_detailed, prob_pred_detailed = calibration_curve(
-                y_true, y_cal, n_bins=additional_bins, 
-                strategy='quantile'  # 使用分位数策略确保每个箱有相似样本数
+                y_true, y_cal, n_bins=additional_bins, strategy='quantile'
             )
             
             # 去除异常值
-            valid_idx = ~np.isnan(prob_true_detailed) & ~np.isnan(prob_pred_detailed)
+            valid_idx = ~np.isnan(prob_true) & ~np.isnan(prob_pred)
             if np.sum(valid_idx) >= 3:  # 至少需要3个有效点
-                prob_true = prob_true_detailed[valid_idx]
-                prob_pred = prob_pred_detailed[valid_idx]
+                prob_true = prob_true[valid_idx]
+                prob_pred = prob_pred[valid_idx]
                 
-                # 进一步过滤掉样本数量太少的分箱
-                # 重新计算每个点代表的样本数
-                bin_edges = np.quantile(y_cal, np.linspace(0, 1, additional_bins+1))
-                bin_indices = np.digitize(y_cal, bin_edges) - 1
-                bin_counts = np.bincount(bin_indices, minlength=len(bin_edges)-1)
+                # 保存结果数据
+                method_key = method_labels.get(method_name, method_name.capitalize())
+                save_data[method_key] = {
+                    'fraction_of_positives': prob_true.tolist(),
+                    'mean_predicted_value': prob_pred.tolist(),
+                    'brier_score': float(brier)
+                }
                 
-                # 对于样本数超过10000的大型数据集，可能需要更严格的样本数要求
-                min_samples = max(10, len(y_true) // 500)  # 根据数据集大小自适应调整
-                # 因为我们不知道每个校准点对应的分箱索引，这里不进行过滤
+                # 绘制校准曲线
+                color = colors.get(method_name, 'gray')
                 
-            # 根据需要添加起点和终点
-            if len(prob_pred) > 0 and prob_pred[0] > 0.05 and y_cal.min() < 0.05:
-                prob_pred = np.insert(prob_pred, 0, 0.0)
-                # 对于多数二分类问题，概率0的点对应的真实值也应该接近0
-                prob_true = np.insert(prob_true, 0, 0.0)
-                
-            if len(prob_pred) > 0 and prob_pred[-1] < 0.95 and y_cal.max() > 0.95:
-                prob_pred = np.append(prob_pred, 1.0)
-                # 最高概率一般对应的是真实的正样本
-                true_high_prob = np.mean(y_true[y_cal > 0.95]) if np.any(y_cal > 0.95) else 1.0
-                prob_true = np.append(prob_true, true_high_prob)
-            
-            # 保存结果数据
-            method_key = method_labels.get(method_name, method_name.capitalize())
-            save_data[method_key] = {
-                'fraction_of_positives': prob_true.tolist(),
-                'mean_predicted_value': prob_pred.tolist(),
-                'brier_score': float(brier)
-            }
-            
-            # 绘制校准曲线，带适度平滑
-            color = colors.get(method_name, 'gray')
-            
-            # 保留数据点的原始分布特征，不过度平滑
-            if len(prob_pred) >= 3:
-                # 排序数据点，确保 x 值升序
-                sort_idx = np.argsort(prob_pred)
-                prob_pred = prob_pred[sort_idx]
-                prob_true = prob_true[sort_idx]
-                
+                # 保留数据点的原始分布特征，不过度平滑
+                if len(prob_pred) >= 3:
+                    # 排序数据点，确保 x 值升序
+                    sort_idx = np.argsort(prob_pred)
+                    sorted_x = prob_pred[sort_idx]
+                    sorted_y = prob_true[sort_idx]
+                    
+                    if use_transform and transform_type == 'loglog':
+                        # 双对数坐标下处理数据点
+                        valid_mask = (sorted_x > 0) & (sorted_y > 0)
+                        if np.sum(valid_mask) >= 2:  # 至少需要2个有效点
+                            sorted_x_valid = sorted_x[valid_mask]
+                            sorted_y_valid = sorted_y[valid_mask]
+                            
+                            # 绘制简约风格的数据点
+                            ax.scatter(sorted_x_valid, sorted_y_valid, s=marker_size*1.2, 
                                       alpha=0.8, color=color, edgecolor='none')
                             
                             # 绘制简约风格的折线
@@ -469,26 +428,77 @@ def plot_calibration_all_data(y_true, y_prob, weights, model_name, plot_dir, plo
                                   linewidth=1.0, markersize=marker_size, 
                                   markerfacecolor=color, markeredgecolor='none',
                                   alpha=0.9, color=color,
-                                  label=f'{method_labels.get(method_name, method_name.capitalize())} (Brier: {brier:.4f})')
+                                  label=f'{method_labels.get(method_name, method_name.capitalize())}')
+                    
+                    elif use_transform and transform_type == 'log':
+                        # 对数坐标处理
+                        sorted_x_min = np.maximum(sorted_x, 0.001)  # 避免负数和零
+                        sorted_x_trans = np.log1p(sorted_x_min * 9) / np.log(10)
+                        
+                        ax.scatter(sorted_x_trans, sorted_y, s=marker_size*1.5, 
+                                 alpha=0.8, color=color, edgecolor='none')
+                        ax.plot(sorted_x_trans, sorted_y, '-o', 
+                              linewidth=1.0, markersize=marker_size, 
+                              markerfacecolor=color, markeredgecolor='none',
+                              alpha=0.9, color=color,
+                              label=f'{method_labels.get(method_name, method_name.capitalize())} (Brier: {brier:.4f})')
+                    
                     else:
-                        # 单对数坐标绘制
+                        # 不使用坐标变换
                         ax.scatter(sorted_x, sorted_y, s=marker_size*1.5, 
-                                  alpha=0.8, color=color, edgecolor='none')
+                                 alpha=0.8, color=color, edgecolor='none')
                         ax.plot(sorted_x, sorted_y, '-o', 
                               linewidth=1.0, markersize=marker_size, 
                               markerfacecolor=color, markeredgecolor='none',
                               alpha=0.9, color=color,
                               label=f'{method_labels.get(method_name, method_name.capitalize())} (Brier: {brier:.4f})')
+                
                 else:
-                    # 不使用坐标变换时的绘制
-                    ax.scatter(sorted_x, sorted_y, s=marker_size*1.5, 
-                              alpha=0.8, color=color, edgecolor='none')
-                    ax.plot(sorted_x, sorted_y, '-o', 
-                          linewidth=1.0, markersize=marker_size, 
-                          markerfacecolor=color, markeredgecolor='none',
-                          alpha=0.9, color=color,
-                          label=f'{method_labels.get(method_name, method_name.capitalize())} (Brier: {brier:.4f})')
-
+                    # 数据点太少，直接绘制
+                    ax.plot(prob_pred, prob_true, '-o', markersize=marker_size, linewidth=1.0, color=color,
+                           label=f'{method_labels.get(method_name, method_name.capitalize())} (Brier: {brier:.4f})')
+            
+            signal.alarm(0)  # 取消超时
+        except Exception as e:
+            print(f"处理方法 {method_name} 时出错: {e}")
+            signal.alarm(0)  # 确保取消超时
+    
+    # 调整图形尺寸、标题和标签
+    if use_transform:
+        if transform_type == 'loglog':
+            # 双对数坐标轴范围
+            plt.xlim([0.001, 1.05])
+            plt.ylim([0.001, 1.05])
+            plt.title(f"Calibration Curve (Log-Log Scale) - {model_name}", fontproperties=font_manager.FontProperties(family='Monaco', size=10))
+        elif transform_type == 'log':
+            # 单对数变换，范围需要计算
+            plt.xlim([-0.01, np.log1p(1.02 * 9) / np.log(10)])
+            plt.ylim([-0.01, 1.02])
+            plt.title(f"Calibration Curve (Log Scale) - {model_name}", fontsize=14, fontweight='normal')
+    else:
+        plt.xlim([-0.01, 1.02])
+        plt.ylim([-0.01, 1.02])
+        plt.title(f"Calibration Curve - {model_name}", fontsize=14, fontweight='normal')
+    
+    plt.xlabel("Mean predicted probability", fontproperties=font_manager.FontProperties(family='Monaco', size=10))
+    plt.ylabel("Fraction of positives", fontproperties=font_manager.FontProperties(family='Monaco', size=10))
+    
+    # 删除底部说明文字
+    
+    # 设置简约风格的图例到图外右侧，并减小图例大小
+    # 使用更直接的方式指定Monaco字体
+    font_props = font_manager.FontProperties(family='Monaco', size=8)
+    ax.legend(loc='center left', bbox_to_anchor=(1.02, 0.5), 
+              frameon=True, fancybox=False, shadow=False, edgecolor='#cccccc',
+              prop=font_props)
+    
+    # 调整图表边距，确保正方形区域不变形
+    plt.tight_layout(rect=[0, 0, 0.85, 0.95])  # 左右下上边距比例
+    
+    # 获取原始数据集信息
+    total_samples = len(y_true)
+    positive_samples = np.sum(y_true)
+    positive_rate = positive_samples / total_samples * 100
     avg_pred_prob = np.mean(y_prob)
     
     print(f"\n原始数据集统计信息:")
@@ -533,9 +543,13 @@ def plot_calibration_all_data(y_true, y_prob, weights, model_name, plot_dir, plo
             print(f"SMOTE过采样失败: {e}")
             print("使用原始不平衡数据集继续...")
     
-    plt.close(fig)
+    # 保存高分辨率图表
+    os.makedirs(plot_dir, exist_ok=True)
+    plt_path = str(Path(plot_dir) / f"{model_name}_All_Calibration.png")
+    plt.savefig(plt_path, dpi=300, bbox_inches='tight', transparent=False)
     
     # 保存数据
+    os.makedirs(plot_data_dir, exist_ok=True)
     save_plot_data(save_data, str(Path(plot_data_dir) / f"{model_name}_All_Calibration_data.json"))
     
     # 找出最佳方法
@@ -544,4 +558,5 @@ def plot_calibration_all_data(y_true, y_prob, weights, model_name, plot_dir, plo
         best_brier = best_data['brier']
         print(f"最佳校准方法: {method_labels.get(best_method, best_method.capitalize())} (Brier: {best_brier:.4f})")
     
+    plt.close(fig)
     return calibration_methods

@@ -6,7 +6,7 @@ import numpy as np
 import mlx.core as mx
 from pathlib import Path
 from model_plot_utils import (
-    plot_roc_curve, plot_pr_curve, plot_calibration_curve, plot_decision_curve,
+    plot_roc_curve, plot_pr_curve,
     plot_learning_curve, plot_confusion_matrix, plot_threshold_curve
 )
 
@@ -139,11 +139,7 @@ plot_roc_curve(y_test, y_prob, weights_test, model_name, plot_dir, plot_data_dir
 print("绘制PR曲线...")
 plot_pr_curve(y_test, y_prob, weights_test, model_name, plot_dir, plot_data_dir)
 
-print("绘制校准曲线...")
-plot_calibration_curve(y_test, y_prob, weights_test, model_name, plot_dir, plot_data_dir)
-
-print("绘制决策曲线...")
-plot_decision_curve(y_test, y_prob, weights_test, model_name, plot_dir, plot_data_dir)
+# 校准曲线和决策曲线已移除
 
 print("绘制混淆矩阵...")
 plot_confusion_matrix(y_test, y_pred, model_name, plot_dir, plot_data_dir, normalize=False)
