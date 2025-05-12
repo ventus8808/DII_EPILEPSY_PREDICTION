@@ -96,3 +96,12 @@ def calculate_metrics(y_true, y_pred, y_prob, weights=None):
         "ECE": ece,
         "MCE": mce
     }
+
+def load_metrics(file_path):
+    try:
+        with open(file_path, 'r') as f:
+            metrics = json.load(f)
+        return metrics
+    except Exception as e:
+        print(f"加载指标文件出错: {e}")
+        return None

@@ -12,7 +12,7 @@ outcome: "Epilepsy"
 covariates: ["Gender", "Age", "BMI", "Education", "Marriage", "Smoke", "Alcohol", "Employment", "ActivityLevel"]
 
 # 模型训练次数
-n_trials: 10
+n_trials: 2
 
 # 目标函数权重
 objective_weights:
@@ -57,6 +57,7 @@ eval_settings:
   draw_confusion: 1    # 是否绘制混淆矩阵(1:是, 0:否)
   draw_learning: 0     # 是否绘制学习曲线(1:是, 0:否)
   draw_threshold: 1    # 是否绘制阈值曲线(1:是, 0:否)
+  draw_dca: 1          # 是否绘制决策曲线分析(DCA)(1:是, 0:否)
 
 # 输出相关
 output_dir: "result/"

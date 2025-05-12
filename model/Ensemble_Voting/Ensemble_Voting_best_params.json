@@ -1,0 +1,10 @@
+{
+    "xgb_weight": 2.913058688018509,
+    "lgbm_weight": 1.450053086864947,
+    "catboost_weight": 1.2164560403440476,
+    "rf_weight": 1.805324345417106,
+    "fnn_weight": 1.366946802760573,
+    "svm_weight": 0.21438198081235377,
+    "logistic_weight": 1.5274548983535923,
+    "voting_threshold": 0.603326154218688
+}

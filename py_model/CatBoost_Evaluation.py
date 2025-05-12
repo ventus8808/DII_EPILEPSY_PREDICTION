@@ -13,6 +13,7 @@ from model_plot_utils import (
     plot_confusion_matrix, plot_threshold_curve
 )
 from model_plot_calibration import plot_calibration_all_data
+from model_plot_DCA import plot_dca_curve, plot_dca_curve_comparison
 
 def main():
     # 命令行参数处理，允许覆盖配置文件中的设置
@@ -25,6 +26,7 @@ def main():
     parser.add_argument("--confusion", type=int, choices=[0, 1], help="是否绘制混淆矩阵(0:否, 1:是)")
     parser.add_argument("--learning", type=int, choices=[0, 1], help="是否绘制学习曲线(0:否, 1:是)")
     parser.add_argument("--threshold", type=int, choices=[0, 1], help="是否绘制阈值曲线(0:否, 1:是)")
+    parser.add_argument("--dca", type=int, choices=[0, 1], help="是否绘制决策曲线分析(DCA)(0:否, 1:是)")
     args = parser.parse_args()
 
     # 读取配置文件
@@ -43,6 +45,7 @@ def main():
     draw_confusion = args.confusion if args.confusion is not None else eval_settings.get('draw_confusion', 1)
     draw_learning = args.learning if args.learning is not None else eval_settings.get('draw_learning', 1)
     draw_threshold = args.threshold if args.threshold is not None else eval_settings.get('draw_threshold', 1)
+    draw_dca = args.dca if args.dca is not None else eval_settings.get('draw_dca', 1)
     
     # 读取基本配置
     data_path = Path(config['data_path'])
@@ -101,6 +104,7 @@ def main():
     print(f"绘制混淆矩阵: {'是' if draw_confusion else '否'}")
     print(f"绘制学习曲线: {'是' if draw_learning else '否'}")
     print(f"绘制阈值曲线: {'是' if draw_threshold else '否'}")
+    print(f"绘制决策曲线分析(DCA): {'是' if draw_dca else '否'}")
     print("===========================\n")
     
     # 计算评估指标
@@ -156,6 +160,34 @@ def main():
         print("绘制阈值曲线...")
         plot_threshold_curve(y_test, y_prob, model_name, plot_dir, plot_data_dir)
         print(f"阈值曲线绘制完成 (耗时 {time.time() - start_time:.2f}秒)")
+    
+    if draw_dca:
+        start_time = time.time()
+        print("绘制决策曲线分析(DCA)...")
+        # 使用与校准曲线相同的处理方式：全量数据集+SMOTE过采样
+        # 预测全量数据集的概率
+        y_prob_all = model.predict_proba(X)[:, 1]
+        # 生成标准DCA曲线
+        plot_dca_curve(y, y_prob_all, weights, model_name, plot_dir, plot_data_dir, use_smote=True)
+        
+        # 增加DII贡献评估
+        print("\n评估DII对模型预测能力的贡献...")
+        # 创建无DII版本的数据(将DII_food列设为0)
+        X_no_dii = X.copy()
+        X_no_dii['DII_food'] = 0  # 将DII列设为0
+        
+        # 预测无DII数据
+        y_prob_no_dii = model.predict_proba(X_no_dii)[:, 1]
+        
+        # 构建DII对比字典
+        y_probs_dict = {
+            f"{model_name}(all feature)": y_prob_all,
+            f"{model_name}(without DII)": y_prob_no_dii
+        }
+        
+        # 绘制DII贡献对比DCA曲线
+        plot_dca_curve_comparison(y, y_probs_dict, weights, model_name, plot_dir, plot_data_dir, use_smote=True)
+        print(f"决策曲线分析(DCA)绘制完成 (耗时 {time.time() - start_time:.2f}秒)")
     
     print("\n所有评估与可视化任务完成！")
 

@@ -1,0 +1,410 @@
+2025-05-07 21:23:19,710 - INFO - 开始简化版投票集成模型训练
+2025-05-07 21:23:19,711 - INFO - 加载数据: data/16_ML.csv
+2025-05-07 21:23:19,732 - INFO - 分割数据为训练集和测试集
+2025-05-07 21:23:19,735 - INFO - 数据集大小 - 训练集: (9228, 10), 测试集: (2308, 10)
+2025-05-07 21:23:19,735 - INFO - 加载基础模型...
+2025-05-07 21:23:19,981 - INFO - 成功加载 rf 模型
+2025-05-07 21:23:19,984 - INFO - 成功加载 svm 模型
+2025-05-07 21:23:19,984 - WARNING - xgb 模型文件不存在: model/xgb_model.pkl
+2025-05-07 21:23:19,984 - WARNING - lgbm 模型文件不存在: model/lgbm_model.pkl
+2025-05-07 21:23:19,984 - WARNING - cat 模型文件不存在: model/cat_model.pkl
+2025-05-07 21:23:19,984 - WARNING - fnn 模型文件不存在: model/fnn_model.pkl
+2025-05-07 21:23:19,984 - INFO - 共加载了 2 个基础模型
+2025-05-07 21:23:19,984 - INFO - 使用平均权重: {'rf': 0.5, 'svm': 0.5}
+2025-05-07 21:23:22,238 - INFO - 训练集指标:
+2025-05-07 21:23:22,238 - INFO - accuracy: 0.9822
+2025-05-07 21:23:22,238 - INFO - precision: 0.0000
+2025-05-07 21:23:22,238 - INFO - recall: 0.0000
+2025-05-07 21:23:22,238 - INFO - f1: 0.0000
+2025-05-07 21:23:22,238 - INFO - roc_auc: 0.8444
+2025-05-07 21:23:22,238 - INFO - pr_auc: 0.1016
+2025-05-07 21:23:22,238 - INFO - tn: 9064
+2025-05-07 21:23:22,238 - INFO - fp: 0
+2025-05-07 21:23:22,238 - INFO - fn: 164
+2025-05-07 21:23:22,238 - INFO - tp: 0
+2025-05-07 21:23:22,238 - INFO - specificity: 1.0000
+2025-05-07 21:23:22,238 - INFO - ppv: 0.0000
+2025-05-07 21:23:22,238 - INFO - npv: 0.9822
+2025-05-07 21:23:22,805 - INFO - 测试集指标:
+2025-05-07 21:23:22,805 - INFO - accuracy: 0.9818
+2025-05-07 21:23:22,805 - INFO - precision: 0.0000
+2025-05-07 21:23:22,805 - INFO - recall: 0.0000
+2025-05-07 21:23:22,805 - INFO - f1: 0.0000
+2025-05-07 21:23:22,805 - INFO - roc_auc: 0.7639
+2025-05-07 21:23:22,805 - INFO - pr_auc: 0.0643
+2025-05-07 21:23:22,805 - INFO - tn: 2266
+2025-05-07 21:23:22,805 - INFO - fp: 1
+2025-05-07 21:23:22,805 - INFO - fn: 41
+2025-05-07 21:23:22,805 - INFO - tp: 0
+2025-05-07 21:23:22,805 - INFO - specificity: 0.9996
+2025-05-07 21:23:22,805 - INFO - ppv: 0.0000
+2025-05-07 21:23:22,805 - INFO - npv: 0.9822
+2025-05-07 21:23:22,860 - INFO - 集成模型已保存至: model/Ensemble_Voting/Ensemble_Voting_model.pkl
+2025-05-07 21:23:22,861 - INFO - 权重已保存至: model/Ensemble_Voting/Ensemble_Voting_weights.json
+2025-05-07 21:23:22,861 - INFO - 特征信息已保存至: model/Ensemble_Voting/Ensemble_Voting_feature_info.json
+2025-05-07 21:23:22,862 - INFO - 评估指标已保存至: result/Ensemble_Voting_metrics.json
+2025-05-07 21:23:22,862 - INFO - 投票集成模型训练完成
+2025-05-07 21:50:00,241 - INFO - 开始集成投票模型训练...
+2025-05-07 21:50:00,267 - INFO - 数据加载完成。训练集样本数: 8075, 测试集样本数: 3461
+2025-05-07 21:50:00,267 - INFO - 开始使用Optuna进行集成权重优化...
+2025-05-07 21:50:00,267 - INFO - 计划执行 3 次试验
+2025-05-07 21:50:00,644 - ERROR - 模型加载或评估过程中发生错误: 'dict' object has no attribute 'predict_proba'
+2025-05-07 21:50:00,645 - ERROR - Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/Ensemble_Voting_Train.py", line 285, in optuna_objective
+    fnn_prob = fnn_model.predict_proba(X_val_fold)[:, 1]
+AttributeError: 'dict' object has no attribute 'predict_proba'
+
+2025-05-07 21:50:00,818 - ERROR - 模型加载或评估过程中发生错误: 'dict' object has no attribute 'predict_proba'
+2025-05-07 21:50:00,818 - ERROR - Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/Ensemble_Voting_Train.py", line 285, in optuna_objective
+    fnn_prob = fnn_model.predict_proba(X_val_fold)[:, 1]
+AttributeError: 'dict' object has no attribute 'predict_proba'
+
+2025-05-07 21:50:00,986 - ERROR - 模型加载或评估过程中发生错误: 'dict' object has no attribute 'predict_proba'
+2025-05-07 21:50:00,987 - ERROR - Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/Ensemble_Voting_Train.py", line 285, in optuna_objective
+    fnn_prob = fnn_model.predict_proba(X_val_fold)[:, 1]
+AttributeError: 'dict' object has no attribute 'predict_proba'
+
+2025-05-07 21:50:00,988 - INFO - 最佳参数: {'xgb_weight': 1.2239736557454934, 'lgbm_weight': 1.031419603966797, 'catboost_weight': 0.7544646314095935, 'rf_weight': 0.23918789475043845, 'fnn_weight': 1.1582689904014092, 'svm_weight': 0.21161173735819894, 'logistic_weight': 0.22330890078204543, 'voting_threshold': 0.7144720676537188}
+2025-05-07 21:50:00,989 - INFO - 最佳交叉验证指标:
+2025-05-07 21:50:00,989 - INFO - 使用最佳参数在完整训练集上训练最终模型...
+2025-05-07 21:50:01,290 - INFO - 在测试集上评估最终模型...
+2025-05-07 21:50:01,410 - ERROR - 优化过程中发生错误: 'dict' object has no attribute 'predict_proba'
+2025-05-07 21:50:01,410 - ERROR - Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/Ensemble_Voting_Train.py", line 440, in main
+    model_probs[model_name] = model.predict_proba(X_test)[:, 1] * weight
+AttributeError: 'dict' object has no attribute 'predict_proba'
+
+2025-05-07 21:52:33,788 - INFO - 开始集成投票模型训练...
+2025-05-07 21:52:33,813 - INFO - 数据加载完成。训练集样本数: 8075, 测试集样本数: 3461
+2025-05-07 21:52:33,813 - INFO - 开始使用Optuna进行集成权重优化...
+2025-05-07 21:52:33,813 - INFO - 计划执行 3 次试验
+2025-05-07 21:52:34,293 - ERROR - 模型加载或评估过程中发生错误: The feature names should match those that were passed during fit.
+Feature names unseen at fit time:
+- ActivityLevel
+- Alcohol
+- Education
+- Employment
+- Gender
+- ...
+Feature names seen at fit time, yet now missing:
+- ActivityLevel_1
+- ActivityLevel_2
+- ActivityLevel_3
+- ActivityLevel_4
+- Alcohol_1
+- ...
+
+2025-05-07 21:52:34,297 - ERROR - Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/Ensemble_Voting_Train.py", line 321, in optuna_objective
+    _, fnn_prob = fnn_predict(fnn_model_data, X_val_fold)
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/Ensemble_Voting_Train.py", line 268, in fnn_predict
+    X = model_data['scaler'].transform(X)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_set_output.py", line 319, in wrapped
+    data_to_wrap = f(self, X, *args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/preprocessing/_data.py", line 1062, in transform
+    X = validate_data(
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 2919, in validate_data
+    _check_feature_names(_estimator, X, reset=reset)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 2777, in _check_feature_names
+    raise ValueError(message)
+ValueError: The feature names should match those that were passed during fit.
+Feature names unseen at fit time:
+- ActivityLevel
+- Alcohol
+- Education
+- Employment
+- Gender
+- ...
+Feature names seen at fit time, yet now missing:
+- ActivityLevel_1
+- ActivityLevel_2
+- ActivityLevel_3
+- ActivityLevel_4
+- Alcohol_1
+- ...
+
+
+2025-05-07 21:52:34,513 - ERROR - 模型加载或评估过程中发生错误: The feature names should match those that were passed during fit.
+Feature names unseen at fit time:
+- ActivityLevel
+- Alcohol
+- Education
+- Employment
+- Gender
+- ...
+Feature names seen at fit time, yet now missing:
+- ActivityLevel_1
+- ActivityLevel_2
+- ActivityLevel_3
+- ActivityLevel_4
+- Alcohol_1
+- ...
+
+2025-05-07 21:52:34,514 - ERROR - Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/Ensemble_Voting_Train.py", line 321, in optuna_objective
+    _, fnn_prob = fnn_predict(fnn_model_data, X_val_fold)
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/Ensemble_Voting_Train.py", line 268, in fnn_predict
+    X = model_data['scaler'].transform(X)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_set_output.py", line 319, in wrapped
+    data_to_wrap = f(self, X, *args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/preprocessing/_data.py", line 1062, in transform
+    X = validate_data(
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 2919, in validate_data
+    _check_feature_names(_estimator, X, reset=reset)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 2777, in _check_feature_names
+    raise ValueError(message)
+ValueError: The feature names should match those that were passed during fit.
+Feature names unseen at fit time:
+- ActivityLevel
+- Alcohol
+- Education
+- Employment
+- Gender
+- ...
+Feature names seen at fit time, yet now missing:
+- ActivityLevel_1
+- ActivityLevel_2
+- ActivityLevel_3
+- ActivityLevel_4
+- Alcohol_1
+- ...
+
+
+2025-05-07 21:52:34,722 - ERROR - 模型加载或评估过程中发生错误: The feature names should match those that were passed during fit.
+Feature names unseen at fit time:
+- ActivityLevel
+- Alcohol
+- Education
+- Employment
+- Gender
+- ...
+Feature names seen at fit time, yet now missing:
+- ActivityLevel_1
+- ActivityLevel_2
+- ActivityLevel_3
+- ActivityLevel_4
+- Alcohol_1
+- ...
+
+2025-05-07 21:52:34,723 - ERROR - Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/Ensemble_Voting_Train.py", line 321, in optuna_objective
+    _, fnn_prob = fnn_predict(fnn_model_data, X_val_fold)
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/Ensemble_Voting_Train.py", line 268, in fnn_predict
+    X = model_data['scaler'].transform(X)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_set_output.py", line 319, in wrapped
+    data_to_wrap = f(self, X, *args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/preprocessing/_data.py", line 1062, in transform
+    X = validate_data(
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 2919, in validate_data
+    _check_feature_names(_estimator, X, reset=reset)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 2777, in _check_feature_names
+    raise ValueError(message)
+ValueError: The feature names should match those that were passed during fit.
+Feature names unseen at fit time:
+- ActivityLevel
+- Alcohol
+- Education
+- Employment
+- Gender
+- ...
+Feature names seen at fit time, yet now missing:
+- ActivityLevel_1
+- ActivityLevel_2
+- ActivityLevel_3
+- ActivityLevel_4
+- Alcohol_1
+- ...
+
+
+2025-05-07 21:52:34,724 - INFO - 最佳参数: {'xgb_weight': 1.1990907926643153, 'lgbm_weight': 0.6645044388945116, 'catboost_weight': 2.0147963173132477, 'rf_weight': 0.2629839256303805, 'fnn_weight': 2.797034866077285, 'svm_weight': 1.1084237798258294, 'logistic_weight': 0.2878079715207282, 'voting_threshold': 0.5121699867860855}
+2025-05-07 21:52:34,725 - INFO - 最佳交叉验证指标:
+2025-05-07 21:52:34,725 - INFO - 使用最佳参数在完整训练集上训练最终模型...
+2025-05-07 21:52:34,772 - ERROR - 优化过程中发生错误: name 'fnn_model_data' is not defined
+2025-05-07 21:52:34,775 - ERROR - Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/Ensemble_Voting_Train.py", line 444, in main
+    'FNN': (fnn_model_data, best_params['fnn_weight']),  # 对于FNN模型，存储模型数据而非模型对象
+NameError: name 'fnn_model_data' is not defined
+
+2025-05-07 21:54:25,993 - INFO - 开始集成投票模型训练...
+2025-05-07 21:54:26,016 - INFO - 数据加载完成。训练集样本数: 8075, 测试集样本数: 3461
+2025-05-07 21:54:26,016 - INFO - 开始使用Optuna进行集成权重优化...
+2025-05-07 21:54:26,016 - INFO - 计划执行 3 次试验
+2025-05-07 21:54:26,413 - ERROR - 模型加载或评估过程中发生错误: The feature names should match those that were passed during fit.
+Feature names must be in the same order as they were in fit.
+
+2025-05-07 21:54:26,416 - ERROR - Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/Ensemble_Voting_Train.py", line 368, in optuna_objective
+    _, fnn_prob = fnn_predict(fnn_model_data, X_val_fold)
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/Ensemble_Voting_Train.py", line 315, in fnn_predict
+    processed_X = model_data['scaler'].transform(processed_X)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_set_output.py", line 319, in wrapped
+    data_to_wrap = f(self, X, *args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/preprocessing/_data.py", line 1062, in transform
+    X = validate_data(
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 2919, in validate_data
+    _check_feature_names(_estimator, X, reset=reset)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 2777, in _check_feature_names
+    raise ValueError(message)
+ValueError: The feature names should match those that were passed during fit.
+Feature names must be in the same order as they were in fit.
+
+
+2025-05-07 21:54:26,621 - ERROR - 模型加载或评估过程中发生错误: The feature names should match those that were passed during fit.
+Feature names must be in the same order as they were in fit.
+
+2025-05-07 21:54:26,621 - ERROR - Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/Ensemble_Voting_Train.py", line 368, in optuna_objective
+    _, fnn_prob = fnn_predict(fnn_model_data, X_val_fold)
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/Ensemble_Voting_Train.py", line 315, in fnn_predict
+    processed_X = model_data['scaler'].transform(processed_X)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_set_output.py", line 319, in wrapped
+    data_to_wrap = f(self, X, *args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/preprocessing/_data.py", line 1062, in transform
+    X = validate_data(
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 2919, in validate_data
+    _check_feature_names(_estimator, X, reset=reset)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 2777, in _check_feature_names
+    raise ValueError(message)
+ValueError: The feature names should match those that were passed during fit.
+Feature names must be in the same order as they were in fit.
+
+
+2025-05-07 21:54:26,804 - ERROR - 模型加载或评估过程中发生错误: The feature names should match those that were passed during fit.
+Feature names must be in the same order as they were in fit.
+
+2025-05-07 21:54:26,805 - ERROR - Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/Ensemble_Voting_Train.py", line 368, in optuna_objective
+    _, fnn_prob = fnn_predict(fnn_model_data, X_val_fold)
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/Ensemble_Voting_Train.py", line 315, in fnn_predict
+    processed_X = model_data['scaler'].transform(processed_X)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/_set_output.py", line 319, in wrapped
+    data_to_wrap = f(self, X, *args, **kwargs)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/preprocessing/_data.py", line 1062, in transform
+    X = validate_data(
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 2919, in validate_data
+    _check_feature_names(_estimator, X, reset=reset)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/sklearn/utils/validation.py", line 2777, in _check_feature_names
+    raise ValueError(message)
+ValueError: The feature names should match those that were passed during fit.
+Feature names must be in the same order as they were in fit.
+
+
+2025-05-07 21:54:26,807 - INFO - 最佳参数: {'xgb_weight': 2.734025145360773, 'lgbm_weight': 0.9657587265847551, 'catboost_weight': 1.2529999187234016, 'rf_weight': 0.6202949580163672, 'fnn_weight': 2.0700663910023964, 'svm_weight': 1.8363564845378848, 'logistic_weight': 1.6106768664082884, 'voting_threshold': 0.3060734977878261}
+2025-05-07 21:54:26,808 - INFO - 最佳交叉验证指标:
+2025-05-07 21:54:26,808 - INFO - 使用最佳参数在完整训练集上训练最终模型...
+2025-05-07 21:54:26,852 - ERROR - 优化过程中发生错误: name 'fnn_model_data' is not defined
+2025-05-07 21:54:26,855 - ERROR - Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/Ensemble_Voting_Train.py", line 493, in main
+    'FNN': (fnn_model_data, best_params['fnn_weight']),  # 对于FNN模型，存储模型数据而非模型对象
+NameError: name 'fnn_model_data' is not defined
+
+2025-05-07 21:55:17,694 - INFO - 开始集成投票模型训练...
+2025-05-07 21:55:17,720 - INFO - 数据加载完成。训练集样本数: 8075, 测试集样本数: 3461
+2025-05-07 21:55:17,720 - INFO - 开始使用Optuna进行集成权重优化...
+2025-05-07 21:55:17,720 - INFO - 计划执行 3 次试验
+2025-05-07 21:55:18,202 - ERROR - 模型加载或评估过程中发生错误: Invalid type  pandas.core.frame.DataFrame received in array initialization.
+2025-05-07 21:55:18,202 - ERROR - Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/Ensemble_Voting_Train.py", line 369, in optuna_objective
+    _, fnn_prob = fnn_predict(fnn_model_data, X_val_fold)
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/Ensemble_Voting_Train.py", line 320, in fnn_predict
+    X_mx = mx.array(processed_X.astype(np.float32))
+ValueError: Invalid type  pandas.core.frame.DataFrame received in array initialization.
+
+2025-05-07 21:55:18,397 - ERROR - 模型加载或评估过程中发生错误: Invalid type  pandas.core.frame.DataFrame received in array initialization.
+2025-05-07 21:55:18,397 - ERROR - Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/Ensemble_Voting_Train.py", line 369, in optuna_objective
+    _, fnn_prob = fnn_predict(fnn_model_data, X_val_fold)
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/Ensemble_Voting_Train.py", line 320, in fnn_predict
+    X_mx = mx.array(processed_X.astype(np.float32))
+ValueError: Invalid type  pandas.core.frame.DataFrame received in array initialization.
+
+2025-05-07 21:55:18,585 - ERROR - 模型加载或评估过程中发生错误: Invalid type  pandas.core.frame.DataFrame received in array initialization.
+2025-05-07 21:55:18,585 - ERROR - Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/Ensemble_Voting_Train.py", line 369, in optuna_objective
+    _, fnn_prob = fnn_predict(fnn_model_data, X_val_fold)
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/Ensemble_Voting_Train.py", line 320, in fnn_predict
+    X_mx = mx.array(processed_X.astype(np.float32))
+ValueError: Invalid type  pandas.core.frame.DataFrame received in array initialization.
+
+2025-05-07 21:55:18,587 - INFO - 最佳参数: {'xgb_weight': 1.1698751258425009, 'lgbm_weight': 2.2301802425475157, 'catboost_weight': 2.219881208063496, 'rf_weight': 0.5771495619863755, 'fnn_weight': 1.138205324487665, 'svm_weight': 0.9474842613932144, 'logistic_weight': 0.5121985215654862, 'voting_threshold': 0.750706091170139}
+2025-05-07 21:55:18,588 - INFO - 最佳交叉验证指标:
+2025-05-07 21:55:18,588 - INFO - 使用最佳参数在完整训练集上训练最终模型...
+2025-05-07 21:55:18,913 - INFO - 在测试集上评估最终模型...
+2025-05-07 21:55:19,133 - ERROR - 优化过程中发生错误: name 'fnn_predict' is not defined
+2025-05-07 21:55:19,135 - ERROR - Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/Ensemble_Voting_Train.py", line 551, in main
+    _, fnn_prob = fnn_predict(model, X_test)
+NameError: name 'fnn_predict' is not defined
+
+2025-05-07 21:57:09,723 - INFO - 开始集成投票模型训练...
+2025-05-07 21:57:09,749 - INFO - 数据加载完成。训练集样本数: 8075, 测试集样本数: 3461
+2025-05-07 21:57:09,749 - INFO - 开始使用Optuna进行集成权重优化...
+2025-05-07 21:57:09,749 - INFO - 计划执行 3 次试验
+2025-05-07 21:57:10,186 - ERROR - 模型加载或评估过程中发生错误: 'numpy.ndarray' object has no attribute 'predict_proba'
+2025-05-07 21:57:10,189 - ERROR - Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/Ensemble_Voting_Train.py", line 372, in optuna_objective
+    svm_prob = svm_model.predict_proba(X_val_fold)[:, 1]
+AttributeError: 'numpy.ndarray' object has no attribute 'predict_proba'
+
+2025-05-07 21:57:10,390 - ERROR - 模型加载或评估过程中发生错误: 'numpy.ndarray' object has no attribute 'predict_proba'
+2025-05-07 21:57:10,392 - ERROR - Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/Ensemble_Voting_Train.py", line 372, in optuna_objective
+    svm_prob = svm_model.predict_proba(X_val_fold)[:, 1]
+AttributeError: 'numpy.ndarray' object has no attribute 'predict_proba'
+
+2025-05-07 21:57:10,642 - ERROR - 模型加载或评估过程中发生错误: 'numpy.ndarray' object has no attribute 'predict_proba'
+2025-05-07 21:57:10,644 - ERROR - Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/Ensemble_Voting_Train.py", line 372, in optuna_objective
+    svm_prob = svm_model.predict_proba(X_val_fold)[:, 1]
+AttributeError: 'numpy.ndarray' object has no attribute 'predict_proba'
+
+2025-05-07 21:57:10,646 - INFO - 最佳参数: {'xgb_weight': 2.385798083585657, 'lgbm_weight': 0.9231420886537443, 'catboost_weight': 2.0313953210475804, 'rf_weight': 1.3569628684133446, 'fnn_weight': 2.037611249381375, 'svm_weight': 1.8581032633815129, 'logistic_weight': 0.5251870692134875, 'voting_threshold': 0.7355993578692241}
+2025-05-07 21:57:10,646 - INFO - 最佳交叉验证指标:
+2025-05-07 21:57:10,646 - INFO - 使用最佳参数在完整训练集上训练最终模型...
+2025-05-07 21:57:10,976 - INFO - 在测试集上评估最终模型...
+2025-05-07 21:57:11,120 - ERROR - 优化过程中发生错误: 'numpy.ndarray' object has no attribute 'predict_proba'
+2025-05-07 21:57:11,122 - ERROR - Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/Ensemble_Voting_Train.py", line 568, in main
+    model_probs[model_name] = model.predict_proba(X_test)[:, 1] * weight
+AttributeError: 'numpy.ndarray' object has no attribute 'predict_proba'
+
+2025-05-07 21:59:19,628 - INFO - 开始集成投票模型训练...
+2025-05-07 21:59:19,656 - INFO - 数据加载完成。训练集样本数: 8075, 测试集样本数: 3461
+2025-05-07 21:59:19,656 - INFO - 开始使用Optuna进行集成权重优化...
+2025-05-07 21:59:19,656 - INFO - 计划执行 3 次试验
+2025-05-07 21:59:22,356 - INFO - 最佳参数: {'xgb_weight': 2.913058688018509, 'lgbm_weight': 1.450053086864947, 'catboost_weight': 1.2164560403440476, 'rf_weight': 1.805324345417106, 'fnn_weight': 1.366946802760573, 'svm_weight': 0.21438198081235377, 'logistic_weight': 1.5274548983535923, 'voting_threshold': 0.603326154218688}
+2025-05-07 21:59:22,356 - INFO - 最佳交叉验证指标:
+2025-05-07 21:59:22,356 - INFO - Accuracy: 0.8336
+2025-05-07 21:59:22,357 - INFO - Sensitivity: 0.6760
+2025-05-07 21:59:22,357 - INFO - Specificity: 0.9912
+2025-05-07 21:59:22,357 - INFO - Precision: 0.9871
+2025-05-07 21:59:22,357 - INFO - NPV: 0.7537
+2025-05-07 21:59:22,357 - INFO - F1 Score: 0.8024
+2025-05-07 21:59:22,357 - INFO - Youden's Index: 0.6672
+2025-05-07 21:59:22,357 - INFO - Cohen's Kappa: 0.6672
+2025-05-07 21:59:22,357 - INFO - AUC-ROC: 0.9667
+2025-05-07 21:59:22,357 - INFO - AUC-PR: 0.9693
+2025-05-07 21:59:22,357 - INFO - Log Loss: 0.3570
+2025-05-07 21:59:22,357 - INFO - Brier: 0.1046
+2025-05-07 21:59:22,357 - INFO - ECE: 0.1570
+2025-05-07 21:59:22,357 - INFO - MCE: 0.3677
+2025-05-07 21:59:22,357 - INFO - 使用最佳参数在完整训练集上训练最终模型...
+2025-05-07 21:59:22,670 - INFO - 在测试集上评估最终模型...
+2025-05-07 21:59:22,820 - INFO - 测试集指标:
+2025-05-07 21:59:22,820 - INFO - Accuracy: 0.9804
+2025-05-07 21:59:22,820 - INFO - Sensitivity: 0.6165
+2025-05-07 21:59:22,820 - INFO - Specificity: 0.9869
+2025-05-07 21:59:22,820 - INFO - Precision: 0.4569
+2025-05-07 21:59:22,820 - INFO - NPV: 0.9931
+2025-05-07 21:59:22,820 - INFO - F1 Score: 0.5249
+2025-05-07 21:59:22,820 - INFO - Youden's Index: 0.6035
+2025-05-07 21:59:22,820 - INFO - Cohen's Kappa: 0.5151
+2025-05-07 21:59:22,820 - INFO - AUC-ROC: 0.8879
+2025-05-07 21:59:22,820 - INFO - AUC-PR: 0.3271
+2025-05-07 21:59:22,820 - INFO - Log Loss: 0.1711
+2025-05-07 21:59:22,820 - INFO - Brier: 0.0368
+2025-05-07 21:59:22,820 - INFO - ECE: 0.1247
+2025-05-07 21:59:22,820 - INFO - MCE: 0.4846
+2025-05-07 21:59:22,820 - INFO - 集成模型训练与评估完成!
