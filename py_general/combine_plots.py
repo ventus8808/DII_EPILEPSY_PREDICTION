@@ -20,75 +20,136 @@ def combine_plots():
     # 获取所有图片文件
     files = [f for f in os.listdir(plot_dir) if f.endswith(('.png', '.jpg', '.jpeg'))]
     
-    # 提取模型名称并按字母排序
-    model_names = set()
+    # 提取模型名称并组织文件
+    model_file_map = {}
+    files_by_model = {}
+    
     for f in files:
-        model_name = f.split('_')[0]
-        model_names.add(model_name)
+        parts = f.split('_')
+        if len(parts) < 2:
+            continue
+        
+        # 获取模型名称
+        if parts[0] == 'All':
+            continue  # 跳过All模型
+        elif parts[0] == 'Ensemble':
+            if len(parts) >= 3:
+                # 处理 Ensemble_Voting_XXX 模式
+                model_display = "Ensemble Voting"
+                model_key = "Ensemble_Voting"
+                img_type = '_'.join(parts[2:])
+            else:
+                continue  # 格式不正确则跳过
+        else:
+            model_display = parts[0]  # 显示名称
+            model_key = parts[0]      # 键名称
+            img_type = '_'.join(parts[1:])
+        
+        # 将文件添加到模型映射中
+        if model_key not in model_file_map:
+            model_file_map[model_key] = model_display
+            files_by_model[model_key] = {}
+        
+        # 将文件添加到相应图片类型中
+        img_type_no_ext = os.path.splitext(img_type)[0]  # 去除扩展名
+        files_by_model[model_key][img_type_no_ext] = f
     
-    model_names = sorted(list(model_names))
-    print(f"找到的模型: {model_names}")
+    # 按特定规则排序模型名称
+    # 1. 将Ensemble模型与非Ensemble模型分开
+    ensemble_models = []
+    regular_models = []
     
-    # 定义图片类型顺序
-    image_types = [
+    for key in model_file_map.keys():
+        if key.startswith('Ensemble'):
+            ensemble_models.append(key)
+        else:
+            regular_models.append(key)
+    
+    # 2. 分别按照字母顺序排序
+    regular_models.sort()
+    ensemble_models.sort()
+    
+    # 3. 将常规模型放前面，Ensemble模型放后面
+    model_keys = regular_models + ensemble_models
+    
+    print(f"找到的模型: {[model_file_map[key] for key in model_keys]}")
+    print(f"模型显示顺序: {[model_file_map[key] for key in model_keys]}")
+    
+    # 定义两种不同的图片类型顺序
+    image_types_all = [
         "Confusion_Matrix", 
         "ROC", 
         "PR", 
         "Threshold_Curve", 
+        "DCA",
+        "DCA_DII",
         "Calibration_Curve", 
         "Sample_Learning_Curve"
     ]
     
-    # 修正FNN的sample_learning_curve名称不一致的问题
-    def get_filename(model, img_type):
-        if model == "FNN" and img_type == "Sample_Learning_Curve":
-            return f"{model}_sample_learning_curve.png"
-        return f"{model}_{img_type}.png"
+    image_types_selected = [
+        "Threshold_Curve", 
+        "DCA_DII",
+        "Calibration_Curve", 
+        "Sample_Learning_Curve"
+    ]
     
-    # 创建大图
-    n_rows = len(image_types)
-    n_cols = len(model_names)
+    # 获取图片文件名称
+    def get_image_path(model_key, img_type):
+        if img_type in files_by_model.get(model_key, {}):
+            return os.path.join(plot_dir, files_by_model[model_key][img_type])
+        return None
     
-    plt.figure(figsize=(5*n_cols, 5*n_rows))
-    gs = GridSpec(n_rows, n_cols)
-    
-    # 添加行标签和列标签
-    for i, img_type in enumerate(image_types):
-        plt.figtext(0.01, 1 - (i + 0.5) / n_rows, img_type.replace('_', ' '), 
-                   va='center', ha='left', fontsize=12, rotation=90)
-    
-    for j, model in enumerate(model_names):
-        plt.figtext((j + 0.5) / n_cols, 0.98, model, 
-                   va='top', ha='center', fontsize=14)
-    
-    # 填充图像
-    for i, img_type in enumerate(image_types):
-        for j, model in enumerate(model_names):
-            filename = get_filename(model, img_type)
-            img_path = os.path.join(plot_dir, filename)
-            
-            if os.path.exists(img_path):
-                # 读取图像
-                img = plt.imread(img_path)
+    # 创建并保存图表的函数
+    def create_and_save_plot(image_types, output_filename):
+        n_rows = len(image_types)
+        n_cols = len(model_keys)
+        
+        plt.figure(figsize=(5*n_cols, 5*n_rows))
+        gs = GridSpec(n_rows, n_cols)
+        
+        # 添加行标签和列标签
+        for i, img_type in enumerate(image_types):
+            plt.figtext(0.01, 1 - (i + 0.5) / n_rows, img_type.replace('_', ' '), 
+                      va='center', ha='left', fontsize=12, rotation=90)
+        
+        for j, model_key in enumerate(model_keys):
+            plt.figtext((j + 0.5) / n_cols, 0.98, model_file_map[model_key], 
+                      va='top', ha='center', fontsize=14)
+        
+        # 填充图像
+        for i, img_type in enumerate(image_types):
+            for j, model_key in enumerate(model_keys):
+                img_path = get_image_path(model_key, img_type)
                 
-                # 添加到网格
                 ax = plt.subplot(gs[i, j])
-                ax.imshow(img)
-                ax.axis('off')
-            else:
-                print(f"警告: 未找到图片 {img_path}")
-                ax = plt.subplot(gs[i, j])
-                ax.text(0.5, 0.5, 'Missing Image', ha='center', va='center')
-                ax.axis('off')
+                if img_path and os.path.exists(img_path):
+                    # 读取图像
+                    img = plt.imread(img_path)
+                    ax.imshow(img)
+                    ax.axis('off')
+                else:
+                    if img_type in ["ROC", "PR", "Confusion_Matrix"]:  # 只为必要图表显示警告
+                        print(f"警告: 未找到模型 {model_file_map[model_key]} 的 {img_type} 图片")
+                    ax.text(0.5, 0.5, 'Missing Image', ha='center', va='center')
+                    ax.axis('off')
+        
+        plt.tight_layout(rect=[0.03, 0.01, 1, 0.97])  # 留出标签空间
+        
+        # 保存组合后的图片
+        output_path = os.path.join(output_dir, output_filename)
+        plt.savefig(output_path, dpi=300, bbox_inches='tight')
+        print(f"已保存组合图片到: {output_path}")
+        
+        plt.close()
     
-    plt.tight_layout(rect=[0.03, 0.01, 1, 0.97])  # 留出标签空间
+    # 生成包含所有图表类型的组合图
+    print("正在生成包含所有图表类型的组合图...")
+    create_and_save_plot(image_types_all, 'Combined_plots1.png')
     
-    # 保存组合后的图片
-    output_path = os.path.join(output_dir, 'combined_model_plots.png')
-    plt.savefig(output_path, dpi=300, bbox_inches='tight')
-    print(f"已保存组合图片到: {output_path}")
-    
-    plt.close()
+    # 生成仅包含指定四种图表类型的组合图
+    print("正在生成仅包含指定图表类型的组合图...")
+    create_and_save_plot(image_types_selected, 'Combined_plots2.png')
 
 if __name__ == "__main__":
     combine_plots()

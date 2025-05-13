@@ -6,6 +6,7 @@
 import os
 import json
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from pathlib import Path
 
@@ -50,6 +51,19 @@ colors = {
     "Random": "gray",            # 随机分类器参考线
 }
 
+def load_metrics_from_csv():
+    """从 metrics_comparison.csv 加载模型的AUC-ROC值"""
+    metrics_comparison_path = Path("Table&Figure/metrics_comparison.csv")
+    if metrics_comparison_path.exists():
+        try:
+            metrics_df = pd.read_csv(metrics_comparison_path, index_col=0)
+            if 'AUC-ROC' in metrics_df.index:
+                # 返回所有模型的AUC-ROC值字典
+                return {col: metrics_df.loc['AUC-ROC', col] for col in metrics_df.columns}
+        except Exception as e:
+            print(f"警告: 读取metrics_comparison.csv出错 - {e}")
+    return {}
+
 def load_roc_data(model_name):
     """加载模型的ROC数据"""
     data_path = Path("plot_original_data") / f"{model_name}_ROC_data.json"
@@ -74,6 +88,10 @@ def plot_all_roc():
     all_models_data = {}
     auc_scores = {}
     
+    # 从 metrics_comparison.csv 加载模型的AUC-ROC值
+    csv_metrics = load_metrics_from_csv()
+    print(f"从csv加载的指标: {csv_metrics}")
+    
     # 加载所有模型数据
     for model_name in models:
         data = load_roc_data(model_name)
@@ -83,10 +101,18 @@ def plot_all_roc():
         # 保存FPR和TPR数据
         if "fpr" in data and "tpr" in data:
             all_models_data[model_name] = (data["fpr"], data["tpr"])
-            if "auc" in data:
+            
+            # 优先使用metrics_comparison.csv中的AUC值
+            if model_name in csv_metrics:
+                auc_scores[model_name] = csv_metrics[model_name]
+                print(f"  使用CSV中的AUC值: {model_name} = {auc_scores[model_name]:.3f}")
+            # 其次使用JSON文件中的AUC值
+            elif "auc" in data:
                 auc_scores[model_name] = data["auc"]
+                print(f"  使用JSON中的auc值: {model_name} = {auc_scores[model_name]:.3f}")
             elif "roc_auc" in data:
                 auc_scores[model_name] = data["roc_auc"]
+                print(f"  使用JSON中的roc_auc值: {model_name} = {auc_scores[model_name]:.3f}")
     
     # 如果没有加载到数据，退出
     if not all_models_data:

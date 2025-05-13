@@ -249,12 +249,43 @@ def main():
         # 若有历史最优参数，动态调整参数空间
         best_params_for_search = best_params if best_params is not None else {}
         params = {
-            'n_estimators': get_suggested_param(trial, 'n_estimators', 200, 1000, best_params_for_search.get('n_estimators'), is_int=True),
+            # 减少树的数量上限，更多关注质量而非数量
+            'n_estimators': get_suggested_param(trial, 'n_estimators', 100, 800, best_params_for_search.get('n_estimators'), is_int=True),
+            # 控制树的深度，避免过拟合，保持与原先的研究一致
             'max_depth': trial.suggest_categorical('max_depth', [3, 5, 7, 10, 15, 20, None]),
-            'min_samples_split': get_suggested_param(trial, 'min_samples_split', 2, 20, best_params_for_search.get('min_samples_split'), is_int=True),
-            'min_samples_leaf': get_suggested_param(trial, 'min_samples_leaf', 1, 10, best_params_for_search.get('min_samples_leaf'), is_int=True),
+            # 增加树的稳定性
+            'min_samples_split': get_suggested_param(trial, 'min_samples_split', 2, 30, best_params_for_search.get('min_samples_split'), is_int=True),
+            'min_samples_leaf': get_suggested_param(trial, 'min_samples_leaf', 2, 15, best_params_for_search.get('min_samples_leaf'), is_int=True),
+            # 阻止过拟合，保持与原先研究一致的值范围
             'max_features': trial.suggest_categorical('max_features', ['sqrt', 'log2', None, 0.5, 0.7, 0.9])
         }
+        
+        # 在rf_optuna_balanced研究中使用更全面的参数空间
+        if getattr(trial, 'study', None) and hasattr(trial.study, '_study_id') and trial.study._study_id and 'rf_optuna_balanced' in (getattr(trial.study, '_study_name', '') or ''):
+            # 重置基本参数为更强的抗过拟合配置
+            params = {
+                # 控制树数量，不过多
+                'n_estimators': get_suggested_param(trial, 'n_estimators', 50, 400, best_params_for_search.get('n_estimators'), is_int=True),
+                # 限制树的深度防止过拟合
+                'max_depth': trial.suggest_categorical('max_depth', [3, 5, 7, 10, 15]),
+                # 增加每个节点要求的样本数
+                'min_samples_split': get_suggested_param(trial, 'min_samples_split', 5, 50, best_params_for_search.get('min_samples_split'), is_int=True),
+                'min_samples_leaf': get_suggested_param(trial, 'min_samples_leaf', 5, 25, best_params_for_search.get('min_samples_leaf'), is_int=True),
+                # 限制特征选择
+                'max_features': trial.suggest_categorical('max_features', ['sqrt', 'log2', 0.3, 0.5]),
+                # 类别权重不使用None选项，强制平衡
+                'class_weight': trial.suggest_categorical('class_weight', ['balanced', 'balanced_subsample', {0: 1, 1: 5}, {0: 1, 1: 10}, {0: 1, 1: 15}]),
+                # 总是使用OOB评分来改善校准
+                'oob_score': True,
+                # 尝试不同的决策函数
+                'criterion': trial.suggest_categorical('criterion', ['gini', 'entropy', 'log_loss']),
+                # 总是使用bootstrap采样
+                'bootstrap': True,
+                # 增大剪枝力度范围
+                'ccp_alpha': trial.suggest_float('ccp_alpha', 0.01, 0.1),
+                # 添加最大叶子节点数量限制
+                'max_leaf_nodes': trial.suggest_categorical('max_leaf_nodes', [50, 100, 200, None])
+            }
         # 创建Pipeline
         pipeline = Pipeline([
             ('preprocessor', preprocessor),
@@ -460,10 +491,10 @@ def main():
     optuna_db_dir = Path(__file__).parent.parent / "optuna" / "RF"
     optuna_db_dir.mkdir(parents=True, exist_ok=True)
     sqlite_path = optuna_db_dir / "RF_optuna.db"
-    # 使用新的 study_name 避免参数分布类型冲突
+    study_name = "rf_optuna_balanced"  # 使用新的研究名称，避免与旧研究参数空间冲突
     study = optuna.create_study(
         direction='maximize',
-        study_name="rf_optuna_new",
+        study_name=study_name,
         storage=f"sqlite:///{sqlite_path}",
         load_if_exists=True
     )

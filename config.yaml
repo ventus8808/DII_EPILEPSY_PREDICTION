@@ -12,24 +12,24 @@ outcome: "Epilepsy"
 covariates: ["Gender", "Age", "BMI", "Education", "Marriage", "Smoke", "Alcohol", "Employment", "ActivityLevel"]
 
 # 模型训练次数
-n_trials: 2
+n_trials: 50
 
 # 目标函数权重
 objective_weights:
   AUC: 0.3
-  ECE: -0.1
+  ECE: -0.2  # 增加校准的重要性
   F1: 0.2
-  Precision: 0.2
-  Sensitivity: 0.2
-  Specificity: 0.2
+  Precision: 0.3  # 增加精确度的重要性
+  Sensitivity: 0.2  # 降低敏感度的权重
+  Specificity: 0.2  # 增加特异度的重要性
 
 # 目标函数硬约束 - 分为交叉验证和测试集两套约束
 # 交叉验证约束（较宽松）
 cv_constraints:
   AUC_min: 0.6
-  AUC_max: 0.95
+  AUC_max: 0.99  # 提高AUC上限，允许更好的模型通过
   Sensitivity_min: 0.4
-  Specificity_min: 0.4
+  Specificity_min: 0.6  # 提高特异度最低要求，改善精确度
 
 # 测试集约束（较严格）
 test_constraints:

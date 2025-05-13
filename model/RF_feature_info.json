@@ -1,0 +1,23 @@
+{
+    "features": [
+        "DII_food",
+        "Age",
+        "BMI",
+        "Gender",
+        "Education",
+        "Marriage",
+        "Smoke",
+        "Alcohol",
+        "Employment",
+        "ActivityLevel"
+    ],
+    "cat_feature_indices": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+    ]
+}
