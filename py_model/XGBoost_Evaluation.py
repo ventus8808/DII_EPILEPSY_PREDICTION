@@ -110,16 +110,39 @@ def main():
     print(f"\n===== 模型评估 =====")
     
     # 计算评估指标
+    print(f"\n===== 开始计算评估指标 =====")
+    print(f"calc_metrics 值: {calc_metrics}")
+    print(f"y_test 形状: {y_test.shape if hasattr(y_test, 'shape') else 'N/A'}")
+    print(f"y_pred 形状: {y_pred.shape if hasattr(y_pred, 'shape') else 'N/A'}")
+    print(f"y_prob 形状: {y_prob.shape if hasattr(y_prob, 'shape') else 'N/A'}")
+    
     if calc_metrics:
         start_time = time.time()
-        print("计算评估指标...")
-        metrics = calculate_metrics(y_test, y_pred, y_prob, weights_test)
-        
-        # 打印评估结果
-        print("\nTest Set Metrics:")
-        for metric_name, metric_value in metrics.items():
-            print(f"{metric_name}: {metric_value:.4f}")
-        print(f"评估指标计算完成 (耗时 {time.time() - start_time:.2f}秒)")
+        print("\n正在计算评估指标...")
+        try:
+            metrics = calculate_metrics(y_test, y_pred, y_prob, weights_test)
+            
+            # 打印评估结果
+            print("\n===== 测试集评估指标 =====")
+            for metric_name, metric_value in metrics.items():
+                if isinstance(metric_value, (int, float)):
+                    print(f"{metric_name}: {metric_value:.4f}")
+                else:
+                    print(f"{metric_name}: {metric_value}")
+            print(f"\n评估指标计算完成 (耗时 {time.time() - start_time:.2f}秒)")
+            
+            # 保存指标到文件
+            metrics_path = Path(config['output_dir']) / f'{model_name}_metrics.json'
+            with open(metrics_path, 'w') as f:
+                json.dump(metrics, f, indent=4)
+            print(f"评估指标已保存到: {metrics_path}")
+            
+        except Exception as e:
+            print(f"\n计算评估指标时出错: {e}")
+            import traceback
+            traceback.print_exc()
+    else:
+        print("根据配置，跳过评估指标计算")
     
     # 绘图
     if draw_roc:
