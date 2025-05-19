@@ -24,24 +24,34 @@ from sklearn.linear_model import LogisticRegression
 import matplotlib
 from matplotlib import font_manager
 
-# 添加Monaco字体路径
-font_dirs = ['/System/Library/Fonts/', '/Library/Fonts/']
-font_files = font_manager.findSystemFonts(fontpaths=font_dirs)
-for font_file in font_files:
-    if 'monaco' in font_file.lower():
-        font_manager.fontManager.addfont(font_file)
+# 设置字体为Monaco，大小统一为13
+# 查找Monaco字体
+# 找到就用，找不到就用系统默认字体
+font_paths = ['/System/Library/Fonts/Monaco.ttf', '/Library/Fonts/Monaco.ttf']
+monaco_found = False
 
-# 强制设置Monaco字体
-matplotlib.rcParams['font.family'] = ['monospace']
-matplotlib.rcParams['font.monospace'] = ['Monaco', 'DejaVu Sans Mono']
+for path in font_paths:
+    if os.path.exists(path):
+        font_manager.fontManager.addfont(path)
+        monaco_found = True
+        print(f"找到Monaco字体: {path}")
+        break
 
-# 设置字体大小 - 与其他图表统一
-plt.rcParams['font.size'] = 13
-plt.rcParams['axes.labelsize'] = 13
-plt.rcParams['axes.titlesize'] = 13
-plt.rcParams['xtick.labelsize'] = 13
-plt.rcParams['ytick.labelsize'] = 13
-plt.rcParams['legend.fontsize'] = 13
+# 设置字体
+if monaco_found:
+    plt.rcParams['font.family'] = 'monospace'
+    plt.rcParams['font.monospace'] = ['Monaco', 'DejaVu Sans Mono']
+
+# 统一设置字体大小为13
+plt.rcParams.update({
+    'font.size': 13,
+    'axes.titlesize': 13,
+    'axes.labelsize': 13,
+    'xtick.labelsize': 13,
+    'ytick.labelsize': 13,
+    'legend.fontsize': 13,
+    'figure.dpi': 300,  # 高DPI
+})
 plt.rcParams['axes.linewidth'] = 1.0  # 细边框
 plt.rcParams['axes.edgecolor'] = '#333333'  # 深灰色边框
 plt.rcParams['figure.facecolor'] = 'white'
@@ -63,10 +73,15 @@ def save_plot_data(data, filename):
         json.dump(data, f)
 
 def plot_calibration_all_data(y_true, y_prob, weights, model_name, plot_dir, plot_data_dir, n_bins=30, use_smote=True):
-    # 创建Monaco字体的全局实例供后面使用
-    font_props_title = font_manager.FontProperties(family='Monaco', size=10)
-    font_props_label = font_manager.FontProperties(family='Monaco', size=10)
-    font_props_legend = font_manager.FontProperties(family='Monaco', size=8)
+    # 创建Monaco字体的实例，并统一设置大小为13
+    if 'Monaco' in matplotlib.rcParams['font.monospace']:
+        font_props_title = font_manager.FontProperties(family='Monaco', size=13)
+        font_props_label = font_manager.FontProperties(family='Monaco', size=13)
+        font_props_legend = font_manager.FontProperties(family='Monaco', size=13)
+    else:
+        font_props_title = font_manager.FontProperties(size=13)
+        font_props_label = font_manager.FontProperties(size=13)
+        font_props_legend = font_manager.FontProperties(size=13)
     """在全量数据集上绘制校准曲线，包含多种校准方法
     
     参数：
@@ -469,31 +484,45 @@ def plot_calibration_all_data(y_true, y_prob, weights, model_name, plot_dir, plo
     # 调整图形尺寸、标题和标签
     if use_transform:
         if transform_type == 'loglog':
-            # 双对数坐标轴范围
-            plt.xlim([0.001, 1.05])
-            plt.ylim([0.001, 1.05])
-            plt.title(f"Calibration Curve (Log-Log Scale) - {model_name}", fontproperties=font_manager.FontProperties(family='Monaco', size=10))
+            # 对数-对数坐标情况下的标题和显示范围
+            plt.xlim([0.001, 1.1])
+            plt.ylim([0.001, 1.1])
+            plt.title(f"Calibration Curve (Log-Log Scale) - {model_name}", fontproperties=font_props_title)
         elif transform_type == 'log':
             # 单对数变换，范围需要计算
             plt.xlim([-0.01, np.log1p(1.02 * 9) / np.log(10)])
             plt.ylim([-0.01, 1.02])
-            plt.title(f"Calibration Curve (Log Scale) - {model_name}", fontsize=14, fontweight='normal')
+            plt.title(f"Calibration Curve (Log Scale) - {model_name}", fontproperties=font_props_title)
     else:
         plt.xlim([-0.01, 1.02])
         plt.ylim([-0.01, 1.02])
-        plt.title(f"Calibration Curve - {model_name}", fontsize=14, fontweight='normal')
+        plt.title(f"Calibration Curve - {model_name}", fontproperties=font_props_title)
     
-    plt.xlabel("Mean predicted probability", fontproperties=font_manager.FontProperties(family='Monaco', size=10))
-    plt.ylabel("Fraction of positives", fontproperties=font_manager.FontProperties(family='Monaco', size=10))
+    # 使用Monaco字体设置标签
+    plt.xlabel("Mean predicted probability", fontproperties=font_props_label)
+    plt.ylabel("Fraction of positives", fontproperties=font_props_label)
+    
+    # 设置刻度字体为Monaco，且不显示y轴0.00
+    from matplotlib.ticker import FuncFormatter
+    plt.xticks(fontsize=13, fontproperties=font_props_label)
+    def ytick_formatter(y, pos):
+        # 只要y非常接近0就不显示，且不显示0.00
+        if y <= 0 or np.isclose(y, 0) or (0 < y < 0.002):
+            return ''
+        # 其它刻度正常格式化
+        if y < 0.01:
+            return f'{y:.3f}'
+        else:
+            return f'{y:.2f}'
+    plt.yticks(fontsize=13, fontproperties=font_props_label)
+    ax.yaxis.set_major_formatter(FuncFormatter(ytick_formatter))
     
     # 删除底部说明文字
     
     # 设置简约风格的图例到图内右下角
-    # 使用Monaco字体，与其他图表保持一致
-    font_props = font_manager.FontProperties(family='Monaco', size=13)
     leg = ax.legend(loc='lower right', 
               frameon=True, fancybox=False, shadow=False, edgecolor='#cccccc',
-              prop=font_props)
+              prop=font_props_legend)
     
     # 处理图例图形，去掉图例中的标记点
     for line in leg.get_lines():
@@ -550,6 +579,9 @@ def plot_calibration_all_data(y_true, y_prob, weights, model_name, plot_dir, plo
         except Exception as e:
             print(f"SMOTE过采样失败: {e}")
             print("使用原始不平衡数据集继续...")
+    
+    # 调整图表比例和布局
+    plt.tight_layout()
     
     # 保存高分辨率图表
     os.makedirs(plot_dir, exist_ok=True)

@@ -424,6 +424,13 @@ def plot_confusion_matrix(y_true, y_pred, model_name, plot_dir, plot_data_dir, n
     ax.xaxis.set_ticks_position('top')
     ax.xaxis.set_label_position('top')
     
+    if normalize:
+        fname = f"{model_name}_Normalized_Confusion_Matrix.png"
+        data_fname = f"{model_name}_Normalized_Confusion_Matrix.json"
+    else:
+        fname = f"{model_name}_Confusion_Matrix.png"
+        data_fname = f"{model_name}_Confusion_Matrix.json"
+    
     # 保存图片
     fig.tight_layout()
     fig.savefig(str(Path(plot_dir) / fname), dpi=300, bbox_inches='tight')

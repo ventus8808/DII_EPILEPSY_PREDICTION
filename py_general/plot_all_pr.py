@@ -179,10 +179,12 @@ def plot_all_pr():
     plt.tight_layout()
     plt.subplots_adjust(bottom=0.2)  # 为图例留出空间
     
+    # 创建输出目录
+    output_dir = Path("plot_combined")
+    output_dir.mkdir(exist_ok=True)
+    
     # 保存图表
-    plot_dir = Path("plot")
-    plot_dir.mkdir(exist_ok=True)
-    output_path = plot_dir / "All_PR.png"
+    output_path = output_dir / "All_PR.png"
     plt.savefig(output_path, dpi=300, bbox_inches="tight")
     plt.close()
     

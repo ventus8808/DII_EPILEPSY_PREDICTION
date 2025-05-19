@@ -454,7 +454,7 @@ def main():
                 ax.set_yticks(np.arange(0.5, 1.01, 0.1))
                 
                 # 设置标题
-                ax.set_title(f"Sample Learning Curve - {model_name}", pad=20)
+                ax.set_title(f"Sample Learning Curve - {model_name}", pad=13)
                 
                 # 添加网格
                 ax.grid(linestyle='--', alpha=0.3, color='gray')
