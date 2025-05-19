@@ -506,7 +506,7 @@ def plot_learning_curve(model, X_train, y_train, X_test, y_test, model_name, plo
         'train_cis': valid_train_cis,
         'n_resamples': n_resamples,
         'cv': cv
-    }, str(Path(plot_data_dir) / f"{model_name}_Sample_Learning_Curve_Data.json"))
+    }, str(Path(plot_data_dir) / f"{model_name}_Sample_Learning_Curve.json"))
 
 def plot_confusion_matrix(y_true, y_pred, model_name, plot_dir, plot_data_dir, normalize=False):
     # 计算混淆矩阵

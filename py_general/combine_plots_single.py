@@ -13,14 +13,14 @@ Image.MAX_IMAGE_PIXELS = None
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 def sort_image_files(files):
-    """按照指定顺序对图片文件进行排序"""
+    """按照指定顺序对图片文件进行排序，不区分大小写"""
     # 分离出Logistic、Ensemble和其他模型
-    logistic_files = [f for f in files if f.startswith('Logistic')]
-    ensemble_files = [f for f in files if f.startswith('Ensemble')]
-    other_files = [f for f in files if not (f.startswith('Logistic') or f.startswith('Ensemble'))]
+    logistic_files = [f for f in files if f.lower().startswith('logistic')]
+    ensemble_files = [f for f in files if f.lower().startswith('ensemble')]
+    other_files = [f for f in files if not (f.lower().startswith('logistic') or f.lower().startswith('ensemble'))]
     
-    # 对其他模型按字母顺序排序
-    other_files_sorted = sorted(other_files)
+    # 对其他模型按字母顺序排序（不区分大小写）
+    other_files_sorted = sorted(other_files, key=str.lower)
     
     # 合并列表：Logistic + 其他模型 + Ensemble
     sorted_files = logistic_files + other_files_sorted + ensemble_files
@@ -72,15 +72,62 @@ def combine_images(image_paths, output_path, spacing=20):
     new_img.save(output_path)
     print(f"已保存合并后的图片到: {output_path}")
 
+def case_insensitive_glob(directory, pattern):
+    """执行不区分大小写的glob匹配"""
+    import re
+    
+    # 将glob模式转换为正则表达式
+    def glob_to_regex(pat):
+        """将glob模式转换为正则表达式"""
+        i, n = 0, len(pat)
+        res = []
+        while i < n:
+            c = pat[i]
+            i += 1
+            if c == '*':
+                res.append('.*')
+            elif c == '?':
+                res.append('.')
+            elif c == '[':
+                j = i
+                if j < n and pat[j] == '!':
+                    j += 1
+                if j < n and pat[j] == ']':
+                    j += 1
+                while j < n and pat[j] != ']':
+                    j += 1
+                if j >= n:
+                    res.append('\\[')
+                else:
+                    stuff = pat[i:j].replace('\\', '\\\\')
+                    i = j + 1
+                    if stuff[0] == '!':
+                        stuff = '^' + stuff[1:]
+                    elif stuff[0] == '^':
+                        stuff = '\\' + stuff
+                    res.append('[' + stuff + ']')
+            else:
+                res.append(re.escape(c))
+        return '(?i)^' + ''.join(res) + '$'
+    
+    # 获取目录下所有文件
+    all_files = [f.name for f in Path(directory).iterdir() if f.is_file()]
+    
+    # 编译正则表达式模式
+    regex = re.compile(glob_to_regex(pattern))
+    
+    # 返回匹配的文件路径
+    return [Path(directory) / f for f in all_files if regex.match(f)]
+
 def process_plots(plot_dir, output_dir):
-    """处理plot目录下的图片"""
+    """处理plot目录下的图片（不区分大小写）"""
     plot_dir = Path(plot_dir)
     output_dir = Path(output_dir)
     
     # 确保输出目录存在
     output_dir.mkdir(parents=True, exist_ok=True)
     
-    # 定义要处理的图片模式
+    # 定义要处理的图片模式（不区分大小写）
     patterns = [
         '*DCA_DII.png', 
         '*Threshold_Curve.png', 
@@ -89,10 +136,10 @@ def process_plots(plot_dir, output_dir):
     ]
     
     for pattern in patterns:
-        # 查找匹配的图片
-        image_files = list(plot_dir.glob(pattern))
+        # 查找匹配的图片（不区分大小写）
+        image_files = case_insensitive_glob(plot_dir, pattern)
         if not image_files:
-            print(f"未找到匹配 {pattern} 的图片")
+            print(f"未找到匹配 {pattern} 的图片（不区分大小写）")
             continue
         
         # 获取文件名并排序

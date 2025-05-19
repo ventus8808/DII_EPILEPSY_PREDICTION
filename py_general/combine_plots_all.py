@@ -18,22 +18,24 @@ def combine_plots():
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     
-    # 获取所有图片文件
-    files = [f for f in os.listdir(plot_dir) if f.endswith(('.png', '.jpg', '.jpeg'))]
+    # 获取所有图片文件（不区分大小写）
+    files = [f for f in os.listdir(plot_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
     
     # 提取模型名称并组织文件
     model_file_map = {}
     files_by_model = {}
     
     for f in files:
-        parts = f.split('_')
+        # 使用正则表达式分割文件名（不区分大小写）
+        parts = re.split(r'[_\-]', f)
         if len(parts) < 2:
             continue
         
-        # 获取模型名称
-        if parts[0] == 'All':
+        # 获取模型名称（不区分大小写）
+        first_part = parts[0].lower()
+        if first_part == 'all':
             continue  # 跳过All模型
-        elif parts[0] == 'Ensemble':
+        elif first_part == 'ensemble':
             if len(parts) >= 3:
                 # 处理 Ensemble_Voting_XXX 模式
                 model_display = "Ensemble Voting"
@@ -43,7 +45,7 @@ def combine_plots():
                 continue  # 格式不正确则跳过
         else:
             model_display = parts[0]  # 显示名称
-            model_key = parts[0]      # 键名称
+            model_key = parts[0].lower()  # 键名称统一转为小写
             img_type = '_'.join(parts[1:])
         
         # 将文件添加到模型映射中
@@ -76,7 +78,7 @@ def combine_plots():
     print(f"找到的模型: {[model_file_map[key] for key in model_keys]}")
     print(f"模型显示顺序: {[model_file_map[key] for key in model_keys]}")
     
-    # 定义两种不同的图片类型顺序
+    # 定义两种不同的图片类型顺序（使用小写键）
     image_types_all = [
         "Confusion_Matrix", 
         "ROC", 
@@ -95,10 +97,17 @@ def combine_plots():
         "Sample_Learning_Curve"
     ]
     
-    # 获取图片文件名称
+    # 获取图片文件名称（不区分大小写）
     def get_image_path(model_key, img_type):
-        if img_type in files_by_model.get(model_key, {}):
-            return os.path.join(plot_dir, files_by_model[model_key][img_type])
+        model_key = model_key.lower()
+        img_type_lower = img_type.lower()
+        
+        # 查找匹配的模型和图片类型
+        for model, img_dict in files_by_model.items():
+            if model.lower() == model_key:
+                for img_key, img_file in img_dict.items():
+                    if img_type_lower in img_key.lower():
+                        return os.path.join(plot_dir, img_file)
         return None
     
     # 创建并保存图表的函数
