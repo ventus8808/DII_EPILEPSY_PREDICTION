@@ -83,18 +83,18 @@ def combine_plots():
         "Confusion_Matrix", 
         "ROC", 
         "PR", 
-        "Threshold_Curve", 
+        "Threshold", 
         "DCA",
         "DCA_DII",
         "Calibration_Curve", 
-        "Sample_Learning_Curve"
+        "Learning_Curve"
     ]
     
     image_types_selected = [
-        "Threshold_Curve", 
+        "Threshold", 
         "DCA_DII",
         "Calibration_Curve", 
-        "Sample_Learning_Curve"
+        "Learning_Curve"
     ]
     
     # 获取图片文件名称（不区分大小写）

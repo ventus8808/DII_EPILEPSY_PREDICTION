@@ -1,8 +1,3 @@
-"""合成所有模型DCA曲线的对比图
-读取各个模型的标准DCA原始数据，仅使用全特征版本（不含无DII版本）
-保存为一张风格一致的合成图
-"""
-
 import os
 import json
 import numpy as np
@@ -13,29 +8,46 @@ from pathlib import Path
 plt.rcParams['font.family'] = 'Monaco'
 plt.rcParams['font.size'] = 12
 
-# 模型列表和对应的颜色 - 按首字母排序
-models = sorted([
+# 模型列表
+all_models = [
     "CatBoost", 
     "Ensemble_Voting",
     "FNN",
     "LightGBM", 
     "Logistic", 
     "RF", 
-    "SVM", 
+    "SVM",
     "XGBoost"
-])
+]
+
+def sort_models(models):
+    """按照指定的顺序对模型进行排序"""
+    # 分离出Logistic、Ensemble和其他模型
+    logistic_models = [m for m in models if m.lower().startswith('logistic')]
+    ensemble_models = [m for m in models if m.lower().startswith('ensemble')]
+    other_models = [m for m in models if not (m.lower().startswith('logistic') or m.lower().startswith('ensemble'))]
+    
+    # 对其他模型按字母顺序排序（不区分大小写）
+    other_models_sorted = sorted(other_models, key=str.lower)
+    
+    # 合并列表：Logistic + 其他模型 + Ensemble
+    return logistic_models + other_models_sorted + ensemble_models
+
+# 按照指定顺序对模型进行排序
+models = sort_models(all_models)
 
 # 模型显示名称（可以根据需要修改）
 model_display_names = {
     "XGBoost": "XGBoost",
     "LightGBM": "LightGBM",
     "CatBoost": "CatBoost",
-    "RF": "Random Forest",
+    "RF": "RF",
     "FNN": "FNN",
     "SVM": "SVM",
-    "Logistic": "Logistic Regression",
+    "Logistic": "Logistic  ",
     "Ensemble_Voting": "Voting"
 }
+
 
 # 颜色映射（保持与单独图表一致的颜色方案）
 colors = {
@@ -53,19 +65,23 @@ colors = {
 
 def load_dca_data(model_name):
     """加载模型的DCA数据"""
-    data_path = Path("plot_original_data") / f"{model_name}_dca_data.json"
+    data_path = Path("plot_original_data") / f"{model_name}_DCA.json"
     if not data_path.exists():
         print(f"警告: {data_path} 不存在，跳过该模型")
         return None
     
-    with open(data_path, 'r') as f:
-        data = json.load(f)
-    return data
+    try:
+        with open(data_path, 'r') as f:
+            data = json.load(f)
+        return data
+    except Exception as e:
+        print(f"警告: 加载 {data_path} 时出错: {e}")
+        return None
 
 def plot_all_dca():
     """创建包含所有模型DCA曲线的合成图"""
-    # 创建正方形图形，确保图形为正方形
-    plt.figure(figsize=(7, 7))
+    # 创建正方形图形
+    plt.figure(figsize=(9.5, 7), dpi=300)
     
     # 存储所有模型的数据
     all_models_data = {}
@@ -134,8 +150,7 @@ def plot_all_dca():
     plt.ylabel("Net Benefit")
     plt.title("Decision Curve Analysis - All Models")
     
-    # 将图例移动到图片下方
-    # 左侧放虚线图例
+    # 将图例移动到右侧
     dashed_handles = [
         plt.Line2D([0], [0], color=colors["Treat All"], linewidth=1.5, linestyle="--"),
         plt.Line2D([0], [0], color=colors["Treat None"], linewidth=1.5, linestyle="--")
@@ -143,7 +158,6 @@ def plot_all_dca():
     
     dashed_labels = ["Treat All", "Treat None"]
     
-    # 模型图例，按首字母排序
     model_handles = []
     model_labels = []
     
@@ -151,30 +165,34 @@ def plot_all_dca():
         model_handles.append(plt.Line2D([0], [0], color=colors.get(model_name, "#000000"), linewidth=2.0))
         model_labels.append(model_display_names.get(model_name, model_name))
     
-    # 创建图例组合（左侧虚线，右侧模型分两列）
-    fig = plt.gcf()
-    fig.legend(
-        handles=dashed_handles,
-        labels=dashed_labels,
-        loc='lower left',
-        bbox_to_anchor=(0.1, -0.05),
-        frameon=True,
-        fontsize=10,
-        framealpha=0.8,
-        handlelength=2.0
-    )
-    
-    fig.legend(
+    # 创建右侧图例（模型）
+    legend_model = plt.legend(
         handles=model_handles,
         labels=model_labels,
-        loc='lower right',
-        bbox_to_anchor=(0.95, -0.08),
+        loc='center left',
+        bbox_to_anchor=(1.05, 0.35),
         frameon=True,
-        fontsize=10,
-        ncol=2,  # 分两列显示
-        framealpha=0.8,
-        handlelength=2.0
+        fontsize=11,
+        title='Models',
+        title_fontsize=10
     )
+    plt.gca().add_artist(legend_model)
+    
+    # 添加参考线图例
+    plt.legend(
+        handles=dashed_handles,
+        labels=dashed_labels,
+        loc='upper left',
+        bbox_to_anchor=(1.05, 0.7),
+        frameon=True,
+        fontsize=11,
+        title='Reference',
+        title_fontsize=10
+    )
+    
+    # 调整布局，为右侧图例留出空间
+    plt.tight_layout()
+    plt.subplots_adjust(right=0.7)
     
     # 添加网格和设置范围
     plt.grid(True, linestyle='--', alpha=0.3)
@@ -192,17 +210,13 @@ def plot_all_dca():
     y_max = 0.25   # 固定上限保证能看到所有峰值
     plt.ylim(y_min, y_max)  
     
-    # 紧凑布局
-    plt.tight_layout()
-    plt.subplots_adjust(bottom=0.2)  # 为图例留出空间
-    
     # 创建输出目录
     output_dir = Path("plot_combined")
     output_dir.mkdir(exist_ok=True)
     
     # 保存图表
     output_path = output_dir / "All_DCA.png"
-    plt.savefig(output_path, dpi=300, bbox_inches="tight")
+    plt.savefig(output_path, dpi=300, bbox_inches='tight', facecolor='white')
     plt.close()
     
     print(f"已生成所有模型的DCA对比图: {output_path}")

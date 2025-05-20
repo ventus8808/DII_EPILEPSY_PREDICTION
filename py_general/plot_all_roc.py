@@ -14,27 +14,43 @@ from pathlib import Path
 plt.rcParams['font.family'] = 'Monaco'
 plt.rcParams['font.size'] = 12
 
-# 模型列表和对应的颜色 - 按首字母排序
-models = sorted([
+# 模型列表
+all_models = [
     "CatBoost", 
     "Ensemble_Voting",
     "FNN",
     "LightGBM", 
     "Logistic", 
     "RF", 
-    "SVM", 
+    "SVM",
     "XGBoost"
-])
+]
+
+def sort_models(models):
+    """按照指定的顺序对模型进行排序"""
+    # 分离出Logistic、Ensemble和其他模型
+    logistic_models = [m for m in models if m.lower().startswith('logistic')]
+    ensemble_models = [m for m in models if m.lower().startswith('ensemble')]
+    other_models = [m for m in models if not (m.lower().startswith('logistic') or m.lower().startswith('ensemble'))]
+    
+    # 对其他模型按字母顺序排序（不区分大小写）
+    other_models_sorted = sorted(other_models, key=str.lower)
+    
+    # 合并列表：Logistic + 其他模型 + Ensemble
+    return logistic_models + other_models_sorted + ensemble_models
+
+# 按照指定顺序对模型进行排序
+models = sort_models(all_models)
 
 # 模型显示名称（可以根据需要修改）
 model_display_names = {
     "XGBoost": "XGBoost",
     "LightGBM": "LightGBM",
     "CatBoost": "CatBoost",
-    "RF": "Random Forest",
+    "RF": "RF",
     "FNN": "FNN",
     "SVM": "SVM",
-    "Logistic": "Logistic Regression",
+    "Logistic": "Logistic",
     "Ensemble_Voting": "Voting"
 }
 
@@ -66,23 +82,23 @@ def load_metrics_from_csv():
 
 def load_roc_data(model_name):
     """加载模型的ROC数据"""
-    data_path = Path("plot_original_data") / f"{model_name}_ROC_data.json"
-    # SVM文件名可能不同
-    if not data_path.exists() and model_name == "SVM":
-        data_path = Path("plot_original_data") / f"{model_name}_ROC_data.json".lower()
-    
+    data_path = Path("plot_original_data") / f"{model_name}_ROC.json"
     if not data_path.exists():
         print(f"警告: {data_path} 不存在，跳过该模型")
         return None
     
-    with open(data_path, 'r') as f:
-        data = json.load(f)
-    return data
+    try:
+        with open(data_path, 'r') as f:
+            data = json.load(f)
+        return data
+    except Exception as e:
+        print(f"警告: 加载 {data_path} 时出错: {e}")
+        return None
 
 def plot_all_roc():
     """创建包含所有模型ROC曲线的合成图"""
     # 创建正方形图形
-    plt.figure(figsize=(7, 7))
+    plt.figure(figsize=(7, 8), dpi=300)
     
     # 存储所有模型的ROC数据
     all_models_data = {}
@@ -155,20 +171,32 @@ def plot_all_roc():
             auc_text = f" (AUC: {auc_scores.get(model_name, 0):.3f})" if model_name in auc_scores else ""
             model_labels.append(f"{model_display_names.get(model_name, model_name)}{auc_text}")
     
-    # 创建图例 - 只显示模型图例，不显示Random参考线图例
-    fig = plt.gcf()
+    # 创建Random参考线图例项
+    random_line = plt.Line2D([0], [0], color='gray', linestyle='--', linewidth=1.5)
     
-    fig.legend(
-        handles=model_handles,
-        labels=model_labels,
+    # 将Random参考线添加到图例最前面
+    all_handles = [random_line] + model_handles
+    all_labels = ['Random'] + model_labels
+    
+    # 创建图例 - 包含所有模型和Random参考线
+    plt.legend(
+        handles=all_handles,
+        labels=all_labels,
         loc='lower right',
-        bbox_to_anchor=(0.95, -0.08),
+        bbox_to_anchor=(0.98, 0.02),  # 图例右下角位置
         frameon=True,
         fontsize=10,
-        ncol=2,  # 分两列显示
+        ncol=1,  # 单列显示
         framealpha=0.8,
-        handlelength=2.0
+        handlelength=1.2,
+        borderpad=0.3,
+        borderaxespad=0.3,
+        handletextpad=0.4,
+        columnspacing=0.8
     )
+    
+    # 调整布局
+    plt.tight_layout()
     
     # 添加网格和设置范围
     plt.grid(True, linestyle='--', alpha=0.3)
@@ -183,11 +211,10 @@ def plot_all_roc():
     output_dir = Path("plot_combined")
     output_dir.mkdir(exist_ok=True)
     
-    # 保存图表
+    # 保存图形
     output_path = output_dir / "All_ROC.png"
-    plt.savefig(output_path, dpi=300, bbox_inches="tight")
+    plt.savefig(output_path, dpi=300, bbox_inches='tight', facecolor='white')
     plt.close()
-    
     print(f"已生成所有模型的ROC对比图: {output_path}")
 
 if __name__ == "__main__":

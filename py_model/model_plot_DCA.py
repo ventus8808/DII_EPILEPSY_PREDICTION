@@ -224,7 +224,7 @@ def plot_dca_curve_comparison(y_true, y_probs_dict, weights, model_name, plot_di
     plt.close()
     
     # 保存原始数据以便后续分析
-    dca_data_path = plot_data_dir / f'{base_name}_dca_dii_data.json'
+    dca_data_path = plot_data_dir / f'{base_name}_DCA_DII.json'
     save_plot_data(comparison_data, dca_data_path)
     
     print(f"DII contribution DCA curve saved to: {dca_plot_path}")
@@ -440,7 +440,7 @@ def plot_dca_curve(y_true, y_prob, weights, model_name, plot_dir, plot_data_dir,
         'prevalence': float(prevalence)
     }
     
-    dca_data_path = plot_data_dir / f'{model_name}_dca_data.json'
+    dca_data_path = plot_data_dir / f'{model_name}_DCA.json'
     save_plot_data(dca_data, dca_data_path)
     
     print(f"决策曲线分析(DCA)图表已保存至: {dca_plot_path}")

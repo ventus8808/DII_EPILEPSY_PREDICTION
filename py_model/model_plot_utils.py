@@ -103,7 +103,7 @@ def plot_roc_curve(y_true, y_prob, weights, model_name, plot_dir, plot_data_dir)
     fig.tight_layout()
     fig.savefig(str(Path(plot_dir) / f"{model_name}_ROC.png"), bbox_inches='tight', dpi=300)
     plt.close(fig)
-    save_plot_data({'fpr': fpr.tolist(), 'tpr': tpr.tolist(), 'roc_auc': float(roc_auc_score(y_true, y_prob, sample_weight=weights))}, str(Path(plot_data_dir) / f"{model_name}_ROC_data.json"))
+    save_plot_data({'fpr': fpr.tolist(), 'tpr': tpr.tolist(), 'roc_auc': float(roc_auc_score(y_true, y_prob, sample_weight=weights))}, str(Path(plot_data_dir) / f"{model_name}_ROC.json"))
 
 def plot_pr_curve(y_true, y_prob, weights, model_name, plot_dir, plot_data_dir):
     # 使用与阈值曲线和ROC曲线相同的上下文设置
@@ -159,7 +159,7 @@ def plot_pr_curve(y_true, y_prob, weights, model_name, plot_dir, plot_data_dir):
     
     # 计算PR-AUC用于保存数据
     pr_auc = auc(recall_values, precision_values)
-    save_plot_data({'recall': recall_values.tolist(), 'precision': precision_values.tolist(), 'pr_auc': float(pr_auc)}, str(Path(plot_data_dir) / f"{model_name}_PR_data.json"))
+    save_plot_data({'recall': recall_values.tolist(), 'precision': precision_values.tolist(), 'pr_auc': float(pr_auc)}, str(Path(plot_data_dir) / f"{model_name}_PR.json"))
 
 def plot_learning_curve(model, X_train, y_train, X_test, y_test, model_name, plot_dir, plot_data_dir, cv=5, n_resamples=10, scoring='roc_auc'):
     """绘制样本量学习曲线，展示随着训练样本数量的增加，模型性能的变化
@@ -418,7 +418,7 @@ def plot_learning_curve(model, X_train, y_train, X_test, y_test, model_name, plo
     valid_test_means = [test_means[i] for i in valid_indices]
     valid_train_cis = [train_cis[i] for i in valid_indices]  # 置信区间
     
-    # 保存结果
+    # 准备数据，稍后保存
     learning_curve_data = {
         'train_sizes': valid_train_sizes,
         'train_scores': valid_train_means,
@@ -427,7 +427,6 @@ def plot_learning_curve(model, X_train, y_train, X_test, y_test, model_name, plo
         'n_resamples': n_resamples,
         'cv': cv
     }
-    save_plot_data(learning_curve_data, str(Path(plot_data_dir) / f"{model_name}_Learning_Curve_Data.json"))
     
     # 绘图 - 使用与阈值曲线和ROC曲线相同的上下文设置
     with plt.rc_context({'font.family': 'Monaco', 'font.size': 13}):
@@ -493,7 +492,7 @@ def plot_learning_curve(model, X_train, y_train, X_test, y_test, model_name, plo
     
     # 调整布局并保存图像
     fig.tight_layout()
-    plot_path = Path(plot_dir) / f"{model_name}_Sample_Learning_Curve.png"
+    plot_path = Path(plot_dir) / f"{model_name}_Learning_Curve.png"
     plt.savefig(str(plot_path), bbox_inches='tight', dpi=300)
     plt.close(fig)
     print(f"学习曲线已保存至: {plot_path}")
@@ -506,7 +505,7 @@ def plot_learning_curve(model, X_train, y_train, X_test, y_test, model_name, plo
         'train_cis': valid_train_cis,
         'n_resamples': n_resamples,
         'cv': cv
-    }, str(Path(plot_data_dir) / f"{model_name}_Sample_Learning_Curve.json"))
+    }, str(Path(plot_data_dir) / f"{model_name}_Learning_Curve.json"))
 
 def plot_confusion_matrix(y_true, y_pred, model_name, plot_dir, plot_data_dir, normalize=False):
     # 计算混淆矩阵
@@ -612,7 +611,7 @@ def plot_threshold_curve(y_true, y_prob, model_name, plot_dir, plot_data_dir):
     
     # 保存图片
     fig.tight_layout()
-    fig.savefig(str(Path(plot_dir) / f"{model_name}_Threshold_Curve.png"), bbox_inches='tight', dpi=300)
+    fig.savefig(str(Path(plot_dir) / f"{model_name}_Threshold.png"), bbox_inches='tight', dpi=300)
     plt.close(fig)
     
     # 保存数据
@@ -622,4 +621,4 @@ def plot_threshold_curve(y_true, y_prob, model_name, plot_dir, plot_data_dir):
         'specificity': specificity_list,
         'precision': precision_list,
         'f1': f1_list
-    }, str(Path(plot_data_dir) / f"{model_name}_Threshold_Curve.json"))
+    }, str(Path(plot_data_dir) / f"{model_name}_Threshold.json"))

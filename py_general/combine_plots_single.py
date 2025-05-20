@@ -130,8 +130,8 @@ def process_plots(plot_dir, output_dir):
     # 定义要处理的图片模式（不区分大小写）
     patterns = [
         '*DCA_DII.png', 
-        '*Threshold_Curve.png', 
-        '*Sample_Learning_Curve.png',
+        '*Threshold.png', 
+        '*Learning_Curve.png',
         '*Calibration_Curve.png'  # 添加校准曲线
     ]
     

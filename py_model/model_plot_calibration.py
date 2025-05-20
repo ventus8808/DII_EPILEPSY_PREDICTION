@@ -590,7 +590,7 @@ def plot_calibration_all_data(y_true, y_prob, weights, model_name, plot_dir, plo
     
     # 保存数据
     os.makedirs(plot_data_dir, exist_ok=True)
-    save_plot_data(save_data, str(Path(plot_data_dir) / f"{model_name}_Calibration_Curve_data.json"))
+    save_plot_data(save_data, str(Path(plot_data_dir) / f"{model_name}_Calibration_Curve.json"))
     
     # 找出最佳方法
     if sorted_methods:
