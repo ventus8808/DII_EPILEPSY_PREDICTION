@@ -1,0 +1,1083 @@
+2025-05-21 16:23:42,499 - INFO - Starting PSGD (Polynomial SGD) model training...
+2025-05-21 16:23:42,499 - INFO - Loading and preprocessing data...
+2025-05-21 16:23:42,513 - INFO - Data loaded: 9228 training samples, 2308 test samples
+2025-05-21 16:23:42,513 - INFO - Running Optuna optimization for 100 trials...
+2025-05-21 16:24:14,764 - INFO - Optimization completed.
+2025-05-21 16:24:14,765 - INFO - Best score: 0.6166438019489219
+2025-05-21 16:24:14,765 - INFO - Best parameters:
+2025-05-21 16:24:14,765 - INFO - loss: log_loss
+2025-05-21 16:24:14,765 - INFO - penalty: l2
+2025-05-21 16:24:14,765 - INFO - alpha: 0.7755289884783919
+2025-05-21 16:24:14,765 - INFO - learning_rate: invscaling
+2025-05-21 16:24:14,765 - INFO - class_weight: balanced
+2025-05-21 16:24:14,765 - INFO - max_iter: 1117
+2025-05-21 16:24:14,765 - INFO - random_state: 42
+2025-05-21 16:24:14,765 - INFO - average: False
+2025-05-21 16:24:14,765 - INFO - eta0: 0.0020702392539711993
+2025-05-21 16:24:14,765 - INFO - power_t: 0.5398951478758033
+2025-05-21 16:24:14,765 - INFO - early_stopping: False
+2025-05-21 16:24:14,765 - INFO - Best metrics:
+2025-05-21 16:24:14,765 - INFO - accuracy: 0.7848
+2025-05-21 16:24:14,765 - INFO - precision: 0.0306
+2025-05-21 16:24:14,765 - INFO - recall: 0.4238
+2025-05-21 16:24:14,765 - INFO - sensitivity: 0.4238
+2025-05-21 16:24:14,765 - INFO - specificity: 0.7904
+2025-05-21 16:24:14,765 - INFO - f1: 0.0571
+2025-05-21 16:24:14,766 - INFO - roc_auc: 0.6166
+2025-05-21 16:24:14,766 - INFO - pr_auc: 0.0380
+2025-05-21 16:24:14,766 - INFO - tp: 124936.4250
+2025-05-21 16:24:14,766 - INFO - tn: 14692780.9215
+2025-05-21 16:24:14,766 - INFO - fp: 3888788.8760
+2025-05-21 16:24:14,766 - INFO - fn: 167926.1125
+2025-05-21 16:24:14,766 - INFO - avg_pred: 0.2129
+2025-05-21 16:24:14,766 - INFO - kappa: 0.0290
+2025-05-21 16:24:14,766 - INFO - log_loss: 0.4620
+2025-05-21 16:24:14,766 - INFO - brier: 0.1469
+2025-05-21 16:24:14,766 - INFO - ece: 0.2595
+2025-05-21 16:24:14,766 - INFO - mce: 0.8718
+2025-05-21 16:24:14,766 - INFO - Final best parameters:
+2025-05-21 16:24:14,766 - INFO - loss: log_loss
+2025-05-21 16:24:14,766 - INFO - penalty: l2
+2025-05-21 16:24:14,766 - INFO - alpha: 0.7755289884783919
+2025-05-21 16:24:14,766 - INFO - learning_rate: invscaling
+2025-05-21 16:24:14,766 - INFO - class_weight: balanced
+2025-05-21 16:24:14,766 - INFO - max_iter: 1117
+2025-05-21 16:24:14,766 - INFO - random_state: 42
+2025-05-21 16:24:14,766 - INFO - average: False
+2025-05-21 16:24:14,766 - INFO - eta0: 0.0020702392539711993
+2025-05-21 16:24:14,766 - INFO - power_t: 0.5398951478758033
+2025-05-21 16:24:14,766 - INFO - early_stopping: False
+2025-05-21 16:24:14,766 - INFO - Final best metrics (CV mean):
+2025-05-21 16:24:14,766 - INFO - accuracy: 0.7848
+2025-05-21 16:24:14,766 - INFO - precision: 0.0306
+2025-05-21 16:24:14,766 - INFO - recall: 0.4238
+2025-05-21 16:24:14,766 - INFO - sensitivity: 0.4238
+2025-05-21 16:24:14,766 - INFO - specificity: 0.7904
+2025-05-21 16:24:14,766 - INFO - f1: 0.0571
+2025-05-21 16:24:14,766 - INFO - roc_auc: 0.6166
+2025-05-21 16:24:14,766 - INFO - pr_auc: 0.0380
+2025-05-21 16:24:14,766 - INFO - tp: 124936.4250
+2025-05-21 16:24:14,766 - INFO - tn: 14692780.9215
+2025-05-21 16:24:14,766 - INFO - fp: 3888788.8760
+2025-05-21 16:24:14,766 - INFO - fn: 167926.1125
+2025-05-21 16:24:14,766 - INFO - avg_pred: 0.2129
+2025-05-21 16:24:14,767 - INFO - kappa: 0.0290
+2025-05-21 16:24:14,767 - INFO - log_loss: 0.4620
+2025-05-21 16:24:14,767 - INFO - brier: 0.1469
+2025-05-21 16:24:14,767 - INFO - ece: 0.2595
+2025-05-21 16:24:14,767 - INFO - mce: 0.8718
+2025-05-21 16:24:14,767 - INFO - Evaluating on held-out test set (never seen during training/tuning)...
+2025-05-21 16:24:14,833 - INFO - Test set metrics (never seen during training/tuning):
+2025-05-21 16:24:14,833 - INFO - accuracy: 0.8190
+2025-05-21 16:24:14,833 - INFO - precision: 0.0278
+2025-05-21 16:24:14,833 - INFO - recall: 0.2673
+2025-05-21 16:24:14,833 - INFO - sensitivity: 0.2673
+2025-05-21 16:24:14,833 - INFO - specificity: 0.8290
+2025-05-21 16:24:14,833 - INFO - f1: 0.0503
+2025-05-21 16:24:14,833 - INFO - roc_auc: 0.5879
+2025-05-21 16:24:14,833 - INFO - pr_auc: 0.0744
+2025-05-21 16:24:14,833 - INFO - tp: 116814.9675
+2025-05-21 16:24:14,833 - INFO - tn: 19839987.2150
+2025-05-21 16:24:14,833 - INFO - fp: 4091530.8075
+2025-05-21 16:24:14,833 - INFO - fn: 320278.3875
+2025-05-21 16:24:14,833 - INFO - avg_pred: 0.1727
+2025-05-21 16:24:14,833 - INFO - kappa: 0.0184
+2025-05-21 16:24:14,833 - INFO - log_loss: 0.3899
+2025-05-21 16:24:14,833 - INFO - brier: 0.1229
+2025-05-21 16:24:14,833 - INFO - ece: 0.2357
+2025-05-21 16:24:14,833 - INFO - mce: 0.8375
+2025-05-21 16:28:55,146 - INFO - Starting PSGD (Polynomial SGD) model training...
+2025-05-21 16:28:55,146 - INFO - Loading and preprocessing data...
+2025-05-21 16:28:55,160 - INFO - Data loaded: 9228 training samples, 2308 test samples
+2025-05-21 16:28:55,160 - INFO - Running Optuna optimization for 100 trials...
+2025-05-21 16:28:55,197 - ERROR - Error during optimization: name 'categorical_transformer' is not defined
+2025-05-21 16:28:55,198 - ERROR - Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/PSGD_Train.py", line 416, in main
+    study.optimize(optuna_objective, n_trials=n_trials, callbacks=[tqdm_callback])
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/optuna/study/study.py", line 475, in optimize
+    _optimize(
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/optuna/study/_optimize.py", line 63, in _optimize
+    _optimize_sequential(
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/optuna/study/_optimize.py", line 160, in _optimize_sequential
+    frozen_trial = _run_trial(study, func, catch)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/optuna/study/_optimize.py", line 248, in _run_trial
+    raise func_err
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/optuna/study/_optimize.py", line 197, in _run_trial
+    value_or_values = func(trial)
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/PSGD_Train.py", line 274, in optuna_objective
+    ('cat', categorical_transformer, categorical_features)
+NameError: name 'categorical_transformer' is not defined
+
+2025-05-21 16:28:55,198 - WARNING - No valid model found that meets the constraints.
+2025-05-21 16:28:55,198 - WARNING - Check your objective constraints and data.
+2025-05-21 16:30:57,084 - INFO - Starting PSGD (Polynomial SGD) model training...
+2025-05-21 16:30:57,084 - INFO - Loading and preprocessing data...
+2025-05-21 16:30:57,098 - INFO - Data loaded: 9228 training samples, 2308 test samples
+2025-05-21 16:30:57,098 - INFO - Running Optuna optimization for 100 trials...
+2025-05-21 16:31:27,752 - INFO - Optimization completed.
+2025-05-21 16:31:27,753 - INFO - Best score: 0.7833062288140965
+2025-05-21 16:31:27,753 - INFO - Best parameters:
+2025-05-21 16:31:27,753 - INFO - loss: log_loss
+2025-05-21 16:31:27,753 - INFO - penalty: l2
+2025-05-21 16:31:27,753 - INFO - alpha: 0.0008522232330730518
+2025-05-21 16:31:27,753 - INFO - learning_rate: invscaling
+2025-05-21 16:31:27,753 - INFO - class_weight: None
+2025-05-21 16:31:27,753 - INFO - max_iter: 1053
+2025-05-21 16:31:27,753 - INFO - random_state: 42
+2025-05-21 16:31:27,753 - INFO - average: True
+2025-05-21 16:31:27,753 - INFO - shuffle: False
+2025-05-21 16:31:27,753 - INFO - eta0: 0.002928837435831374
+2025-05-21 16:31:27,753 - INFO - power_t: 0.2298400545328561
+2025-05-21 16:31:27,753 - INFO - early_stopping: False
+2025-05-21 16:31:27,753 - INFO - Best metrics:
+2025-05-21 16:31:27,753 - INFO - accuracy: 0.5061
+2025-05-21 16:31:27,753 - INFO - precision: 0.0267
+2025-05-21 16:31:27,753 - INFO - recall: 0.8603
+2025-05-21 16:31:27,753 - INFO - sensitivity: 0.8603
+2025-05-21 16:31:27,753 - INFO - specificity: 0.5006
+2025-05-21 16:31:27,753 - INFO - f1: 0.0517
+2025-05-21 16:31:27,753 - INFO - roc_auc: 0.7833
+2025-05-21 16:31:27,753 - INFO - pr_auc: 0.0661
+2025-05-21 16:31:27,753 - INFO - tp: 250100.3635
+2025-05-21 16:31:27,754 - INFO - tn: 9297522.9205
+2025-05-21 16:31:27,754 - INFO - fp: 9284046.8770
+2025-05-21 16:31:27,754 - INFO - fn: 42762.1740
+2025-05-21 16:31:27,754 - INFO - avg_pred: 0.5049
+2025-05-21 16:31:27,754 - INFO - kappa: 0.0224
+2025-05-21 16:31:27,754 - INFO - log_loss: 4.4706
+2025-05-21 16:31:27,754 - INFO - brier: 0.4551
+2025-05-21 16:31:27,754 - INFO - ece: 0.4927
+2025-05-21 16:31:27,754 - INFO - mce: 0.9592
+2025-05-21 16:31:27,754 - INFO - Final best parameters:
+2025-05-21 16:31:27,754 - INFO - loss: log_loss
+2025-05-21 16:31:27,754 - INFO - penalty: l2
+2025-05-21 16:31:27,754 - INFO - alpha: 0.0008522232330730518
+2025-05-21 16:31:27,754 - INFO - learning_rate: invscaling
+2025-05-21 16:31:27,754 - INFO - class_weight: None
+2025-05-21 16:31:27,754 - INFO - max_iter: 1053
+2025-05-21 16:31:27,754 - INFO - random_state: 42
+2025-05-21 16:31:27,754 - INFO - average: True
+2025-05-21 16:31:27,754 - INFO - shuffle: False
+2025-05-21 16:31:27,754 - INFO - eta0: 0.002928837435831374
+2025-05-21 16:31:27,754 - INFO - power_t: 0.2298400545328561
+2025-05-21 16:31:27,754 - INFO - early_stopping: False
+2025-05-21 16:31:27,754 - INFO - Final best metrics (CV mean):
+2025-05-21 16:31:27,754 - INFO - accuracy: 0.5061
+2025-05-21 16:31:27,754 - INFO - precision: 0.0267
+2025-05-21 16:31:27,754 - INFO - recall: 0.8603
+2025-05-21 16:31:27,754 - INFO - sensitivity: 0.8603
+2025-05-21 16:31:27,754 - INFO - specificity: 0.5006
+2025-05-21 16:31:27,754 - INFO - f1: 0.0517
+2025-05-21 16:31:27,754 - INFO - roc_auc: 0.7833
+2025-05-21 16:31:27,754 - INFO - pr_auc: 0.0661
+2025-05-21 16:31:27,754 - INFO - tp: 250100.3635
+2025-05-21 16:31:27,754 - INFO - tn: 9297522.9205
+2025-05-21 16:31:27,754 - INFO - fp: 9284046.8770
+2025-05-21 16:31:27,754 - INFO - fn: 42762.1740
+2025-05-21 16:31:27,754 - INFO - avg_pred: 0.5049
+2025-05-21 16:31:27,754 - INFO - kappa: 0.0224
+2025-05-21 16:31:27,754 - INFO - log_loss: 4.4706
+2025-05-21 16:31:27,755 - INFO - brier: 0.4551
+2025-05-21 16:31:27,755 - INFO - ece: 0.4927
+2025-05-21 16:31:27,755 - INFO - mce: 0.9592
+2025-05-21 16:31:27,755 - INFO - 评估在所有数据集上（从未在训练/调整期间使用）...
+2025-05-21 16:31:27,803 - INFO - Test set metrics (never seen during training/tuning):
+2025-05-21 16:31:27,803 - INFO - accuracy: 0.4248
+2025-05-21 16:31:27,803 - INFO - precision: 0.0267
+2025-05-21 16:31:27,803 - INFO - recall: 0.8761
+2025-05-21 16:31:27,803 - INFO - sensitivity: 0.8761
+2025-05-21 16:31:27,803 - INFO - specificity: 0.4166
+2025-05-21 16:31:27,803 - INFO - f1: 0.0518
+2025-05-21 16:31:27,803 - INFO - roc_auc: 0.7324
+2025-05-21 16:31:27,803 - INFO - pr_auc: 0.1582
+2025-05-21 16:31:27,803 - INFO - tp: 382927.3400
+2025-05-21 16:31:27,803 - INFO - tn: 9969390.0125
+2025-05-21 16:31:27,803 - INFO - fp: 13962128.0100
+2025-05-21 16:31:27,803 - INFO - fn: 54166.0150
+2025-05-21 16:31:27,803 - INFO - avg_pred: 0.5887
+2025-05-21 16:31:27,803 - INFO - kappa: 0.0176
+2025-05-21 16:31:27,803 - INFO - log_loss: 11.6552
+2025-05-21 16:31:27,803 - INFO - brier: 0.5593
+2025-05-21 16:31:27,803 - INFO - ece: 0.5736
+2025-05-21 16:31:27,803 - INFO - mce: 0.9690
+2025-05-21 16:35:43,266 - INFO - Starting PSGD (Polynomial SGD) model training...
+2025-05-21 16:35:43,266 - INFO - Loading and preprocessing data...
+2025-05-21 16:35:43,278 - INFO - Data loaded: 9228 training samples, 2308 test samples
+2025-05-21 16:35:43,279 - INFO - Running Optuna optimization for 100 trials...
+2025-05-21 16:36:12,657 - INFO - Optimization completed.
+2025-05-21 16:36:12,657 - INFO - Best score: 0.7782977083122699
+2025-05-21 16:36:12,657 - INFO - Best parameters:
+2025-05-21 16:36:12,657 - INFO - loss: log_loss
+2025-05-21 16:36:12,657 - INFO - penalty: l2
+2025-05-21 16:36:12,657 - INFO - alpha: 0.00037850929921609745
+2025-05-21 16:36:12,657 - INFO - learning_rate: invscaling
+2025-05-21 16:36:12,657 - INFO - class_weight: balanced
+2025-05-21 16:36:12,657 - INFO - max_iter: 1259
+2025-05-21 16:36:12,657 - INFO - random_state: 42
+2025-05-21 16:36:12,657 - INFO - average: True
+2025-05-21 16:36:12,658 - INFO - shuffle: False
+2025-05-21 16:36:12,658 - INFO - eta0: 0.0018463296747815027
+2025-05-21 16:36:12,658 - INFO - power_t: 0.31533488648711294
+2025-05-21 16:36:12,658 - INFO - early_stopping: True
+2025-05-21 16:36:12,658 - INFO - validation_fraction: 0.21145601609011913
+2025-05-21 16:36:12,658 - INFO - n_iter_no_change: 9
+2025-05-21 16:36:12,658 - INFO - tol: 0.00010403986877632837
+2025-05-21 16:36:12,658 - INFO - Best metrics:
+2025-05-21 16:36:12,658 - INFO - accuracy: 0.4488
+2025-05-21 16:36:12,658 - INFO - precision: 0.0241
+2025-05-21 16:36:12,658 - INFO - recall: 0.8607
+2025-05-21 16:36:12,658 - INFO - sensitivity: 0.8607
+2025-05-21 16:36:12,658 - INFO - specificity: 0.4423
+2025-05-21 16:36:12,658 - INFO - f1: 0.0468
+2025-05-21 16:36:12,658 - INFO - roc_auc: 0.7783
+2025-05-21 16:36:12,658 - INFO - pr_auc: 0.0578
+2025-05-21 16:36:12,658 - INFO - tp: 250508.5060
+2025-05-21 16:36:12,658 - INFO - tn: 8220459.1620
+2025-05-21 16:36:12,658 - INFO - fp: 10361110.6355
+2025-05-21 16:36:12,658 - INFO - fn: 42354.0315
+2025-05-21 16:36:12,658 - INFO - avg_pred: 0.5622
+2025-05-21 16:36:12,658 - INFO - kappa: 0.0172
+2025-05-21 16:36:12,658 - INFO - log_loss: 1.8927
+2025-05-21 16:36:12,658 - INFO - brier: 0.4470
+2025-05-21 16:36:12,658 - INFO - ece: 0.5471
+2025-05-21 16:36:12,658 - INFO - mce: 0.9356
+2025-05-21 16:36:12,658 - INFO - Final best parameters:
+2025-05-21 16:36:12,658 - INFO - loss: log_loss
+2025-05-21 16:36:12,658 - INFO - penalty: l2
+2025-05-21 16:36:12,658 - INFO - alpha: 0.00037850929921609745
+2025-05-21 16:36:12,658 - INFO - learning_rate: invscaling
+2025-05-21 16:36:12,658 - INFO - class_weight: balanced
+2025-05-21 16:36:12,659 - INFO - max_iter: 1259
+2025-05-21 16:36:12,659 - INFO - random_state: 42
+2025-05-21 16:36:12,659 - INFO - average: True
+2025-05-21 16:36:12,659 - INFO - shuffle: False
+2025-05-21 16:36:12,659 - INFO - eta0: 0.0018463296747815027
+2025-05-21 16:36:12,659 - INFO - power_t: 0.31533488648711294
+2025-05-21 16:36:12,659 - INFO - early_stopping: True
+2025-05-21 16:36:12,659 - INFO - validation_fraction: 0.21145601609011913
+2025-05-21 16:36:12,659 - INFO - n_iter_no_change: 9
+2025-05-21 16:36:12,659 - INFO - tol: 0.00010403986877632837
+2025-05-21 16:36:12,659 - INFO - Final best metrics (CV mean):
+2025-05-21 16:36:12,659 - INFO - accuracy: 0.4488
+2025-05-21 16:36:12,659 - INFO - precision: 0.0241
+2025-05-21 16:36:12,659 - INFO - recall: 0.8607
+2025-05-21 16:36:12,659 - INFO - sensitivity: 0.8607
+2025-05-21 16:36:12,659 - INFO - specificity: 0.4423
+2025-05-21 16:36:12,659 - INFO - f1: 0.0468
+2025-05-21 16:36:12,659 - INFO - roc_auc: 0.7783
+2025-05-21 16:36:12,659 - INFO - pr_auc: 0.0578
+2025-05-21 16:36:12,659 - INFO - tp: 250508.5060
+2025-05-21 16:36:12,659 - INFO - tn: 8220459.1620
+2025-05-21 16:36:12,659 - INFO - fp: 10361110.6355
+2025-05-21 16:36:12,659 - INFO - fn: 42354.0315
+2025-05-21 16:36:12,659 - INFO - avg_pred: 0.5622
+2025-05-21 16:36:12,659 - INFO - kappa: 0.0172
+2025-05-21 16:36:12,659 - INFO - log_loss: 1.8927
+2025-05-21 16:36:12,659 - INFO - brier: 0.4470
+2025-05-21 16:36:12,659 - INFO - ece: 0.5471
+2025-05-21 16:36:12,659 - INFO - mce: 0.9356
+2025-05-21 16:36:12,659 - INFO - 评估在所有数据集上（从未在训练/调整期间使用）...
+2025-05-21 16:36:12,700 - INFO - Test set metrics (never seen during training/tuning):
+2025-05-21 16:36:12,700 - INFO - accuracy: 0.6371
+2025-05-21 16:36:12,700 - INFO - precision: 0.0328
+2025-05-21 16:36:12,700 - INFO - recall: 0.6752
+2025-05-21 16:36:12,700 - INFO - sensitivity: 0.6752
+2025-05-21 16:36:12,701 - INFO - specificity: 0.6364
+2025-05-21 16:36:12,701 - INFO - f1: 0.0626
+2025-05-21 16:36:12,701 - INFO - roc_auc: 0.6716
+2025-05-21 16:36:12,701 - INFO - pr_auc: 0.0476
+2025-05-21 16:36:12,701 - INFO - tp: 295115.4125
+2025-05-21 16:36:12,701 - INFO - tn: 15230318.0675
+2025-05-21 16:36:12,701 - INFO - fp: 8701199.9550
+2025-05-21 16:36:12,701 - INFO - fn: 141977.9425
+2025-05-21 16:36:12,701 - INFO - avg_pred: 0.3692
+2025-05-21 16:36:12,701 - INFO - kappa: 0.0294
+2025-05-21 16:36:12,701 - INFO - log_loss: 2.2402
+2025-05-21 16:36:12,701 - INFO - brier: 0.3276
+2025-05-21 16:36:12,701 - INFO - ece: 0.3583
+2025-05-21 16:36:12,701 - INFO - mce: 0.9581
+2025-05-21 16:36:51,672 - INFO - Starting PSGD (Polynomial SGD) model training...
+2025-05-21 16:36:51,672 - INFO - Loading and preprocessing data...
+2025-05-21 16:36:51,684 - INFO - Data loaded: 9228 training samples, 2308 test samples
+2025-05-21 16:36:51,684 - INFO - Running Optuna optimization for 2000 trials...
+2025-05-21 16:47:22,958 - INFO - Optimization completed.
+2025-05-21 16:47:22,959 - INFO - Best score: 0.7895471071428546
+2025-05-21 16:47:22,959 - INFO - Best parameters:
+2025-05-21 16:47:22,959 - INFO - loss: log_loss
+2025-05-21 16:47:22,959 - INFO - penalty: l2
+2025-05-21 16:47:22,959 - INFO - alpha: 0.005216002340280566
+2025-05-21 16:47:22,959 - INFO - learning_rate: invscaling
+2025-05-21 16:47:22,959 - INFO - class_weight: balanced
+2025-05-21 16:47:22,959 - INFO - max_iter: 831
+2025-05-21 16:47:22,959 - INFO - random_state: 42
+2025-05-21 16:47:22,959 - INFO - average: True
+2025-05-21 16:47:22,959 - INFO - shuffle: False
+2025-05-21 16:47:22,959 - INFO - eta0: 0.0310932998415609
+2025-05-21 16:47:22,959 - INFO - power_t: 0.3932483848925144
+2025-05-21 16:47:22,959 - INFO - early_stopping: False
+2025-05-21 16:47:22,959 - INFO - Best metrics:
+2025-05-21 16:47:22,959 - INFO - accuracy: 0.5254
+2025-05-21 16:47:22,959 - INFO - precision: 0.0273
+2025-05-21 16:47:22,959 - INFO - recall: 0.8584
+2025-05-21 16:47:22,959 - INFO - sensitivity: 0.8584
+2025-05-21 16:47:22,959 - INFO - specificity: 0.5203
+2025-05-21 16:47:22,959 - INFO - f1: 0.0529
+2025-05-21 16:47:22,959 - INFO - roc_auc: 0.7895
+2025-05-21 16:47:22,959 - INFO - pr_auc: 0.0700
+2025-05-21 16:47:22,959 - INFO - tp: 249540.5385
+2025-05-21 16:47:22,959 - INFO - tn: 9659100.9215
+2025-05-21 16:47:22,959 - INFO - fp: 8922468.8760
+2025-05-21 16:47:22,959 - INFO - fn: 43321.9990
+2025-05-21 16:47:22,959 - INFO - avg_pred: 0.4856
+2025-05-21 16:47:22,959 - INFO - kappa: 0.0236
+2025-05-21 16:47:22,959 - INFO - log_loss: 5.8705
+2025-05-21 16:47:22,959 - INFO - brier: 0.4427
+2025-05-21 16:47:22,959 - INFO - ece: 0.4712
+2025-05-21 16:47:22,959 - INFO - mce: 0.9627
+2025-05-21 16:47:22,960 - INFO - Final best parameters:
+2025-05-21 16:47:22,960 - INFO - loss: log_loss
+2025-05-21 16:47:22,960 - INFO - penalty: l2
+2025-05-21 16:47:22,960 - INFO - alpha: 0.005216002340280566
+2025-05-21 16:47:22,960 - INFO - learning_rate: invscaling
+2025-05-21 16:47:22,960 - INFO - class_weight: balanced
+2025-05-21 16:47:22,960 - INFO - max_iter: 831
+2025-05-21 16:47:22,960 - INFO - random_state: 42
+2025-05-21 16:47:22,960 - INFO - average: True
+2025-05-21 16:47:22,960 - INFO - shuffle: False
+2025-05-21 16:47:22,960 - INFO - eta0: 0.0310932998415609
+2025-05-21 16:47:22,960 - INFO - power_t: 0.3932483848925144
+2025-05-21 16:47:22,960 - INFO - early_stopping: False
+2025-05-21 16:47:22,960 - INFO - Final best metrics (CV mean):
+2025-05-21 16:47:22,960 - INFO - accuracy: 0.5254
+2025-05-21 16:47:22,960 - INFO - precision: 0.0273
+2025-05-21 16:47:22,960 - INFO - recall: 0.8584
+2025-05-21 16:47:22,960 - INFO - sensitivity: 0.8584
+2025-05-21 16:47:22,960 - INFO - specificity: 0.5203
+2025-05-21 16:47:22,960 - INFO - f1: 0.0529
+2025-05-21 16:47:22,960 - INFO - roc_auc: 0.7895
+2025-05-21 16:47:22,960 - INFO - pr_auc: 0.0700
+2025-05-21 16:47:22,960 - INFO - tp: 249540.5385
+2025-05-21 16:47:22,960 - INFO - tn: 9659100.9215
+2025-05-21 16:47:22,960 - INFO - fp: 8922468.8760
+2025-05-21 16:47:22,960 - INFO - fn: 43321.9990
+2025-05-21 16:47:22,960 - INFO - avg_pred: 0.4856
+2025-05-21 16:47:22,960 - INFO - kappa: 0.0236
+2025-05-21 16:47:22,960 - INFO - log_loss: 5.8705
+2025-05-21 16:47:22,960 - INFO - brier: 0.4427
+2025-05-21 16:47:22,960 - INFO - ece: 0.4712
+2025-05-21 16:47:22,960 - INFO - mce: 0.9627
+2025-05-21 16:47:22,960 - INFO - 评估在所有数据集上（从未在训练/调整期间使用）...
+2025-05-21 16:47:23,020 - INFO - Test set metrics (never seen during training/tuning):
+2025-05-21 16:47:23,020 - INFO - accuracy: 0.5372
+2025-05-21 16:47:23,020 - INFO - precision: 0.0307
+2025-05-21 16:47:23,020 - INFO - recall: 0.8119
+2025-05-21 16:47:23,020 - INFO - sensitivity: 0.8119
+2025-05-21 16:47:23,020 - INFO - specificity: 0.5322
+2025-05-21 16:47:23,020 - INFO - f1: 0.0592
+2025-05-21 16:47:23,020 - INFO - roc_auc: 0.7148
+2025-05-21 16:47:23,020 - INFO - pr_auc: 0.1778
+2025-05-21 16:47:23,020 - INFO - tp: 354856.3725
+2025-05-21 16:47:23,020 - INFO - tn: 12735431.2700
+2025-05-21 16:47:23,020 - INFO - fp: 11196086.7525
+2025-05-21 16:47:23,020 - INFO - fn: 82236.9825
+2025-05-21 16:47:23,020 - INFO - avg_pred: 0.4740
+2025-05-21 16:47:23,020 - INFO - kappa: 0.0255
+2025-05-21 16:47:23,020 - INFO - log_loss: 10.2689
+2025-05-21 16:47:23,020 - INFO - brier: 0.4500
+2025-05-21 16:47:23,020 - INFO - ece: 0.4566
+2025-05-21 16:47:23,020 - INFO - mce: 0.9659
+2025-05-21 16:52:24,898 - INFO - Starting PSGD (Polynomial SGD) model training...
+2025-05-21 16:52:24,899 - INFO - Loading and preprocessing data...
+2025-05-21 16:52:24,914 - INFO - Data loaded: 9228 training samples, 2308 test samples
+2025-05-21 16:52:24,915 - INFO - Running Optuna optimization for 5000 trials...
+2025-05-21 17:17:58,394 - INFO - Optimization completed.
+2025-05-21 17:17:58,395 - INFO - Best score: 0.7985563324918481
+2025-05-21 17:17:58,395 - INFO - Best parameters:
+2025-05-21 17:17:58,395 - INFO - loss: log_loss
+2025-05-21 17:17:58,395 - INFO - penalty: l2
+2025-05-21 17:17:58,395 - INFO - alpha: 1.8677732482336244e-05
+2025-05-21 17:17:58,395 - INFO - learning_rate: invscaling
+2025-05-21 17:17:58,395 - INFO - class_weight: balanced
+2025-05-21 17:17:58,395 - INFO - max_iter: 1421
+2025-05-21 17:17:58,395 - INFO - random_state: 42
+2025-05-21 17:17:58,395 - INFO - average: True
+2025-05-21 17:17:58,395 - INFO - shuffle: False
+2025-05-21 17:17:58,395 - INFO - eta0: 0.004215042736175645
+2025-05-21 17:17:58,395 - INFO - power_t: 0.3585089923575971
+2025-05-21 17:17:58,395 - INFO - early_stopping: True
+2025-05-21 17:17:58,396 - INFO - validation_fraction: 0.2189794082481404
+2025-05-21 17:17:58,396 - INFO - n_iter_no_change: 5
+2025-05-21 17:17:58,396 - INFO - tol: 0.00022671219822261118
+2025-05-21 17:17:58,396 - INFO - Best metrics:
+2025-05-21 17:17:58,396 - INFO - accuracy: 0.6202
+2025-05-21 17:17:58,396 - INFO - precision: 0.0316
+2025-05-21 17:17:58,396 - INFO - recall: 0.7933
+2025-05-21 17:17:58,396 - INFO - sensitivity: 0.7933
+2025-05-21 17:17:58,396 - INFO - specificity: 0.6177
+2025-05-21 17:17:58,396 - INFO - f1: 0.0606
+2025-05-21 17:17:58,396 - INFO - roc_auc: 0.7986
+2025-05-21 17:17:58,396 - INFO - pr_auc: 0.0710
+2025-05-21 17:17:58,396 - INFO - tp: 230162.6905
+2025-05-21 17:17:58,396 - INFO - tn: 11482061.1355
+2025-05-21 17:17:58,396 - INFO - fp: 7099508.6620
+2025-05-21 17:17:58,396 - INFO - fn: 62699.8470
+2025-05-21 17:17:58,396 - INFO - avg_pred: 0.3887
+2025-05-21 17:17:58,396 - INFO - kappa: 0.0319
+2025-05-21 17:17:58,396 - INFO - log_loss: 2.0706
+2025-05-21 17:17:58,396 - INFO - brier: 0.3290
+2025-05-21 17:17:58,396 - INFO - ece: 0.3816
+2025-05-21 17:17:58,396 - INFO - mce: 0.9462
+2025-05-21 17:17:58,397 - INFO - Final best parameters:
+2025-05-21 17:17:58,397 - INFO - loss: log_loss
+2025-05-21 17:17:58,397 - INFO - penalty: l2
+2025-05-21 17:17:58,397 - INFO - alpha: 1.8677732482336244e-05
+2025-05-21 17:17:58,397 - INFO - learning_rate: invscaling
+2025-05-21 17:17:58,397 - INFO - class_weight: balanced
+2025-05-21 17:17:58,397 - INFO - max_iter: 1421
+2025-05-21 17:17:58,397 - INFO - random_state: 42
+2025-05-21 17:17:58,397 - INFO - average: True
+2025-05-21 17:17:58,397 - INFO - shuffle: False
+2025-05-21 17:17:58,397 - INFO - eta0: 0.004215042736175645
+2025-05-21 17:17:58,397 - INFO - power_t: 0.3585089923575971
+2025-05-21 17:17:58,397 - INFO - early_stopping: True
+2025-05-21 17:17:58,397 - INFO - validation_fraction: 0.2189794082481404
+2025-05-21 17:17:58,397 - INFO - n_iter_no_change: 5
+2025-05-21 17:17:58,397 - INFO - tol: 0.00022671219822261118
+2025-05-21 17:17:58,397 - INFO - Final best metrics (CV mean):
+2025-05-21 17:17:58,397 - INFO - accuracy: 0.6202
+2025-05-21 17:17:58,397 - INFO - precision: 0.0316
+2025-05-21 17:17:58,397 - INFO - recall: 0.7933
+2025-05-21 17:17:58,397 - INFO - sensitivity: 0.7933
+2025-05-21 17:17:58,397 - INFO - specificity: 0.6177
+2025-05-21 17:17:58,397 - INFO - f1: 0.0606
+2025-05-21 17:17:58,397 - INFO - roc_auc: 0.7986
+2025-05-21 17:17:58,397 - INFO - pr_auc: 0.0710
+2025-05-21 17:17:58,397 - INFO - tp: 230162.6905
+2025-05-21 17:17:58,397 - INFO - tn: 11482061.1355
+2025-05-21 17:17:58,397 - INFO - fp: 7099508.6620
+2025-05-21 17:17:58,397 - INFO - fn: 62699.8470
+2025-05-21 17:17:58,397 - INFO - avg_pred: 0.3887
+2025-05-21 17:17:58,397 - INFO - kappa: 0.0319
+2025-05-21 17:17:58,397 - INFO - log_loss: 2.0706
+2025-05-21 17:17:58,397 - INFO - brier: 0.3290
+2025-05-21 17:17:58,397 - INFO - ece: 0.3816
+2025-05-21 17:17:58,397 - INFO - mce: 0.9462
+2025-05-21 17:17:58,397 - INFO - 评估在所有数据集上（从未在训练/调整期间使用）...
+2025-05-21 17:17:58,435 - INFO - Test set metrics (never seen during training/tuning):
+2025-05-21 17:17:58,435 - INFO - accuracy: 0.5682
+2025-05-21 17:17:58,435 - INFO - precision: 0.0189
+2025-05-21 17:17:58,435 - INFO - recall: 0.4544
+2025-05-21 17:17:58,435 - INFO - sensitivity: 0.4544
+2025-05-21 17:17:58,435 - INFO - specificity: 0.5703
+2025-05-21 17:17:58,435 - INFO - f1: 0.0364
+2025-05-21 17:17:58,435 - INFO - roc_auc: 0.5706
+2025-05-21 17:17:58,435 - INFO - pr_auc: 0.0514
+2025-05-21 17:17:58,435 - INFO - tp: 198616.3200
+2025-05-21 17:17:58,435 - INFO - tn: 13647576.1475
+2025-05-21 17:17:58,435 - INFO - fp: 10283941.8750
+2025-05-21 17:17:58,435 - INFO - fn: 238477.0350
+2025-05-21 17:17:58,435 - INFO - avg_pred: 0.4302
+2025-05-21 17:17:58,435 - INFO - kappa: 0.0020
+2025-05-21 17:17:58,435 - INFO - log_loss: 6.1867
+2025-05-21 17:17:58,435 - INFO - brier: 0.4149
+2025-05-21 17:17:58,435 - INFO - ece: 0.4295
+2025-05-21 17:17:58,435 - INFO - mce: 0.9754
+2025-05-21 17:36:44,484 - INFO - Starting PSGD (Polynomial SGD) model training...
+2025-05-21 17:36:44,484 - INFO - Loading and preprocessing data...
+2025-05-21 17:36:44,499 - INFO - Data loaded: 9228 training samples, 2308 test samples
+2025-05-21 17:36:44,499 - INFO - Running Optuna optimization for 10 trials...
+2025-05-21 17:36:47,614 - INFO - Optimization completed.
+2025-05-21 17:36:47,614 - INFO - Best score: 0.7032565267847126
+2025-05-21 17:36:47,615 - INFO - Best parameters:
+2025-05-21 17:36:47,615 - INFO - loss: modified_huber
+2025-05-21 17:36:47,615 - INFO - penalty: l2
+2025-05-21 17:36:47,615 - INFO - alpha: 0.005883471118488424
+2025-05-21 17:36:47,615 - INFO - learning_rate: adaptive
+2025-05-21 17:36:47,615 - INFO - class_weight: balanced
+2025-05-21 17:36:47,615 - INFO - max_iter: 598
+2025-05-21 17:36:47,615 - INFO - random_state: 42
+2025-05-21 17:36:47,615 - INFO - average: True
+2025-05-21 17:36:47,615 - INFO - shuffle: False
+2025-05-21 17:36:47,615 - INFO - eta0: 0.015615847054747728
+2025-05-21 17:36:47,615 - INFO - epsilon: 0.03660309537068339
+2025-05-21 17:36:47,615 - INFO - Best metrics:
+2025-05-21 17:36:47,615 - INFO - accuracy: 0.6181
+2025-05-21 17:36:47,615 - INFO - precision: 0.0314
+2025-05-21 17:36:47,615 - INFO - recall: 0.7849
+2025-05-21 17:36:47,615 - INFO - sensitivity: 0.7849
+2025-05-21 17:36:47,615 - INFO - specificity: 0.6156
+2025-05-21 17:36:47,615 - INFO - f1: 0.0603
+2025-05-21 17:36:47,615 - INFO - roc_auc: 0.7033
+2025-05-21 17:36:47,615 - INFO - pr_auc: 0.4100
+2025-05-21 17:36:47,615 - INFO - tp: 228664.4040
+2025-05-21 17:36:47,615 - INFO - tn: 11423392.6795
+2025-05-21 17:36:47,615 - INFO - fp: 7158177.1180
+2025-05-21 17:36:47,615 - INFO - fn: 64198.1335
+2025-05-21 17:36:47,615 - INFO - avg_pred: 0.3906
+2025-05-21 17:36:47,615 - INFO - kappa: 0.0314
+2025-05-21 17:36:47,615 - INFO - log_loss: 13.7072
+2025-05-21 17:36:47,615 - INFO - brier: 0.3814
+2025-05-21 17:36:47,615 - INFO - ece: 0.3784
+2025-05-21 17:36:47,615 - INFO - mce: 0.9685
+2025-05-21 17:36:47,616 - INFO - Final best parameters:
+2025-05-21 17:36:47,617 - INFO - loss: modified_huber
+2025-05-21 17:36:47,617 - INFO - penalty: l2
+2025-05-21 17:36:47,617 - INFO - alpha: 0.005883471118488424
+2025-05-21 17:36:47,617 - INFO - learning_rate: adaptive
+2025-05-21 17:36:47,617 - INFO - class_weight: balanced
+2025-05-21 17:36:47,617 - INFO - max_iter: 598
+2025-05-21 17:36:47,617 - INFO - random_state: 42
+2025-05-21 17:36:47,617 - INFO - average: True
+2025-05-21 17:36:47,617 - INFO - shuffle: False
+2025-05-21 17:36:47,617 - INFO - eta0: 0.015615847054747728
+2025-05-21 17:36:47,617 - INFO - epsilon: 0.03660309537068339
+2025-05-21 17:36:47,617 - INFO - Final best metrics (CV mean):
+2025-05-21 17:36:47,617 - INFO - accuracy: 0.6181
+2025-05-21 17:36:47,617 - INFO - precision: 0.0314
+2025-05-21 17:36:47,617 - INFO - recall: 0.7849
+2025-05-21 17:36:47,617 - INFO - sensitivity: 0.7849
+2025-05-21 17:36:47,617 - INFO - specificity: 0.6156
+2025-05-21 17:36:47,617 - INFO - f1: 0.0603
+2025-05-21 17:36:47,617 - INFO - roc_auc: 0.7033
+2025-05-21 17:36:47,617 - INFO - pr_auc: 0.4100
+2025-05-21 17:36:47,617 - INFO - tp: 228664.4040
+2025-05-21 17:36:47,617 - INFO - tn: 11423392.6795
+2025-05-21 17:36:47,617 - INFO - fp: 7158177.1180
+2025-05-21 17:36:47,617 - INFO - fn: 64198.1335
+2025-05-21 17:36:47,617 - INFO - avg_pred: 0.3906
+2025-05-21 17:36:47,617 - INFO - kappa: 0.0314
+2025-05-21 17:36:47,617 - INFO - log_loss: 13.7072
+2025-05-21 17:36:47,617 - INFO - brier: 0.3814
+2025-05-21 17:36:47,617 - INFO - ece: 0.3784
+2025-05-21 17:36:47,617 - INFO - mce: 0.9685
+2025-05-21 17:36:47,617 - INFO - 评估在所有数据集上（从未在训练/调整期间使用）...
+2025-05-21 17:36:47,683 - INFO - Test set metrics (never seen during training/tuning):
+2025-05-21 17:36:47,683 - INFO - accuracy: 0.5652
+2025-05-21 17:36:47,683 - INFO - precision: 0.0321
+2025-05-21 17:36:47,683 - INFO - recall: 0.7969
+2025-05-21 17:36:47,683 - INFO - sensitivity: 0.7969
+2025-05-21 17:36:47,683 - INFO - specificity: 0.5610
+2025-05-21 17:36:47,683 - INFO - f1: 0.0617
+2025-05-21 17:36:47,683 - INFO - roc_auc: 0.6790
+2025-05-21 17:36:47,683 - INFO - pr_auc: 0.4163
+2025-05-21 17:36:47,683 - INFO - tp: 348311.3200
+2025-05-21 17:36:47,683 - INFO - tn: 13424853.0600
+2025-05-21 17:36:47,683 - INFO - fp: 10506664.9625
+2025-05-21 17:36:47,683 - INFO - fn: 88782.0350
+2025-05-21 17:36:47,683 - INFO - avg_pred: 0.4454
+2025-05-21 17:36:47,683 - INFO - kappa: 0.0282
+2025-05-21 17:36:47,683 - INFO - log_loss: 15.6688
+2025-05-21 17:36:47,683 - INFO - brier: 0.4348
+2025-05-21 17:36:47,684 - INFO - ece: 0.4312
+2025-05-21 17:36:47,684 - INFO - mce: 0.9679
+2025-05-21 17:36:47,684 - INFO - Test set metrics satisfied all test constraints!
+2025-05-21 17:36:47,684 - INFO - Test set objective score: 0.6790
+2025-05-21 17:37:43,036 - INFO - Starting PSGD (Polynomial SGD) model training...
+2025-05-21 17:37:43,036 - INFO - Loading and preprocessing data...
+2025-05-21 17:37:43,051 - INFO - Data loaded: 9228 training samples, 2308 test samples
+2025-05-21 17:37:43,052 - INFO - Running Optuna optimization for 500 trials...
+2025-05-21 17:41:47,922 - INFO - Optimization completed.
+2025-05-21 17:41:47,923 - INFO - Best score: 0.7867311377531185
+2025-05-21 17:41:47,923 - INFO - Best parameters:
+2025-05-21 17:41:47,923 - INFO - loss: log_loss
+2025-05-21 17:41:47,923 - INFO - penalty: l2
+2025-05-21 17:41:47,923 - INFO - alpha: 0.020257374389872032
+2025-05-21 17:41:47,923 - INFO - learning_rate: adaptive
+2025-05-21 17:41:47,923 - INFO - class_weight: balanced
+2025-05-21 17:41:47,923 - INFO - max_iter: 1630
+2025-05-21 17:41:47,923 - INFO - random_state: 42
+2025-05-21 17:41:47,923 - INFO - average: True
+2025-05-21 17:41:47,923 - INFO - shuffle: False
+2025-05-21 17:41:47,923 - INFO - eta0: 0.002047713600380875
+2025-05-21 17:41:47,923 - INFO - early_stopping: True
+2025-05-21 17:41:47,923 - INFO - validation_fraction: 0.25446128111410343
+2025-05-21 17:41:47,923 - INFO - n_iter_no_change: 25
+2025-05-21 17:41:47,923 - INFO - tol: 0.0026185195691435926
+2025-05-21 17:41:47,923 - INFO - Best metrics:
+2025-05-21 17:41:47,923 - INFO - accuracy: 0.6934
+2025-05-21 17:41:47,923 - INFO - precision: 0.0370
+2025-05-21 17:41:47,923 - INFO - recall: 0.7385
+2025-05-21 17:41:47,923 - INFO - sensitivity: 0.7385
+2025-05-21 17:41:47,923 - INFO - specificity: 0.6927
+2025-05-21 17:41:47,923 - INFO - f1: 0.0702
+2025-05-21 17:41:47,923 - INFO - roc_auc: 0.7867
+2025-05-21 17:41:47,923 - INFO - pr_auc: 0.0563
+2025-05-21 17:41:47,923 - INFO - tp: 216278.8570
+2025-05-21 17:41:47,923 - INFO - tn: 12854195.4125
+2025-05-21 17:41:47,923 - INFO - fp: 5727374.3850
+2025-05-21 17:41:47,923 - INFO - fn: 76583.6805
+2025-05-21 17:41:47,923 - INFO - avg_pred: 0.3140
+2025-05-21 17:41:47,923 - INFO - kappa: 0.0420
+2025-05-21 17:41:47,923 - INFO - log_loss: 2.7932
+2025-05-21 17:41:47,923 - INFO - brier: 0.2880
+2025-05-21 17:41:47,923 - INFO - ece: 0.3060
+2025-05-21 17:41:47,923 - INFO - mce: 0.9523
+2025-05-21 17:41:47,924 - INFO - Final best parameters:
+2025-05-21 17:41:47,924 - INFO - loss: log_loss
+2025-05-21 17:41:47,924 - INFO - penalty: l2
+2025-05-21 17:41:47,924 - INFO - alpha: 0.020257374389872032
+2025-05-21 17:41:47,924 - INFO - learning_rate: adaptive
+2025-05-21 17:41:47,924 - INFO - class_weight: balanced
+2025-05-21 17:41:47,924 - INFO - max_iter: 1630
+2025-05-21 17:41:47,924 - INFO - random_state: 42
+2025-05-21 17:41:47,924 - INFO - average: True
+2025-05-21 17:41:47,924 - INFO - shuffle: False
+2025-05-21 17:41:47,924 - INFO - eta0: 0.002047713600380875
+2025-05-21 17:41:47,924 - INFO - early_stopping: True
+2025-05-21 17:41:47,924 - INFO - validation_fraction: 0.25446128111410343
+2025-05-21 17:41:47,924 - INFO - n_iter_no_change: 25
+2025-05-21 17:41:47,924 - INFO - tol: 0.0026185195691435926
+2025-05-21 17:41:47,924 - INFO - Final best metrics (CV mean):
+2025-05-21 17:41:47,924 - INFO - accuracy: 0.6934
+2025-05-21 17:41:47,924 - INFO - precision: 0.0370
+2025-05-21 17:41:47,924 - INFO - recall: 0.7385
+2025-05-21 17:41:47,924 - INFO - sensitivity: 0.7385
+2025-05-21 17:41:47,924 - INFO - specificity: 0.6927
+2025-05-21 17:41:47,924 - INFO - f1: 0.0702
+2025-05-21 17:41:47,924 - INFO - roc_auc: 0.7867
+2025-05-21 17:41:47,924 - INFO - pr_auc: 0.0563
+2025-05-21 17:41:47,924 - INFO - tp: 216278.8570
+2025-05-21 17:41:47,924 - INFO - tn: 12854195.4125
+2025-05-21 17:41:47,924 - INFO - fp: 5727374.3850
+2025-05-21 17:41:47,924 - INFO - fn: 76583.6805
+2025-05-21 17:41:47,924 - INFO - avg_pred: 0.3140
+2025-05-21 17:41:47,925 - INFO - kappa: 0.0420
+2025-05-21 17:41:47,925 - INFO - log_loss: 2.7932
+2025-05-21 17:41:47,925 - INFO - brier: 0.2880
+2025-05-21 17:41:47,925 - INFO - ece: 0.3060
+2025-05-21 17:41:47,925 - INFO - mce: 0.9523
+2025-05-21 17:41:47,925 - INFO - 评估在所有数据集上（从未在训练/调整期间使用）...
+2025-05-21 17:41:48,087 - INFO - Test set metrics (never seen during training/tuning):
+2025-05-21 17:41:48,087 - INFO - accuracy: 0.4541
+2025-05-21 17:41:48,087 - INFO - precision: 0.0269
+2025-05-21 17:41:48,087 - INFO - recall: 0.8381
+2025-05-21 17:41:48,087 - INFO - sensitivity: 0.8381
+2025-05-21 17:41:48,087 - INFO - specificity: 0.4471
+2025-05-21 17:41:48,087 - INFO - f1: 0.0522
+2025-05-21 17:41:48,087 - INFO - roc_auc: 0.7274
+2025-05-21 17:41:48,087 - INFO - pr_auc: 0.3869
+2025-05-21 17:41:48,087 - INFO - tp: 366340.2175
+2025-05-21 17:41:48,087 - INFO - tn: 10700169.8325
+2025-05-21 17:41:48,087 - INFO - fp: 13231348.1900
+2025-05-21 17:41:48,087 - INFO - fn: 70753.1375
+2025-05-21 17:41:48,087 - INFO - avg_pred: 0.5580
+2025-05-21 17:41:48,087 - INFO - kappa: 0.0181
+2025-05-21 17:41:48,087 - INFO - log_loss: 14.1595
+2025-05-21 17:41:48,087 - INFO - brier: 0.5353
+2025-05-21 17:41:48,087 - INFO - ece: 0.5412
+2025-05-21 17:41:48,087 - INFO - mce: 0.9704
+2025-05-21 17:41:48,087 - INFO - Test set metrics satisfied all test constraints!
+2025-05-21 17:41:48,087 - INFO - Test set objective score: 0.7274
+2025-05-21 17:44:38,028 - INFO - Starting PSGD (Polynomial SGD) model training...
+2025-05-21 17:44:38,028 - INFO - Loading and preprocessing data...
+2025-05-21 17:44:38,048 - INFO - Data loaded: 9228 training samples, 2308 test samples
+2025-05-21 17:44:38,048 - INFO - Running Optuna optimization for 500 trials...
+2025-05-21 17:46:29,169 - INFO - Optimization completed.
+2025-05-21 17:46:29,171 - INFO - Best score: 0.7939874037858831
+2025-05-21 17:46:29,171 - INFO - Best parameters:
+2025-05-21 17:46:29,171 - INFO - loss: log_loss
+2025-05-21 17:46:29,171 - INFO - penalty: l2
+2025-05-21 17:46:29,171 - INFO - alpha: 1.53447842841826e-05
+2025-05-21 17:46:29,171 - INFO - learning_rate: invscaling
+2025-05-21 17:46:29,171 - INFO - class_weight: balanced
+2025-05-21 17:46:29,171 - INFO - max_iter: 383
+2025-05-21 17:46:29,171 - INFO - random_state: 42
+2025-05-21 17:46:29,171 - INFO - average: True
+2025-05-21 17:46:29,171 - INFO - shuffle: False
+2025-05-21 17:46:29,171 - INFO - eta0: 0.007924426928834537
+2025-05-21 17:46:29,171 - INFO - power_t: 0.37734804534045324
+2025-05-21 17:46:29,171 - INFO - early_stopping: True
+2025-05-21 17:46:29,171 - INFO - validation_fraction: 0.2330145384031573
+2025-05-21 17:46:29,171 - INFO - n_iter_no_change: 5
+2025-05-21 17:46:29,171 - INFO - tol: 0.004076494752866215
+2025-05-21 17:46:29,171 - INFO - Best metrics:
+2025-05-21 17:46:29,171 - INFO - accuracy: 0.6156
+2025-05-21 17:46:29,171 - INFO - precision: 0.0293
+2025-05-21 17:46:29,171 - INFO - recall: 0.7498
+2025-05-21 17:46:29,171 - INFO - sensitivity: 0.7498
+2025-05-21 17:46:29,171 - INFO - specificity: 0.6136
+2025-05-21 17:46:29,171 - INFO - f1: 0.0563
+2025-05-21 17:46:29,171 - INFO - roc_auc: 0.7940
+2025-05-21 17:46:29,171 - INFO - pr_auc: 0.0744
+2025-05-21 17:46:29,171 - INFO - tp: 217287.2775
+2025-05-21 17:46:29,171 - INFO - tn: 11409963.1480
+2025-05-21 17:46:29,171 - INFO - fp: 7171606.6495
+2025-05-21 17:46:29,171 - INFO - fn: 75575.2600
+2025-05-21 17:46:29,171 - INFO - avg_pred: 0.3919
+2025-05-21 17:46:29,171 - INFO - kappa: 0.0273
+2025-05-21 17:46:29,171 - INFO - log_loss: 3.4225
+2025-05-21 17:46:29,171 - INFO - brier: 0.3521
+2025-05-21 17:46:29,171 - INFO - ece: 0.3799
+2025-05-21 17:46:29,171 - INFO - mce: 0.9553
+2025-05-21 17:46:29,172 - INFO - Final best parameters:
+2025-05-21 17:46:29,172 - INFO - loss: log_loss
+2025-05-21 17:46:29,172 - INFO - penalty: l2
+2025-05-21 17:46:29,172 - INFO - alpha: 1.53447842841826e-05
+2025-05-21 17:46:29,172 - INFO - learning_rate: invscaling
+2025-05-21 17:46:29,172 - INFO - class_weight: balanced
+2025-05-21 17:46:29,172 - INFO - max_iter: 383
+2025-05-21 17:46:29,172 - INFO - random_state: 42
+2025-05-21 17:46:29,172 - INFO - average: True
+2025-05-21 17:46:29,172 - INFO - shuffle: False
+2025-05-21 17:46:29,172 - INFO - eta0: 0.007924426928834537
+2025-05-21 17:46:29,172 - INFO - power_t: 0.37734804534045324
+2025-05-21 17:46:29,172 - INFO - early_stopping: True
+2025-05-21 17:46:29,172 - INFO - validation_fraction: 0.2330145384031573
+2025-05-21 17:46:29,172 - INFO - n_iter_no_change: 5
+2025-05-21 17:46:29,172 - INFO - tol: 0.004076494752866215
+2025-05-21 17:46:29,172 - INFO - Final best metrics (CV mean):
+2025-05-21 17:46:29,172 - INFO - accuracy: 0.6156
+2025-05-21 17:46:29,172 - INFO - precision: 0.0293
+2025-05-21 17:46:29,172 - INFO - recall: 0.7498
+2025-05-21 17:46:29,172 - INFO - sensitivity: 0.7498
+2025-05-21 17:46:29,172 - INFO - specificity: 0.6136
+2025-05-21 17:46:29,172 - INFO - f1: 0.0563
+2025-05-21 17:46:29,172 - INFO - roc_auc: 0.7940
+2025-05-21 17:46:29,172 - INFO - pr_auc: 0.0744
+2025-05-21 17:46:29,172 - INFO - tp: 217287.2775
+2025-05-21 17:46:29,172 - INFO - tn: 11409963.1480
+2025-05-21 17:46:29,172 - INFO - fp: 7171606.6495
+2025-05-21 17:46:29,172 - INFO - fn: 75575.2600
+2025-05-21 17:46:29,172 - INFO - avg_pred: 0.3919
+2025-05-21 17:46:29,172 - INFO - kappa: 0.0273
+2025-05-21 17:46:29,172 - INFO - log_loss: 3.4225
+2025-05-21 17:46:29,172 - INFO - brier: 0.3521
+2025-05-21 17:46:29,172 - INFO - ece: 0.3799
+2025-05-21 17:46:29,172 - INFO - mce: 0.9553
+2025-05-21 17:46:29,172 - INFO - 评估在所有数据集上（从未在训练/调整期间使用）...
+2025-05-21 17:46:29,213 - INFO - Test set metrics (never seen during training/tuning):
+2025-05-21 17:46:29,213 - INFO - accuracy: 0.6727
+2025-05-21 17:46:29,213 - INFO - precision: 0.0229
+2025-05-21 17:46:29,213 - INFO - recall: 0.4140
+2025-05-21 17:46:29,213 - INFO - sensitivity: 0.4140
+2025-05-21 17:46:29,213 - INFO - specificity: 0.6774
+2025-05-21 17:46:29,213 - INFO - f1: 0.0434
+2025-05-21 17:46:29,213 - INFO - roc_auc: 0.5877
+2025-05-21 17:46:29,213 - INFO - pr_auc: 0.1229
+2025-05-21 17:46:29,213 - INFO - tp: 180941.7975
+2025-05-21 17:46:29,213 - INFO - tn: 16211084.7675
+2025-05-21 17:46:29,213 - INFO - fp: 7720433.2550
+2025-05-21 17:46:29,213 - INFO - fn: 256151.5575
+2025-05-21 17:46:29,213 - INFO - avg_pred: 0.3242
+2025-05-21 17:46:29,213 - INFO - kappa: 0.0097
+2025-05-21 17:46:29,213 - INFO - log_loss: 6.3440
+2025-05-21 17:46:29,213 - INFO - brier: 0.3196
+2025-05-21 17:46:29,213 - INFO - ece: 0.3269
+2025-05-21 17:46:29,213 - INFO - mce: 0.9727
+2025-05-21 17:46:29,213 - INFO - Test set metrics satisfied all test constraints!
+2025-05-21 17:46:29,213 - INFO - Test set objective score: 0.5877
+2025-05-21 17:50:21,350 - INFO - Starting PSGD (Polynomial SGD) model training...
+2025-05-21 17:50:21,350 - INFO - Loading and preprocessing data...
+2025-05-21 17:50:21,362 - INFO - Data loaded: 9228 training samples, 2308 test samples
+2025-05-21 17:50:21,362 - INFO - Running Optuna optimization for 500 trials...
+2025-05-21 17:50:21,390 - ERROR - Error during optimization: SGDClassifier.__init__() got an unexpected keyword argument 'batch_size'
+2025-05-21 17:50:21,391 - ERROR - Traceback (most recent call last):
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/PSGD_Train.py", line 464, in main
+    study.optimize(optuna_objective, n_trials=n_trials, callbacks=[tqdm_callback])
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/optuna/study/study.py", line 475, in optimize
+    _optimize(
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/optuna/study/_optimize.py", line 63, in _optimize
+    _optimize_sequential(
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/optuna/study/_optimize.py", line 160, in _optimize_sequential
+    frozen_trial = _run_trial(study, func, catch)
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/optuna/study/_optimize.py", line 248, in _run_trial
+    raise func_err
+  File "/opt/anaconda3/envs/ml/lib/python3.10/site-packages/optuna/study/_optimize.py", line 197, in _run_trial
+    value_or_values = func(trial)
+  File "/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/py_model/PSGD_Train.py", line 411, in optuna_objective
+    pipeline_steps.append(('classifier', SGDClassifier(**params)))
+TypeError: SGDClassifier.__init__() got an unexpected keyword argument 'batch_size'
+
+2025-05-21 17:50:21,391 - WARNING - No valid model found that meets the constraints.
+2025-05-21 17:50:21,391 - WARNING - Check your objective constraints and data.
+2025-05-21 17:50:53,663 - INFO - Starting PSGD (Polynomial SGD) model training...
+2025-05-21 17:50:53,664 - INFO - Loading and preprocessing data...
+2025-05-21 17:50:53,677 - INFO - Data loaded: 9228 training samples, 2308 test samples
+2025-05-21 17:50:53,678 - INFO - Running Optuna optimization for 500 trials...
+2025-05-21 17:56:25,608 - INFO - Optimization completed.
+2025-05-21 17:56:25,609 - INFO - Best score: 0.7762611756805077
+2025-05-21 17:56:25,609 - INFO - Best parameters:
+2025-05-21 17:56:25,609 - INFO - loss: log_loss
+2025-05-21 17:56:25,609 - INFO - penalty: None
+2025-05-21 17:56:25,609 - INFO - alpha: 0.8423849383425285
+2025-05-21 17:56:25,609 - INFO - learning_rate: invscaling
+2025-05-21 17:56:25,609 - INFO - class_weight: None
+2025-05-21 17:56:25,609 - INFO - max_iter: 184
+2025-05-21 17:56:25,609 - INFO - random_state: 42
+2025-05-21 17:56:25,609 - INFO - average: True
+2025-05-21 17:56:25,609 - INFO - shuffle: False
+2025-05-21 17:56:25,609 - INFO - fit_intercept: True
+2025-05-21 17:56:25,609 - INFO - eta0: 0.0785495223129401
+2025-05-21 17:56:25,609 - INFO - power_t: 0.5058004353988743
+2025-05-21 17:56:25,609 - INFO - early_stopping: True
+2025-05-21 17:56:25,609 - INFO - validation_fraction: 0.23674756674443675
+2025-05-21 17:56:25,609 - INFO - n_iter_no_change: 38
+2025-05-21 17:56:25,609 - INFO - tol: 4.229821660125053e-06
+2025-05-21 17:56:25,609 - INFO - Best metrics:
+2025-05-21 17:56:25,609 - INFO - accuracy: 0.6932
+2025-05-21 17:56:25,609 - INFO - precision: 0.0361
+2025-05-21 17:56:25,609 - INFO - recall: 0.7287
+2025-05-21 17:56:25,609 - INFO - sensitivity: 0.7287
+2025-05-21 17:56:25,609 - INFO - specificity: 0.6928
+2025-05-21 17:56:25,609 - INFO - f1: 0.0687
+2025-05-21 17:56:25,609 - INFO - roc_auc: 0.7763
+2025-05-21 17:56:25,609 - INFO - pr_auc: 0.0600
+2025-05-21 17:56:25,609 - INFO - tp: 212511.2660
+2025-05-21 17:56:25,609 - INFO - tn: 12869346.9155
+2025-05-21 17:56:25,609 - INFO - fp: 5712222.8820
+2025-05-21 17:56:25,609 - INFO - fn: 80351.2715
+2025-05-21 17:56:25,609 - INFO - avg_pred: 0.3138
+2025-05-21 17:56:25,609 - INFO - kappa: 0.0404
+2025-05-21 17:56:25,609 - INFO - log_loss: 3.2405
+2025-05-21 17:56:25,610 - INFO - brier: 0.2875
+2025-05-21 17:56:25,610 - INFO - ece: 0.3043
+2025-05-21 17:56:25,610 - INFO - mce: 0.9563
+2025-05-21 17:56:25,610 - INFO - Final best parameters:
+2025-05-21 17:56:25,610 - INFO - loss: log_loss
+2025-05-21 17:56:25,610 - INFO - penalty: None
+2025-05-21 17:56:25,610 - INFO - alpha: 0.8423849383425285
+2025-05-21 17:56:25,610 - INFO - learning_rate: invscaling
+2025-05-21 17:56:25,610 - INFO - class_weight: None
+2025-05-21 17:56:25,610 - INFO - max_iter: 184
+2025-05-21 17:56:25,610 - INFO - random_state: 42
+2025-05-21 17:56:25,610 - INFO - average: True
+2025-05-21 17:56:25,610 - INFO - shuffle: False
+2025-05-21 17:56:25,610 - INFO - fit_intercept: True
+2025-05-21 17:56:25,610 - INFO - eta0: 0.0785495223129401
+2025-05-21 17:56:25,610 - INFO - power_t: 0.5058004353988743
+2025-05-21 17:56:25,610 - INFO - early_stopping: True
+2025-05-21 17:56:25,610 - INFO - validation_fraction: 0.23674756674443675
+2025-05-21 17:56:25,610 - INFO - n_iter_no_change: 38
+2025-05-21 17:56:25,610 - INFO - tol: 4.229821660125053e-06
+2025-05-21 17:56:25,610 - INFO - Final best metrics (CV mean):
+2025-05-21 17:56:25,610 - INFO - accuracy: 0.6932
+2025-05-21 17:56:25,610 - INFO - precision: 0.0361
+2025-05-21 17:56:25,610 - INFO - recall: 0.7287
+2025-05-21 17:56:25,610 - INFO - sensitivity: 0.7287
+2025-05-21 17:56:25,610 - INFO - specificity: 0.6928
+2025-05-21 17:56:25,611 - INFO - f1: 0.0687
+2025-05-21 17:56:25,611 - INFO - roc_auc: 0.7763
+2025-05-21 17:56:25,611 - INFO - pr_auc: 0.0600
+2025-05-21 17:56:25,611 - INFO - tp: 212511.2660
+2025-05-21 17:56:25,611 - INFO - tn: 12869346.9155
+2025-05-21 17:56:25,611 - INFO - fp: 5712222.8820
+2025-05-21 17:56:25,611 - INFO - fn: 80351.2715
+2025-05-21 17:56:25,611 - INFO - avg_pred: 0.3138
+2025-05-21 17:56:25,611 - INFO - kappa: 0.0404
+2025-05-21 17:56:25,611 - INFO - log_loss: 3.2405
+2025-05-21 17:56:25,611 - INFO - brier: 0.2875
+2025-05-21 17:56:25,611 - INFO - ece: 0.3043
+2025-05-21 17:56:25,611 - INFO - mce: 0.9563
+2025-05-21 17:56:25,611 - INFO - 评估在所有数据集上（从未在训练/调整期间使用）...
+2025-05-21 17:56:25,682 - INFO - Test set metrics (never seen during training/tuning):
+2025-05-21 17:56:25,682 - INFO - accuracy: 0.5473
+2025-05-21 17:56:25,682 - INFO - precision: 0.0161
+2025-05-21 17:56:25,682 - INFO - recall: 0.4020
+2025-05-21 17:56:25,682 - INFO - sensitivity: 0.4020
+2025-05-21 17:56:25,682 - INFO - specificity: 0.5500
+2025-05-21 17:56:25,682 - INFO - f1: 0.0309
+2025-05-21 17:56:25,683 - INFO - roc_auc: 0.5443
+2025-05-21 17:56:25,683 - INFO - pr_auc: 0.1659
+2025-05-21 17:56:25,683 - INFO - tp: 175694.5625
+2025-05-21 17:56:25,683 - INFO - tn: 13161999.4500
+2025-05-21 17:56:25,683 - INFO - fp: 10769518.5725
+2025-05-21 17:56:25,683 - INFO - fn: 261398.7925
+2025-05-21 17:56:25,683 - INFO - avg_pred: 0.4492
+2025-05-21 17:56:25,683 - INFO - kappa: -0.0038
+2025-05-21 17:56:25,683 - INFO - log_loss: 11.5640
+2025-05-21 17:56:25,683 - INFO - brier: 0.4415
+2025-05-21 17:56:25,683 - INFO - ece: 0.4455
+2025-05-21 17:56:25,683 - INFO - mce: 0.9822
+2025-05-21 17:56:25,683 - INFO - Test set metrics satisfied all test constraints!
+2025-05-21 17:56:25,683 - INFO - Test set objective score: 0.5443
+2025-05-21 17:59:48,624 - INFO - Starting PSGD (Polynomial SGD) model training...
+2025-05-21 17:59:48,625 - INFO - Loading and preprocessing data...
+2025-05-21 17:59:48,641 - INFO - Data loaded: 9228 training samples, 2308 test samples
+2025-05-21 17:59:48,641 - INFO - Running Optuna optimization for 100 trials...
+2025-05-21 18:00:50,470 - INFO - Optimization completed.
+2025-05-21 18:00:50,470 - INFO - Best score: 0.7501206788207281
+2025-05-21 18:00:50,471 - INFO - Best parameters:
+2025-05-21 18:00:50,471 - INFO - loss: log_loss
+2025-05-21 18:00:50,471 - INFO - penalty: l1
+2025-05-21 18:00:50,471 - INFO - alpha: 0.010405416945047855
+2025-05-21 18:00:50,471 - INFO - learning_rate: optimal
+2025-05-21 18:00:50,471 - INFO - class_weight: None
+2025-05-21 18:00:50,471 - INFO - max_iter: 239
+2025-05-21 18:00:50,472 - INFO - random_state: 42
+2025-05-21 18:00:50,472 - INFO - average: False
+2025-05-21 18:00:50,472 - INFO - shuffle: False
+2025-05-21 18:00:50,472 - INFO - fit_intercept: False
+2025-05-21 18:00:50,472 - INFO - early_stopping: True
+2025-05-21 18:00:50,472 - INFO - validation_fraction: 0.16373656651128002
+2025-05-21 18:00:50,472 - INFO - n_iter_no_change: 45
+2025-05-21 18:00:50,472 - INFO - tol: 0.0001516523698348687
+2025-05-21 18:00:50,472 - INFO - Best metrics:
+2025-05-21 18:00:50,472 - INFO - accuracy: 0.0199
+2025-05-21 18:00:50,472 - INFO - precision: 0.0156
+2025-05-21 18:00:50,472 - INFO - recall: 1.0000
+2025-05-21 18:00:50,472 - INFO - sensitivity: 1.0000
+2025-05-21 18:00:50,472 - INFO - specificity: 0.0044
+2025-05-21 18:00:50,473 - INFO - f1: 0.0307
+2025-05-21 18:00:50,473 - INFO - roc_auc: 0.7501
+2025-05-21 18:00:50,473 - INFO - pr_auc: 0.0543
+2025-05-21 18:00:50,473 - INFO - tp: 292862.5375
+2025-05-21 18:00:50,473 - INFO - tn: 82268.7470
+2025-05-21 18:00:50,473 - INFO - fp: 18499301.0505
+2025-05-21 18:00:50,473 - INFO - fn: 0.0000
+2025-05-21 18:00:50,473 - INFO - avg_pred: 0.9956
+2025-05-21 18:00:50,474 - INFO - kappa: 0.0001
+2025-05-21 18:00:50,474 - INFO - log_loss: 12.8753
+2025-05-21 18:00:50,474 - INFO - brier: 0.9770
+2025-05-21 18:00:50,474 - INFO - ece: 0.9798
+2025-05-21 18:00:50,474 - INFO - mce: 0.9835
+2025-05-21 18:00:50,476 - INFO - Final best parameters:
+2025-05-21 18:00:50,477 - INFO - loss: log_loss
+2025-05-21 18:00:50,477 - INFO - penalty: l1
+2025-05-21 18:00:50,477 - INFO - alpha: 0.010405416945047855
+2025-05-21 18:00:50,477 - INFO - learning_rate: optimal
+2025-05-21 18:00:50,477 - INFO - class_weight: None
+2025-05-21 18:00:50,477 - INFO - max_iter: 239
+2025-05-21 18:00:50,477 - INFO - random_state: 42
+2025-05-21 18:00:50,477 - INFO - average: False
+2025-05-21 18:00:50,478 - INFO - shuffle: False
+2025-05-21 18:00:50,478 - INFO - fit_intercept: False
+2025-05-21 18:00:50,478 - INFO - early_stopping: True
+2025-05-21 18:00:50,478 - INFO - validation_fraction: 0.16373656651128002
+2025-05-21 18:00:50,478 - INFO - n_iter_no_change: 45
+2025-05-21 18:00:50,478 - INFO - tol: 0.0001516523698348687
+2025-05-21 18:00:50,478 - INFO - Final best metrics (CV mean):
+2025-05-21 18:00:50,478 - INFO - accuracy: 0.0199
+2025-05-21 18:00:50,478 - INFO - precision: 0.0156
+2025-05-21 18:00:50,478 - INFO - recall: 1.0000
+2025-05-21 18:00:50,478 - INFO - sensitivity: 1.0000
+2025-05-21 18:00:50,478 - INFO - specificity: 0.0044
+2025-05-21 18:00:50,478 - INFO - f1: 0.0307
+2025-05-21 18:00:50,478 - INFO - roc_auc: 0.7501
+2025-05-21 18:00:50,478 - INFO - pr_auc: 0.0543
+2025-05-21 18:00:50,478 - INFO - tp: 292862.5375
+2025-05-21 18:00:50,478 - INFO - tn: 82268.7470
+2025-05-21 18:00:50,478 - INFO - fp: 18499301.0505
+2025-05-21 18:00:50,478 - INFO - fn: 0.0000
+2025-05-21 18:00:50,478 - INFO - avg_pred: 0.9956
+2025-05-21 18:00:50,478 - INFO - kappa: 0.0001
+2025-05-21 18:00:50,478 - INFO - log_loss: 12.8753
+2025-05-21 18:00:50,478 - INFO - brier: 0.9770
+2025-05-21 18:00:50,478 - INFO - ece: 0.9798
+2025-05-21 18:00:50,478 - INFO - mce: 0.9835
+2025-05-21 18:00:50,478 - INFO - 评估在所有数据集上（从未在训练/调整期间使用）...
+2025-05-21 18:00:50,643 - INFO - Test set metrics (never seen during training/tuning):
+2025-05-21 18:00:50,643 - INFO - accuracy: 0.0179
+2025-05-21 18:00:50,643 - INFO - precision: 0.0179
+2025-05-21 18:00:50,643 - INFO - recall: 1.0000
+2025-05-21 18:00:50,643 - INFO - sensitivity: 1.0000
+2025-05-21 18:00:50,643 - INFO - specificity: 0.0000
+2025-05-21 18:00:50,643 - INFO - f1: 0.0352
+2025-05-21 18:00:50,644 - INFO - roc_auc: 0.6240
+2025-05-21 18:00:50,644 - INFO - pr_auc: 0.0218
+2025-05-21 18:00:50,644 - INFO - tp: 437093.3550
+2025-05-21 18:00:50,644 - INFO - tn: 0.0000
+2025-05-21 18:00:50,644 - INFO - fp: 23931518.0225
+2025-05-21 18:00:50,644 - INFO - fn: 0.0000
+2025-05-21 18:00:50,644 - INFO - avg_pred: 1.0000
+2025-05-21 18:00:50,644 - INFO - kappa: -0.0000
+2025-05-21 18:00:50,644 - INFO - log_loss: 15.5756
+2025-05-21 18:00:50,644 - INFO - brier: 0.9777
+2025-05-21 18:00:50,644 - INFO - ece: 0.9797
+2025-05-21 18:00:50,644 - INFO - mce: 0.9809
+2025-05-21 18:00:50,644 - INFO - Test set metrics satisfied all test constraints!
+2025-05-21 18:00:50,644 - INFO - Test set objective score: 0.6240
+2025-05-21 18:04:44,159 - INFO - Starting PSGD (Polynomial SGD) model training...
+2025-05-21 18:04:44,159 - INFO - Found existing parameter file: model/PSGD_best_params.json
+2025-05-21 18:04:44,159 - INFO - Loaded previous best parameters as optimization starting point.
+2025-05-21 18:04:44,159 - INFO - Loading and preprocessing data...
+2025-05-21 18:04:44,170 - INFO - Data loaded: 9228 training samples, 2308 test samples
+2025-05-21 18:04:44,171 - INFO - Running Optuna optimization for 100 trials...
+2025-05-21 18:04:44,171 - INFO - Using previous best parameters as starting point for optimization
+2025-05-21 18:05:13,674 - INFO - Optimization completed.
+2025-05-21 18:05:13,675 - INFO - Best score: 0.7663558724068263
+2025-05-21 18:05:13,675 - INFO - Best parameters:
+2025-05-21 18:05:13,675 - INFO - loss: log_loss
+2025-05-21 18:05:13,675 - INFO - penalty: l1
+2025-05-21 18:05:13,675 - INFO - alpha: 1.094935335649899e-06
+2025-05-21 18:05:13,675 - INFO - learning_rate: constant
+2025-05-21 18:05:13,675 - INFO - class_weight: balanced
+2025-05-21 18:05:13,675 - INFO - max_iter: 1939
+2025-05-21 18:05:13,675 - INFO - random_state: 42
+2025-05-21 18:05:13,675 - INFO - average: True
+2025-05-21 18:05:13,675 - INFO - shuffle: False
+2025-05-21 18:05:13,675 - INFO - fit_intercept: False
+2025-05-21 18:05:13,675 - INFO - eta0: 0.00015549471110420937
+2025-05-21 18:05:13,675 - INFO - early_stopping: False
+2025-05-21 18:05:13,675 - INFO - Best metrics:
+2025-05-21 18:05:13,675 - INFO - accuracy: 0.5222
+2025-05-21 18:05:13,675 - INFO - precision: 0.0287
+2025-05-21 18:05:13,675 - INFO - recall: 0.8628
+2025-05-21 18:05:13,675 - INFO - sensitivity: 0.8628
+2025-05-21 18:05:13,675 - INFO - specificity: 0.5169
+2025-05-21 18:05:13,675 - INFO - f1: 0.0553
+2025-05-21 18:05:13,675 - INFO - roc_auc: 0.7664
+2025-05-21 18:05:13,675 - INFO - pr_auc: 0.0551
+2025-05-21 18:05:13,675 - INFO - tp: 251921.4795
+2025-05-21 18:05:13,675 - INFO - tn: 9621253.4420
+2025-05-21 18:05:13,675 - INFO - fp: 8960316.3555
+2025-05-21 18:05:13,675 - INFO - fn: 40941.0580
+2025-05-21 18:05:13,676 - INFO - avg_pred: 0.4890
+2025-05-21 18:05:13,676 - INFO - kappa: 0.0261
+2025-05-21 18:05:13,676 - INFO - log_loss: 3.3637
+2025-05-21 18:05:13,676 - INFO - brier: 0.4350
+2025-05-21 18:05:13,676 - INFO - ece: 0.4809
+2025-05-21 18:05:13,676 - INFO - mce: 0.9579
+2025-05-21 18:05:13,676 - INFO - Final best parameters:
+2025-05-21 18:05:13,676 - INFO - loss: log_loss
+2025-05-21 18:05:13,676 - INFO - penalty: l1
+2025-05-21 18:05:13,676 - INFO - alpha: 1.094935335649899e-06
+2025-05-21 18:05:13,676 - INFO - learning_rate: constant
+2025-05-21 18:05:13,676 - INFO - class_weight: balanced
+2025-05-21 18:05:13,676 - INFO - max_iter: 1939
+2025-05-21 18:05:13,676 - INFO - random_state: 42
+2025-05-21 18:05:13,676 - INFO - average: True
+2025-05-21 18:05:13,676 - INFO - shuffle: False
+2025-05-21 18:05:13,676 - INFO - fit_intercept: False
+2025-05-21 18:05:13,676 - INFO - eta0: 0.00015549471110420937
+2025-05-21 18:05:13,676 - INFO - early_stopping: False
+2025-05-21 18:05:13,676 - INFO - Final best metrics (CV mean):
+2025-05-21 18:05:13,676 - INFO - accuracy: 0.5222
+2025-05-21 18:05:13,676 - INFO - precision: 0.0287
+2025-05-21 18:05:13,676 - INFO - recall: 0.8628
+2025-05-21 18:05:13,676 - INFO - sensitivity: 0.8628
+2025-05-21 18:05:13,676 - INFO - specificity: 0.5169
+2025-05-21 18:05:13,676 - INFO - f1: 0.0553
+2025-05-21 18:05:13,676 - INFO - roc_auc: 0.7664
+2025-05-21 18:05:13,676 - INFO - pr_auc: 0.0551
+2025-05-21 18:05:13,676 - INFO - tp: 251921.4795
+2025-05-21 18:05:13,676 - INFO - tn: 9621253.4420
+2025-05-21 18:05:13,676 - INFO - fp: 8960316.3555
+2025-05-21 18:05:13,676 - INFO - fn: 40941.0580
+2025-05-21 18:05:13,676 - INFO - avg_pred: 0.4890
+2025-05-21 18:05:13,677 - INFO - kappa: 0.0261
+2025-05-21 18:05:13,677 - INFO - log_loss: 3.3637
+2025-05-21 18:05:13,677 - INFO - brier: 0.4350
+2025-05-21 18:05:13,677 - INFO - ece: 0.4809
+2025-05-21 18:05:13,677 - INFO - mce: 0.9579
+2025-05-21 18:05:13,677 - INFO - 评估在所有数据集上（从未在训练/调整期间使用）...
+2025-05-21 18:05:13,716 - INFO - Test set metrics (never seen during training/tuning):
+2025-05-21 18:05:13,717 - INFO - accuracy: 0.3525
+2025-05-21 18:05:13,717 - INFO - precision: 0.0253
+2025-05-21 18:05:13,717 - INFO - recall: 0.9353
+2025-05-21 18:05:13,717 - INFO - sensitivity: 0.9353
+2025-05-21 18:05:13,717 - INFO - specificity: 0.3419
+2025-05-21 18:05:13,717 - INFO - f1: 0.0493
+2025-05-21 18:05:13,717 - INFO - roc_auc: 0.7623
+2025-05-21 18:05:13,717 - INFO - pr_auc: 0.1327
+2025-05-21 18:05:13,717 - INFO - tp: 408798.2550
+2025-05-21 18:05:13,717 - INFO - tn: 8182130.7300
+2025-05-21 18:05:13,717 - INFO - fp: 15749387.2925
+2025-05-21 18:05:13,717 - INFO - fn: 28295.1000
+2025-05-21 18:05:13,717 - INFO - avg_pred: 0.6631
+2025-05-21 18:05:13,717 - INFO - kappa: 0.0149
+2025-05-21 18:05:13,717 - INFO - log_loss: 11.7420
+2025-05-21 18:05:13,717 - INFO - brier: 0.6274
+2025-05-21 18:05:13,717 - INFO - ece: 0.6437
+2025-05-21 18:05:13,717 - INFO - mce: 0.9692
+2025-05-21 18:05:13,717 - INFO - Test set metrics satisfied all test constraints!
+2025-05-21 18:05:13,717 - INFO - Test set objective score: 0.7623

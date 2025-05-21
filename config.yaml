@@ -12,16 +12,16 @@ outcome: "Epilepsy"
 covariates: ["Gender", "Age", "BMI", "Education", "Marriage", "Smoke", "Alcohol", "Employment", "ActivityLevel"]
 
 # 模型训练次数
-n_trials: 50
+n_trials: 3
 
 # 目标函数权重
 objective_weights:
-  AUC: 0.3
-  ECE: -0.2  # 增加校准的重要性
+  AUC: 0.25
+  ECE: -0.2
   F1: 0.2
-  Precision: 0.3  # 增加精确度的重要性
-  Sensitivity: 0.2  # 降低敏感度的权重
-  Specificity: 0.2  # 增加特异度的重要性
+  Precision: 0.3
+  Sensitivity: 0.25
+  Specificity: 0.2
 
 # 目标函数硬约束 - 分为交叉验证和测试集两套约束
 # 交叉验证约束（较宽松）
@@ -55,7 +55,7 @@ eval_settings:
   draw_pr: 1           # 是否绘制PR曲线(1:是, 0:否)
   draw_calibration: 1  # 是否绘制校准曲线(1:是, 0:否)
   draw_confusion: 1    # 是否绘制混淆矩阵(1:是, 0:否)
-  draw_learning: 0     # 是否绘制学习曲线(1:是, 0:否)
+  draw_learning: 1     # 是否绘制学习曲线(1:是, 0:否)
   draw_threshold: 1    # 是否绘制阈值曲线(1:是, 0:否)
   draw_dca: 1          # 是否绘制决策曲线分析(DCA)(1:是, 0:否)
 
