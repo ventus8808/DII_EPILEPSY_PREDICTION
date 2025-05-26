@@ -5,26 +5,37 @@
 
 import os
 import json
+import yaml
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from pathlib import Path
 
+# 加载配置文件
+with open(Path(__file__).parent.parent / 'config.yaml', 'r') as f:
+    config = yaml.safe_load(f)
+
 # 设置字体和风格
 plt.rcParams['font.family'] = 'Monaco'
 plt.rcParams['font.size'] = 12
 
-# 模型列表
-all_models = [
-    "CatBoost", 
-    "Ensemble_Voting",
-    "FNN",
-    "LightGBM", 
-    "Logistic", 
-    "RF", 
-    "SVM",
-    "XGBoost"
-]
+# 从配置中获取模型相关设置
+models = config['models']['order']
+model_display_names = config['models']['display_names']
+colors = config['models']['colors']
+
+# ROC配置
+ROC_CONFIG = {
+    'figure_size': (7, 8),
+    'dpi': 300,
+    'line_width': 2.0,
+    'reference_line_style': '--',
+    'reference_line_width': 1.5,
+    'x_lim': [0.0, 1.0],
+    'y_lim': [0.0, 1.0],
+    'legend_bbox_to_anchor': [0.98, 0.02],
+    'output_dir': 'plot_combined'
+}
 
 def sort_models(models):
     """按照指定的顺序对模型进行排序"""
@@ -40,32 +51,7 @@ def sort_models(models):
     return logistic_models + other_models_sorted + ensemble_models
 
 # 按照指定顺序对模型进行排序
-models = sort_models(all_models)
-
-# 模型显示名称（可以根据需要修改）
-model_display_names = {
-    "XGBoost": "XGBoost",
-    "LightGBM": "LightGBM",
-    "CatBoost": "CatBoost",
-    "RF": "RF",
-    "FNN": "FNN",
-    "SVM": "SVM",
-    "Logistic": "Logistic",
-    "Ensemble_Voting": "Voting"
-}
-
-# 颜色映射（保持与单独图表一致的颜色方案）
-colors = {
-    "XGBoost": "#1f77b4",        # 蓝色
-    "LightGBM": "#ff7f0e",       # 橙色
-    "CatBoost": "#2ca02c",       # 绿色
-    "RF": "#d62728",             # 红色
-    "FNN": "#9467bd",            # 紫色
-    "SVM": "#8c564b",            # 棕色
-    "Logistic": "#e377c2",       # 粉色
-    "Ensemble_Voting": "#17becf", # 青色
-    "Random": "gray",            # 随机分类器参考线
-}
+models = sort_models(models)
 
 def load_metrics_from_csv():
     """从 metrics_comparison.csv 加载模型的AUC-ROC值"""
@@ -97,8 +83,8 @@ def load_roc_data(model_name):
 
 def plot_all_roc():
     """创建包含所有模型ROC曲线的合成图"""
-    # 创建正方形图形
-    plt.figure(figsize=(7, 8), dpi=300)
+    # 创建图形
+    plt.figure(figsize=ROC_CONFIG['figure_size'], dpi=ROC_CONFIG['dpi'])
     
     # 存储所有模型的ROC数据
     all_models_data = {}
@@ -143,7 +129,7 @@ def plot_all_roc():
             tpr,
             label=f"{model_display_names.get(model_name, model_name)}{auc_text}",
             color=colors.get(model_name, "#000000"),
-            linewidth=2.0
+            linewidth=ROC_CONFIG['line_width']
         )
     
     # 绘制随机分类器参考线
@@ -152,14 +138,14 @@ def plot_all_roc():
         [0, 1],
         label="Random",
         color=colors["Random"],
-        linewidth=1.5,
-        linestyle="--"
+        linewidth=ROC_CONFIG['reference_line_width'],
+        linestyle=ROC_CONFIG['reference_line_style']
     )
     
     # 设置图表样式
     plt.xlabel("False Positive Rate")
     plt.ylabel("True Positive Rate")
-    plt.title("ROC Curves - All Models")
+    plt.title("Receiver Operating Characteristic (ROC) Curve")
     
     # 模型图例，按首字母排序
     model_handles = []
@@ -167,12 +153,21 @@ def plot_all_roc():
     
     for model_name in models:
         if model_name in all_models_data:
-            model_handles.append(plt.Line2D([0], [0], color=colors.get(model_name, "#000000"), linewidth=2.0))
+            model_handles.append(plt.Line2D(
+                [0], [0], 
+                color=colors.get(model_name, "#000000"), 
+                linewidth=ROC_CONFIG['line_width']
+            ))
             auc_text = f" (AUC: {auc_scores.get(model_name, 0):.3f})" if model_name in auc_scores else ""
             model_labels.append(f"{model_display_names.get(model_name, model_name)}{auc_text}")
     
     # 创建Random参考线图例项
-    random_line = plt.Line2D([0], [0], color='gray', linestyle='--', linewidth=1.5)
+    random_line = plt.Line2D(
+        [0], [0], 
+        color=colors["Random"], 
+        linestyle=ROC_CONFIG['reference_line_style'], 
+        linewidth=ROC_CONFIG['reference_line_width']
+    )
     
     # 将Random参考线添加到图例最前面
     all_handles = [random_line] + model_handles
@@ -183,7 +178,7 @@ def plot_all_roc():
         handles=all_handles,
         labels=all_labels,
         loc='lower right',
-        bbox_to_anchor=(0.98, 0.02),  # 图例右下角位置
+        bbox_to_anchor=ROC_CONFIG['legend_bbox_to_anchor'],
         frameon=True,
         fontsize=10,
         ncol=1,  # 单列显示
@@ -200,22 +195,22 @@ def plot_all_roc():
     
     # 添加网格和设置范围
     plt.grid(True, linestyle='--', alpha=0.3)
-    plt.xlim(0.0, 1.0)
-    plt.ylim(0.0, 1.05)
+    plt.xlim(ROC_CONFIG['x_lim'])
+    plt.ylim(ROC_CONFIG['y_lim'])
     
     # 紧凑布局
     plt.tight_layout()
     plt.subplots_adjust(bottom=0.2)  # 为图例留出空间
     
     # 创建输出目录
-    output_dir = Path("plot_combined")
+    output_dir = Path(ROC_CONFIG['output_dir'])
     output_dir.mkdir(exist_ok=True)
     
-    # 保存图形
+    # 保存图表
     output_path = output_dir / "All_ROC.png"
-    plt.savefig(output_path, dpi=300, bbox_inches='tight', facecolor='white')
-    plt.close()
-    print(f"已生成所有模型的ROC对比图: {output_path}")
+    plt.savefig(output_path, dpi=ROC_CONFIG['dpi'], bbox_inches='tight', facecolor='white')
+    
+    print(f"ROC曲线图已保存至 {output_path}")
 
 if __name__ == "__main__":
     plot_all_roc()

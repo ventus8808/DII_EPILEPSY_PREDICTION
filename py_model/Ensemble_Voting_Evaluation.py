@@ -389,9 +389,6 @@ def main():
         total_weight = sum(weight for _, weight in models_dict.values())
         y_prob_all = sum(probs for probs in model_probs_full.values()) / total_weight
         
-        # 生成标准DCA曲线
-        plot_dca_curve(y_full, y_prob_all, weights_full, model_name, plot_dir, plot_data_dir, use_smote=True)
-        
         # 增加DII贡献评估
         print("\n评估DII对模型预测能力的贡献...")
         # 创建无DII版本的数据(将DII_food列设为0)
@@ -405,10 +402,14 @@ def main():
                 # 对FNN模型使用特殊处理
                 _, fnn_prob = fnn_predict(model, X_no_dii, feature_info)
                 model_probs_no_dii[base_model_name] = fnn_prob * weight
-            elif base_model_name == 'SVM':
-                # 对SVM模型使用特殊处理
-                _, svm_prob = svm_predict(model, X_no_dii)
-                model_probs_no_dii[base_model_name] = svm_prob * weight
+            elif base_model_name in ['SVM', 'PSGD']:
+                # 对SVM或PSGD模型使用特殊处理
+                try:
+                    _, svm_prob = svm_predict(model, X_no_dii)
+                    model_probs_no_dii[base_model_name] = svm_prob * weight
+                except Exception as e:
+                    print(f"预测{base_model_name}遇到错误: {e}")
+                    model_probs_no_dii[base_model_name] = model.predict_proba(X_no_dii)[:, 1] * weight
             else:
                 model_probs_no_dii[base_model_name] = model.predict_proba(X_no_dii)[:, 1] * weight
         
@@ -421,8 +422,24 @@ def main():
             f"{model_name}(without DII)": y_prob_no_dii
         }
         
-        # 绘制DII贡献对比DCA曲线
-        plot_dca_curve_comparison(y_full, y_probs_dict, weights_full, model_name, plot_dir, plot_data_dir, use_smote=True)
+        # 绘制DII贡献对比DCA曲线 - 现在直接返回数据而不是路径
+        comparison_data = plot_dca_curve_comparison(y_full, y_probs_dict, weights_full, model_name, plot_dir, plot_data_dir, use_smote=True)
+        
+        # 创建单模型格式数据
+        single_model_data = {
+            "thresholds": comparison_data["thresholds"],
+            "net_benefits_model": comparison_data["models"][f"{model_name}(all feature)"],
+            "net_benefits_all": comparison_data["treat_all"],
+            "net_benefits_none": comparison_data["treat_none"],
+            "model_name": model_name,
+            "prevalence": comparison_data.get("prevalence", np.mean(y_full))
+        }
+        
+        # 保存单模型数据
+        with open(plot_data_dir / f"{model_name}_DCA.json", 'w') as f:
+            json.dump(single_model_data, f, indent=4)
+            
+        print(f"已从比较版本中提取并保存单模型DCA数据 -> {model_name}_DCA.json")
         print(f"决策曲线分析(DCA)绘制完成 (耗时 {time.time() - start_time:.2f}秒)")
     
     print("\n所有评估与可视化任务完成！")

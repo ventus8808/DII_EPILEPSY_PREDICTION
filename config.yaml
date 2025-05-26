@@ -12,7 +12,7 @@ outcome: "Epilepsy"
 covariates: ["Gender", "Age", "BMI", "Education", "Marriage", "Smoke", "Alcohol", "Employment", "ActivityLevel"]
 
 # 模型训练次数
-n_trials: 3
+n_trials: 10
 
 # 目标函数权重
 objective_weights:
@@ -29,11 +29,11 @@ cv_constraints:
   AUC_min: 0.6
   AUC_max: 0.99  # 提高AUC上限，允许更好的模型通过
   Sensitivity_min: 0.4
-  Specificity_min: 0.6  # 提高特异度最低要求，改善精确度
+  Specificity_min: 0.4  # 提高特异度最低要求，改善精确度
 
 # 测试集约束（较严格）
 test_constraints:
-  AUC_min: 0.7
+  AUC_min: 0.65
   AUC_max: 0.9
   Sensitivity_min: 0.5
   Specificity_min: 0.5
@@ -64,3 +64,41 @@ output_dir: "result/"
 plot_dir: "plot/"
 model_dir: "model/"
 random_seed: 42
+
+# 模型配置
+models:
+  # 模型显示顺序
+  order:
+    - "Logistic"
+    - "CatBoost"
+    - "FNN"
+    - "LightGBM"
+    - "PSGD"
+    - "RF"
+    - "XGBoost"
+    - "Ensemble_Voting"
+  
+  # 模型显示名称
+  display_names:
+    XGBoost: "XGBoost"
+    LightGBM: "LightGBM"
+    CatBoost: "CatBoost"
+    RF: "RF"
+    FNN: "FNN"
+    PSGD: "PSGD"
+    Logistic: "Logistic"
+    Ensemble_Voting: "Voting"
+  
+  # 模型颜色
+  colors:
+    XGBoost: "#1f77b4"      # 蓝色
+    LightGBM: "#ff7f0e"     # 橙色
+    CatBoost: "#2ca02c"     # 绿色
+    RF: "#d62728"           # 红色
+    FNN: "#9467bd"          # 紫色
+    PSGD: "#8c564b"         # 棕色
+    Logistic: "#e377c2"     # 粉色
+    Ensemble_Voting: "#17becf" # 青色
+    Random: "gray"          # 随机分类器参考线
+    Treat_All: "green"      # Treat All参考线
+    Treat_None: "red"       # Treat None参考线

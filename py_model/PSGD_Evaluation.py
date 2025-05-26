@@ -74,44 +74,71 @@ def main():
     try:
         model_path = model_dir / 'PSGD_model.pkl'
         with open(model_path, 'rb') as f:
-            model = pickle.load(f)
-        print("已加载PSGD(多项式特征SGD)模型")
+            model_data = pickle.load(f)
+            
+        # 新格式下模型是字典
+        if isinstance(model_data, dict):
+            model = model_data['model']
+            preprocessor = model_data.get('preprocessor')
+            features = model_data.get('features', [])
+            best_params = model_data.get('best_params', {})
+            last_updated = model_data.get('last_updated', '未知')
+            print(f"已加载PSGD(多项式特征SGD)模型\n最后更新时间: {last_updated}")
+        else:
+            # 兼容旧格式
+            model = model_data
+            features = []
+            best_params = {}
+            print("已加载旧格式PSGD模型")
+            
+            # 尝试从单独文件加载特征和参数
+            try:
+                with open(model_dir / 'PSGD_feature_info.json', 'r') as f:
+                    feature_info = json.load(f)
+                    features = feature_info.get('features', [])
+                with open(model_dir / 'PSGD_best_params.json', 'r') as f:
+                    best_params = json.load(f)
+                print("已加载单独的特征信息和最佳参数")
+            except FileNotFoundError:
+                pass
     except FileNotFoundError:
         try:
             # 尝试加载旧的命名格式
             model_path = model_dir / 'SGD_model.pkl'
             with open(model_path, 'rb') as f:
-                model = pickle.load(f)
+                model_data = pickle.load(f)
+                if isinstance(model_data, dict):
+                    model = model_data['model']
+                    features = model_data.get('features', [])
+                    best_params = model_data.get('best_params', {})
+                else:
+                    model = model_data
+                    features = []
+                    best_params = {}
             print("已加载旧版本SGD模型")
+            
+            # 尝试从单独文件加载特征
+            try:
+                with open(model_dir / 'SGD_feature_info.json', 'r') as f:
+                    feature_info = json.load(f)
+                    features = feature_info.get('features', [])
+                print("已加载旧版本特征信息文件")
+            except FileNotFoundError:
+                pass
         except FileNotFoundError:
             print("错误：找不到SGD模型文件，请先训练模型")
             return
     
-    # 加载特征信息和参数
-    try:
-        with open(model_dir / 'PSGD_feature_info.json', 'r') as f:
-            feature_info = json.load(f)
-        # 读取参数
-        with open(model_dir / 'PSGD_best_params.json', 'r') as f:
-            best_params = json.load(f)
-        print("已加载特征信息和最佳参数")
-    except FileNotFoundError:
-        try:
-            # 尝试加载旧的命名格式
-            with open(model_dir / 'SGD_feature_info.json', 'r') as f:
-                feature_info = json.load(f)
-            print("已加载旧版本特征信息文件")
-        except FileNotFoundError:
-            print("错误：找不到特征信息文件")
-            return
-    
-    features = feature_info['features']
-    # 输出多项式特征信息
-    if 'polynomial_degree' in feature_info:
-        print(f"多项式特征程度: {feature_info['polynomial_degree']}")
+    # 检查特征列表是否为空
+    if not features:
+        # 如果特征列表为空，尝试从配置文件加载
+        categorical_features = config.get('covariates', [])
+        numeric_features = [col for col in ['Age', 'BMI'] if col in pd.read_csv(data_path).columns]
+        features = [config.get('exposure', 'DII_food')] + numeric_features + categorical_features
+        print(f"从配置文件加载特征列表，特征数量: {len(features)}")
 
     # 输出最佳参数
-    if 'best_params' in locals():
+    if best_params:
         print("\n===== 最佳参数 =====")
         for param_name, param_value in best_params.items():
             print(f"{param_name}: {param_value}")
@@ -164,22 +191,32 @@ def main():
         start_time = time.time()
         print("计算评估指标...")
         try:
-            metrics = calculate_metrics(y_test, y_pred, y_prob, weights_test)
+            # 使用 model_metrics_utils 计算指标
+            from model_metrics_utils import calculate_metrics
+            
+            # 计算测试集指标
+            test_metrics = calculate_metrics(y_test, y_pred, y_prob, weights_test)
+            
+            # 确保所有指标都是Python原生类型
+            for k, v in test_metrics.items():
+                if hasattr(v, 'item'):  # 处理numpy类型
+                    test_metrics[k] = v.item()
+            
+            # 保存指标到文件
+            metrics_path = result_dir / f'{model_name}_metrics.json'
+            with open(metrics_path, 'w', encoding='utf-8') as f:
+                json.dump(test_metrics, f, indent=4, ensure_ascii=False)
             
             # 打印评估结果
             print("\n===== 测试集评估指标 =====")
-            for metric_name, metric_value in metrics.items():
+            for metric_name, metric_value in test_metrics.items():
                 if isinstance(metric_value, (int, float)):
                     print(f"{metric_name}: {metric_value:.4f}")
                 else:
                     print(f"{metric_name}: {metric_value}")
-            print(f"\n评估指标计算完成 (耗时 {time.time() - start_time:.2f}秒)")
             
-            # 保存指标到文件
-            metrics_path = result_dir / f'{model_name}_metrics.json'
-            with open(metrics_path, 'w') as f:
-                json.dump(metrics, f, indent=4)
-            print(f"评估指标已保存到: {metrics_path}")
+            print(f"\n评估指标计算完成 (耗时 {time.time() - start_time:.2f}秒)")
+            print(f"指标已保存到: {metrics_path}")
             
         except Exception as e:
             print(f"\n计算评估指标时出错: {e}")
@@ -239,9 +276,6 @@ def main():
         # 使用与校准曲线相同的处理方式：全量数据集+SMOTE过采样
         # 预测全量数据集的概率
         y_prob_all = model.predict_proba(X)[:, 1]
-        # 生成标准DCA曲线
-        plot_dca_curve(y, y_prob_all, weights, model_name, plot_dir, plot_data_dir, use_smote=True)
-        
         # 增加DII贡献评估
         print("\n评估DII对模型预测能力的贡献...")
         # 创建无DII版本的数据(将DII_food列设为0)
@@ -257,8 +291,24 @@ def main():
             f"{model_name}(without DII)": y_prob_no_dii
         }
         
-        # 绘制DII贡献对比DCA曲线
-        plot_dca_curve_comparison(y, y_probs_dict, weights, model_name, plot_dir, plot_data_dir, use_smote=True)
+        # 绘制DII贡献对比DCA曲线 - 现在直接返回数据而不是路径
+        comparison_data = plot_dca_curve_comparison(y, y_probs_dict, weights, model_name, plot_dir, plot_data_dir, use_smote=True)
+        
+        # 创建单模型格式数据
+        single_model_data = {
+            "thresholds": comparison_data["thresholds"],
+            "net_benefits_model": comparison_data["models"][f"{model_name}(all feature)"],
+            "net_benefits_all": comparison_data["treat_all"],
+            "net_benefits_none": comparison_data["treat_none"],
+            "model_name": model_name,
+            "prevalence": comparison_data.get("prevalence", np.mean(y))
+        }
+        
+        # 保存单模型数据
+        with open(plot_data_dir / f"{model_name}_DCA.json", 'w') as f:
+            json.dump(single_model_data, f, indent=4)
+            
+        print(f"已从比较版本中提取并保存单模型DCA数据 -> {model_name}_DCA.json")
         print(f"决策曲线分析(DCA)绘制完成 (耗时 {time.time() - start_time:.2f}秒)")
     
     print("\n所有评估与可视化任务完成！")

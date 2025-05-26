@@ -1,66 +1,33 @@
-import os
 import json
+import yaml
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
+
+# 加载配置文件
+with open(Path(__file__).parent.parent / 'config.yaml', 'r') as f:
+    config = yaml.safe_load(f)
 
 # 设置字体和风格
 plt.rcParams['font.family'] = 'Monaco'
 plt.rcParams['font.size'] = 12
 
-# 模型列表
-all_models = [
-    "CatBoost", 
-    "Ensemble_Voting",
-    "FNN",
-    "LightGBM", 
-    "Logistic", 
-    "RF", 
-    "SVM",
-    "XGBoost"
-]
+# 从配置中获取模型相关设置
+models = config['models']['order']
+model_display_names = config['models']['display_names']
+colors = config['models']['colors']
 
-def sort_models(models):
-    """按照指定的顺序对模型进行排序"""
-    # 分离出Logistic、Ensemble和其他模型
-    logistic_models = [m for m in models if m.lower().startswith('logistic')]
-    ensemble_models = [m for m in models if m.lower().startswith('ensemble')]
-    other_models = [m for m in models if not (m.lower().startswith('logistic') or m.lower().startswith('ensemble'))]
-    
-    # 对其他模型按字母顺序排序（不区分大小写）
-    other_models_sorted = sorted(other_models, key=str.lower)
-    
-    # 合并列表：Logistic + 其他模型 + Ensemble
-    return logistic_models + other_models_sorted + ensemble_models
-
-# 按照指定顺序对模型进行排序
-models = sort_models(all_models)
-
-# 模型显示名称（可以根据需要修改）
-model_display_names = {
-    "XGBoost": "XGBoost",
-    "LightGBM": "LightGBM",
-    "CatBoost": "CatBoost",
-    "RF": "RF",
-    "FNN": "FNN",
-    "SVM": "SVM",
-    "Logistic": "Logistic  ",
-    "Ensemble_Voting": "Voting"
-}
-
-
-# 颜色映射（保持与单独图表一致的颜色方案）
-colors = {
-    "XGBoost": "#1f77b4",        # 蓝色
-    "LightGBM": "#ff7f0e",       # 橙色
-    "CatBoost": "#2ca02c",       # 绿色
-    "RF": "#d62728",             # 红色
-    "FNN": "#9467bd",            # 紫色
-    "SVM": "#8c564b",            # 棕色
-    "Logistic": "#e377c2",       # 粉色
-    "Ensemble_Voting": "#17becf", # 青色
-    "Treat All": "green",        # 绿色虚线
-    "Treat None": "red"          # 红色虚线
+# DCA配置
+DCA_CONFIG = {
+    'figure_size': (9.5, 7),
+    'dpi': 300,
+    'line_width': 2.0,
+    'reference_line_style': '--',
+    'reference_line_width': 1.5,
+    'x_lim': [0.0, 1.0],
+    'y_lim': [-0.1, 0.25],
+    'legend_bbox_to_anchor': [1.05, 0.7],
+    'output_dir': 'plot_combined'
 }
 
 def load_dca_data(model_name):
@@ -80,8 +47,8 @@ def load_dca_data(model_name):
 
 def plot_all_dca():
     """创建包含所有模型DCA曲线的合成图"""
-    # 创建正方形图形
-    plt.figure(figsize=(9.5, 7), dpi=300)
+    # 创建图形
+    plt.figure(figsize=DCA_CONFIG['figure_size'], dpi=DCA_CONFIG['dpi'])
     
     # 存储所有模型的数据
     all_models_data = {}
@@ -117,109 +84,111 @@ def plot_all_dca():
     
     # 绘制各模型的DCA曲线
     for model_name, net_benefits in all_models_data.items():
+        # 确保数据长度一致
+        if len(net_benefits) != len(thresholds):
+            # 插值处理
+            old_indices = np.linspace(0, 1, len(net_benefits))
+            new_indices = np.linspace(0, 1, len(thresholds))
+            net_benefits = np.interp(new_indices, old_indices, net_benefits)
+        
         plt.plot(
             thresholds, 
             net_benefits,
             label=model_display_names.get(model_name, model_name),
             color=colors.get(model_name, "#000000"),
-            linewidth=2.0
+            linewidth=DCA_CONFIG['line_width']
         )
     
-    # 绘制"Treat All"策略的曲线 - 绿色长虚线
+    # 绘制参考线
     plt.plot(
         thresholds, 
         treat_all,
         label="Treat All",
-        color=colors["Treat All"],
-        linewidth=1.5,
-        linestyle="--"
+        color=colors["Treat_All"],
+        linewidth=DCA_CONFIG['reference_line_width'],
+        linestyle=DCA_CONFIG['reference_line_style']
     )
     
-    # 绘制"Treat None"策略的曲线 - 红色长虚线
     plt.plot(
         thresholds, 
         treat_none,
         label="Treat None",
-        color=colors["Treat None"],
-        linewidth=1.5,
-        linestyle="--"
+        color=colors["Treat_None"],
+        linewidth=DCA_CONFIG['reference_line_width'],
+        linestyle=DCA_CONFIG['reference_line_style']
     )
     
     # 设置图表样式
     plt.xlabel("Threshold Probability")
     plt.ylabel("Net Benefit")
-    plt.title("Decision Curve Analysis - All Models")
+    plt.title("Decision Curve Analysis (DCA)")
     
-    # 将图例移动到右侧
-    dashed_handles = [
-        plt.Line2D([0], [0], color=colors["Treat All"], linewidth=1.5, linestyle="--"),
-        plt.Line2D([0], [0], color=colors["Treat None"], linewidth=1.5, linestyle="--")
+    # 创建图例
+    reference_handles = [
+        plt.Line2D([0], [0], color=colors["Treat_All"], 
+                  linewidth=DCA_CONFIG['reference_line_width'], 
+                  linestyle=DCA_CONFIG['reference_line_style']),
+        plt.Line2D([0], [0], color=colors["Treat_None"], 
+                  linewidth=DCA_CONFIG['reference_line_width'], 
+                  linestyle=DCA_CONFIG['reference_line_style'])
     ]
     
-    dashed_labels = ["Treat All", "Treat None"]
+    model_handles = [
+        plt.Line2D([0], [0], color=colors.get(model_name, "#000000"), 
+                  linewidth=DCA_CONFIG['line_width'])
+        for model_name in models if model_name in all_models_data
+    ]
     
-    model_handles = []
-    model_labels = []
-    
-    for model_name in models:
-        model_handles.append(plt.Line2D([0], [0], color=colors.get(model_name, "#000000"), linewidth=2.0))
-        model_labels.append(model_display_names.get(model_name, model_name))
-    
-    # 创建右侧图例（模型）
-    legend_model = plt.legend(
-        handles=model_handles,
-        labels=model_labels,
-        loc='center left',
-        bbox_to_anchor=(1.05, 0.35),
-        frameon=True,
-        fontsize=11,
-        title='Models',
-        title_fontsize=10
-    )
-    plt.gca().add_artist(legend_model)
+    model_labels = [
+        model_display_names.get(model_name, model_name)
+        for model_name in models if model_name in all_models_data
+    ]
     
     # 添加参考线图例
     plt.legend(
-        handles=dashed_handles,
-        labels=dashed_labels,
+        handles=reference_handles,
+        labels=["Treat All", "Treat None"],
         loc='upper left',
-        bbox_to_anchor=(1.05, 0.7),
+        bbox_to_anchor=DCA_CONFIG['legend_bbox_to_anchor'],
         frameon=True,
         fontsize=11,
         title='Reference',
         title_fontsize=10
     )
     
-    # 调整布局，为右侧图例留出空间
+    # 添加模型图例
+    plt.legend(
+        handles=model_handles,
+        labels=model_labels,
+        loc='center left',
+        bbox_to_anchor=(DCA_CONFIG['legend_bbox_to_anchor'][0], 0.35),
+        frameon=True,
+        fontsize=11,
+        title='Models',
+        title_fontsize=10
+    )
+    
+    # 调整布局
     plt.tight_layout()
-    plt.subplots_adjust(right=0.7)
+    plt.subplots_adjust(right=0.7 if DCA_CONFIG['legend_bbox_to_anchor'][0] > 1 else 0.9)
     
-    # 添加网格和设置范围
+    # 设置坐标轴范围
+    plt.xlim(DCA_CONFIG['x_lim'])
+    plt.ylim(DCA_CONFIG['y_lim'])
+    
+    # 添加网格
     plt.grid(True, linestyle='--', alpha=0.3)
-    plt.xlim(0.0, 1.0)  # 设置横轴范围从0到1
-    
-    # 动态调整Y轴范围，确保所有曲线可见
-    all_benefits = []
-    for benefits in all_models_data.values():
-        all_benefits.extend(benefits)
-    all_benefits.extend(treat_all)
-    all_benefits.extend(treat_none)
-    
-    # 手动设置合适的Y轴范围，更好地显示数据差异
-    y_min = -0.1  # 固定下限以显示负值区域
-    y_max = 0.25   # 固定上限保证能看到所有峰值
-    plt.ylim(y_min, y_max)  
     
     # 创建输出目录
-    output_dir = Path("plot_combined")
+    output_dir = Path(DCA_CONFIG['output_dir'])
     output_dir.mkdir(exist_ok=True)
     
     # 保存图表
     output_path = output_dir / "All_DCA.png"
-    plt.savefig(output_path, dpi=300, bbox_inches='tight', facecolor='white')
+    plt.savefig(output_path, dpi=DCA_CONFIG['dpi'], bbox_inches='tight', facecolor='white')
     plt.close()
     
-    print(f"已生成所有模型的DCA对比图: {output_path}")
+    print(f"DCA曲线图已保存至 {output_path} 和 {output_dir}/All_DCA.pdf")
     if prevalence is not None:
         print(f"数据集患病率: {prevalence:.4f}")
 

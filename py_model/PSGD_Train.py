@@ -1,55 +1,75 @@
-import pandas as pd
-import numpy as np
-import pickle
-import json
 import logging
-from pathlib import Path
-import yaml
+import pickle
 import warnings
 from datetime import datetime
-from sklearn.model_selection import train_test_split, KFold, StratifiedKFold
-from tqdm import tqdm
-from sklearn.preprocessing import OneHotEncoder, StandardScaler, PolynomialFeatures
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
-from sklearn.linear_model import SGDClassifier
-from sklearn.feature_selection import SelectPercentile, f_classif
-from sklearn.metrics import (
-    accuracy_score, precision_score, recall_score, f1_score, roc_auc_score,
-    precision_recall_curve, auc, confusion_matrix, cohen_kappa_score, log_loss, brier_score_loss
-)
-import optuna
-import traceback
-from imblearn.over_sampling import SMOTE
+from pathlib import Path
 
+import numpy as np
+import optuna
+import pandas as pd
+import yaml
+from optuna.pruners import MedianPruner
+from optuna.storages import RDBStorage
+from sklearn.compose import ColumnTransformer
+from sklearn.linear_model import SGDClassifier
+from sklearn.calibration import CalibratedClassifierCV
+from sklearn.metrics import (
+    accuracy_score, auc, brier_score_loss, cohen_kappa_score, confusion_matrix,
+    f1_score, log_loss, precision_recall_curve, precision_recall_fscore_support,
+    precision_score, recall_score, roc_auc_score, roc_curve
+)
+from sklearn.model_selection import StratifiedKFold, train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, StandardScaler, PolynomialFeatures
+from tqdm import tqdm
+
+# 忽略警告
 warnings.filterwarnings('ignore')
+
+# 确保optuna目录存在
+optuna_dir = Path('optuna')
+optuna_dir.mkdir(exist_ok=True)
+
+# 确保model目录存在
+model_dir = Path('model')
+model_dir.mkdir(exist_ok=True)
+
+# 配置日志格式
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+# 创建控制台处理器
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+
+# 创建文件处理器
+log_file = model_dir / 'PSGD.log'
+file_handler = logging.FileHandler(log_file)
+file_handler.setLevel(logging.INFO)
+
+# 设置日志格式
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+console_handler.setFormatter(formatter)
+file_handler.setFormatter(formatter)
+
+# 清空现有的处理器
+logger.handlers = []
+
+# 添加处理器到logger
+logger.addHandler(console_handler)
+logger.addHandler(file_handler)
 
 # 1. 配置读取
 with open('config.yaml', 'r') as f:
     config = yaml.safe_load(f)
 
 data_path = Path(config['data_path'])
-model_dir = Path(config['model_dir'])
-model_dir.mkdir(exist_ok=True)
 output_dir = Path(config['output_dir']) if 'output_dir' in config else Path('result')
 output_dir.mkdir(exist_ok=True)
 plot_dir = Path(config['plot_dir']) if 'plot_dir' in config else Path('plots')
 plot_dir.mkdir(exist_ok=True)
 plot_data_dir = Path('plot_original_data')
 plot_data_dir.mkdir(exist_ok=True)
-
-# 2. 日志
-def setup_logger(model_name):
-    log_file = model_dir / f'{model_name}.log'
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.FileHandler(log_file),
-            logging.StreamHandler()
-        ]
-    )
-    return logging.getLogger()
 
 # 3. 数据加载与预处理
 # 全局特征定义，供 main() 和特征保存使用
@@ -180,490 +200,392 @@ def load_objective_config(config_path='config.yaml', constraint_type='objective_
     
     constraints = {}
     if constraint_type in config:
-        constraints = config[constraint_type]
+        raw_constraints = config[constraint_type]
+        # 将配置转换为标准格式
+        for metric, value in raw_constraints.items():
+            if metric.endswith('_min'):
+                base_metric = metric[:-4]
+                if base_metric not in constraints:
+                    constraints[base_metric] = {}
+                constraints[base_metric]['min'] = value
+            elif metric.endswith('_max'):
+                base_metric = metric[:-4]
+                if base_metric not in constraints:
+                    constraints[base_metric] = {}
+                constraints[base_metric]['max'] = value
     
     return constraints
 
-def objective_function(metrics, config_path='config.yaml', constraint_type='objective_constraints'):
+def objective_function(metrics, config_path='config.yaml', constraint_type='objective_constraints', verbose=False):
     """
-    定制目标函数，使用config中的硬约束及自定义权重
+    计算综合得分，使用config中的硬约束及自定义权重
     
-    Args:
-        metrics: 评估指标字典
-        config_path: 配置文件路径
-        constraint_type: 约束类型，可选 'cv', 'test' 或默认的 'objective_constraints'
-        
-    Returns:
-        tuple: (score, failed_reasons) - 评分和失败原因列表
+    参数:
+    metrics -- 包含各项指标得分的字典
+    config_path -- 配置文件路径
+    constraint_type -- 约束类型
+    verbose -- 是否输出详细日志
+    
+    返回:
+    final_score -- 综合得分
+    constraints_met -- 是否满足所有约束条件
     """
-    # 获取正确的配置部分（确保使用正确的约束类型：cv或test）
-    constraints = load_objective_config(config_path, constraint_type)
-    failed_reasons = []
-    
-    # 首先检查硬约束
-    for metric, constraint in constraints.items():
-        if not isinstance(constraint, dict):
-            continue
-            
-        if 'min' in constraint and metrics[metric] < constraint['min']:
-            failed_reasons.append(f"{metric}={metrics[metric]:.4f} < {constraint['min']} (min)")
-            
-        if 'max' in constraint and metrics[metric] > constraint['max']:
-            failed_reasons.append(f"{metric}={metrics[metric]:.4f} > {constraint['max']} (max)")
-    
-    # 如果有任何约束未满足，返回负无穷分数
-    if failed_reasons:
-        return float('-inf'), failed_reasons
-    
-    # 计算目标函数值（带权重的评分）
-    score = 0.0
-    weights_sum = 0.0
-    
-    # 正确获取objective_weights而不是使用constraints
+    # 加载配置
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
     
-    # 使用专门的权重部分
+    # 获取权重和约束
     weights = config.get('objective_weights', {})
+    constraints = load_objective_config(config_path, constraint_type).get('constraints', {})
+    
+    # 指标名称映射（处理大小写不一致问题）
+    metric_mapping = {
+        'AUC': 'roc_auc',
+        'ECE': 'ece',
+        'F1': 'f1',
+        'Precision': 'precision',
+        'Sensitivity': 'sensitivity',
+        'Specificity': 'specificity'
+    }
+    
+    if verbose:
+        logger.info("\n===== 目标函数计算 =====")
+        logger.info(f"使用的权重: {weights}")
+    
+    # 计算加权分数
+    score = 0.0
+    weights_sum = 0.0
     
     for metric, weight in weights.items():
-        if metric in metrics and isinstance(weight, (int, float)):
-            score += metrics[metric] * weight
-            weights_sum += abs(weight)  # 使用绝对值，因为有些权重可能是负的
-    
-    # 默认情况，如果没有指定权重，则使用 roc_auc
-    if weights_sum == 0:
-        return metrics.get('roc_auc', 0.0), failed_reasons
+        # 获取标准化的指标名称
+        normalized_metric = metric_mapping.get(metric, metric).lower()
         
-    return score / weights_sum, failed_reasons
+        # 尝试获取指标值
+        metric_value = metrics.get(normalized_metric)
+        if metric_value is not None and isinstance(weight, (int, float)):
+            score += metric_value * weight
+            weights_sum += abs(weight)  # 使用绝对值，因为有些权重可能是负的
+            if verbose:
+                logger.info(f"指标 {metric}({normalized_metric}): {metric_value:.4f} * {weight:.2f} = {metric_value * weight:.4f}")
+    
+    # 计算最终得分
+    final_score = score / weights_sum if weights_sum > 0 else metrics.get('roc_auc', 0.0)
+    
+    # 检查是否满足所有约束条件
+    constraints_met = True
+    for constraint_name, constraint_value in constraints.items():
+        if constraint_name in metrics:
+            metric_value = metrics[constraint_name]
+            if not (constraint_value['min'] <= metric_value <= constraint_value['max']):
+                constraints_met = False
+                if verbose:
+                    logger.warning(f"约束未满足: {constraint_name} = {metric_value:.4f} 不在范围 [{constraint_value['min']}, {constraint_value['max']}] 内")
+                break
+    
+    if verbose:
+        logger.info(f"总分: {score:.4f} / 权重和: {weights_sum:.4f} = 最终得分: {final_score:.4f}")
+        logger.info(f"约束条件{'全部满足' if constraints_met else '未全部满足'}")
+    
+    return final_score, constraints_met
 
 # 5. 主函数
 def main():
-    # 设置日志
-    logger = setup_logger("PSGD")
+    # 使用已配置好的日志
     logger.info("Starting PSGD (Polynomial SGD) model training...")
     
-    # 检查是否存在已有的最佳参数文件
-    previous_best_params = None
-    param_path = model_dir / 'PSGD_best_params.json'
+    # 定义模型保存路径
+    model_save_path = model_dir / 'PSGD_model.pkl'
     
-    if param_path.exists():
-        try:
-            logger.info(f"Found existing parameter file: {param_path}")
-            with open(param_path, 'r') as f:
-                previous_best_params = json.load(f)
-            logger.info(f"Loaded previous best parameters as optimization starting point.")
-        except Exception as e:
-            logger.warning(f"Failed to load previous parameters: {e}")
-            previous_best_params = None
+    # 定义Optuna数据库路径
+    optuna_db_path = optuna_dir / 'PSGD_optuna.db'
+    storage = RDBStorage(f'sqlite:///{optuna_db_path}')
     
     # 加载和预处理数据
-    logger.info("Loading and preprocessing data...")
+    logger.info("正在加载和预处理数据...")
     X_train, X_test, y_train, y_test, weights_train, weights_test, preprocessor = load_and_preprocess_data()
-    logger.info(f"Data loaded: {X_train.shape[0]} training samples, {X_test.shape[0]} test samples")
     
-    # 最佳参数、分数和指标初始化
-    best_params = None
-    best_score = float('-inf')
-    best_metrics = None
+    # 总是训练新模型
+    logger.info("开始训练新模型...")
     
-    # 从config中读取n_trials，保持与其他模型一致
-    n_trials = config.get('n_trials', 100)
-    cv_folds = config.get('cv_folds', 5)
-    
-    # 全局化categorical_transformer变量以便optuna_objective函数使用
-    global categorical_transformer
-    
-    try:
-        def optuna_objective(trial):
-            # 获取建议的参数，尝试不同的正则化强度和损失函数
-            def get_suggested_param(trial, name, default_low, default_high, best=None, pct=0.2, is_int=False, log=False):
-                if best is None:
-                    low, high = default_low, default_high
-                else:
-                    range_val = best * pct
-                    low = max(default_low, best - range_val)
-                    high = min(default_high, best + range_val)
-                
-                if is_int:
-                    return trial.suggest_int(name, int(low), int(high), log=log)
-                else:
-                    return trial.suggest_float(name, low, high, log=log)
+    # 记录现有模型的性能（如果存在）
+    existing_model_score = -np.inf
+    if model_save_path.exists():
+        try:
+            with open(model_save_path, 'rb') as f:
+                model_data = pickle.load(f)
+                if all(key in model_data for key in ['model', 'preprocessor', 'features']):
+                    logger.info(f"找到现有模型: {model_save_path}")
+                    logger.info(f"最后更新时间: {model_data.get('last_updated', '未知')}")
                     
-            # 如果存在先前的最佳参数，尝试使用它们来设置起始值
-            def suggest_with_prior(trial, name, suggestion_func, *args, **kwargs):
-                if previous_best_params and name in previous_best_params:
-                    prior_value = previous_best_params[name]
-                    try:
-                        # 尝试使用先前的参数值作为起点
-                        if trial.number == 0:  # 只在第一次试验时使用先前的参数
-                            return prior_value
-                    except Exception:
-                        pass  # 如果无法使用先前的参数，就使用正常的建议流程
-                return suggestion_func(*args, **kwargs)
-            
-            # 1. 搜索多项式特征程度和配置
-            polynomial_degree = suggest_with_prior(trial, 'polynomial_degree', 
-                                              trial.suggest_int, 'polynomial_degree', 1, 4)  # 增加到最大4阶
-            interaction_only = suggest_with_prior(trial, 'interaction_only', 
-                                             trial.suggest_categorical, 'interaction_only', [True, False])  # 是否只使用交互项
-            include_bias = suggest_with_prior(trial, 'include_bias', 
-                                         trial.suggest_categorical, 'include_bias', [True, False])  # 是否包含偏置项
-            
-            # 2. 创建动态数值处理器
-            # 使用局部变量避免与全局变量冲突
-            trial_numeric_transformer = Pipeline([
-                ('scaler', StandardScaler()),
-                ('poly', PolynomialFeatures(
-                    degree=polynomial_degree, 
-                    interaction_only=interaction_only,
-                    include_bias=include_bias
-                ))
-            ])
-            
-            # 3. 构建动态预处理器
-            # 使用全局的categorical_transformer
-            trial_preprocessor = ColumnTransformer([
-                ('num', trial_numeric_transformer, ['DII_food'] + numeric_features),
-                ('cat', categorical_transformer, categorical_features)
-            ])
-            
-            # 4. 是否添加特征选择
-            use_feature_selection = suggest_with_prior(trial, 'use_feature_selection',
-                                               trial.suggest_categorical, 'use_feature_selection', [True, False])
-            
-            # 5. 超参数搜索空间
-            # 只使用支持predict_proba的损失函数
-            
-            # 正则化参数细化
-            penalty = suggest_with_prior(trial, 'penalty',
-                                   trial.suggest_categorical, 'penalty', ['l2', 'l1', 'elasticnet', None])
-            
-            params = {
-                'loss': suggest_with_prior(trial, 'loss', trial.suggest_categorical, 'loss', ['log_loss', 'modified_huber']),
-                'penalty': penalty,  # 动态选择正则化类型
-                'alpha': suggest_with_prior(trial, 'alpha', trial.suggest_float, 'alpha', 1e-6, 10.0, log=True),
-                'learning_rate': suggest_with_prior(trial, 'learning_rate', trial.suggest_categorical, 'learning_rate', 
-                                                  ['optimal', 'constant', 'invscaling', 'adaptive']),
-                'class_weight': suggest_with_prior(trial, 'class_weight', trial.suggest_categorical, 'class_weight', ['balanced', None]),
-                'max_iter': suggest_with_prior(trial, 'max_iter', trial.suggest_int, 'max_iter', 100, 2000),
-                'random_state': 42,
-                'average': suggest_with_prior(trial, 'average', trial.suggest_categorical, 'average', [True, False]),
-                'shuffle': suggest_with_prior(trial, 'shuffle', trial.suggest_categorical, 'shuffle', [True, False]),
-                'fit_intercept': suggest_with_prior(trial, 'fit_intercept', trial.suggest_categorical, 'fit_intercept', [True, False])
-            }
-            
-            # 如果使用弹性网络正则化，添加l1_ratio参数
-            if penalty == 'elasticnet':
-                params['l1_ratio'] = suggest_with_prior(trial, 'l1_ratio', trial.suggest_float, 'l1_ratio', 0.0, 1.0)
-            
-            # 学习率参数优化 - 扩展范围和精度
-            if params['learning_rate'] != 'optimal':
-                params['eta0'] = suggest_with_prior(trial, 'eta0', trial.suggest_float, 'eta0', 0.0001, 1.0, log=True)
-            
-            # 更精细的学习率衰减参数
-            if params['learning_rate'] == 'invscaling':
-                params['power_t'] = suggest_with_prior(trial, 'power_t', trial.suggest_float, 'power_t', 0.01, 2.0)
-                
-            # 如果是自适应学习率，添加弹性参数
-            if params['learning_rate'] == 'adaptive':
-                params['n_iter_no_change'] = suggest_with_prior(trial, 'n_iter_no_change_adaptive', 
-                                                          trial.suggest_int, 'n_iter_no_change_adaptive', 3, 50)
-                params['tol'] = suggest_with_prior(trial, 'tol_adaptive', 
-                                              trial.suggest_float, 'tol_adaptive', 1e-6, 1e-2, log=True)
-            
-            # 增强早停策略并统一处理不同的损失函数
-            
-            # 解耦性适用于所有主要损失函数的早停策略
-            params['early_stopping'] = suggest_with_prior(trial, 'early_stopping', 
-                                                   trial.suggest_categorical, 'early_stopping', [True, False])
-            
-            if params['early_stopping']:
-                params['validation_fraction'] = suggest_with_prior(trial, 'validation_fraction', 
-                                                            trial.suggest_float, 'validation_fraction', 0.1, 0.4)
-                params['n_iter_no_change'] = suggest_with_prior(trial, 'n_iter_no_change', 
-                                                          trial.suggest_int, 'n_iter_no_change', 3, 50)
-                params['tol'] = suggest_with_prior(trial, 'tol', 
-                                              trial.suggest_float, 'tol', 1e-6, 1e-2, log=True)
-            
-            # 针对不同的损失函数设置特殊参数
-            if params['loss'] == 'modified_huber':
-                # modified_huber可以设置epsilon
-                params['epsilon'] = suggest_with_prior(trial, 'epsilon', trial.suggest_float, 'epsilon', 0.01, 0.5)
-            
-            # 添加批量大小参数
-            batch_size = suggest_with_prior(trial, 'batch_size', trial.suggest_categorical, 'batch_size', 
-                                        [1, 16, 32, 64, 128, 256, 512, 'auto'])
-            
-            # 交叉验证
-            cv = StratifiedKFold(n_splits=cv_folds, shuffle=True, random_state=42)
-            
-            fold_metrics = []
-            train_smote_fold_metrics = []
-            
-            for fold, (train_idx, val_idx) in enumerate(cv.split(X_train, y_train)):
-                # 分割训练集和验证集
-                X_train_fold, X_val_fold = X_train.iloc[train_idx], X_train.iloc[val_idx]
-                y_train_fold, y_val_fold = y_train.iloc[train_idx], y_train.iloc[val_idx]
-                
-                if weights_train is not None:
-                    weights_train_fold = weights_train.iloc[train_idx]
-                    weights_val_fold = weights_train.iloc[val_idx]
-                else:
-                    weights_train_fold = weights_val_fold = None
-                
-                # 应用SMOTE过采样平衡训练集
-                # 为SMOTE添加k_neighbors参数优化
-                smote_k = suggest_with_prior(trial, 'smote_k', trial.suggest_int, 'smote_k', 
-                                     3, min(10, len(y_train_fold) - 1))  # 确保不超过样本数
-                smote = SMOTE(random_state=42, k_neighbors=smote_k)
-                # 处理权重
-                if weights_train_fold is not None:
-                    X_train_fold_with_weights = X_train_fold.copy()
-                    X_train_fold_with_weights['__weight__'] = weights_train_fold
-                    X_train_fold_with_weights['__label__'] = y_train_fold
+                    # 评估现有模型
+                    existing_model = model_data['model']
+                    y_prob = existing_model.predict_proba(X_test)[:, 1]
+                    y_pred = (y_prob > 0.5).astype(int)
+                    metrics = calculate_metrics(y_test, y_pred, y_prob, weights=weights_test)
+                    existing_model_score, _ = objective_function(metrics)
+                    logger.info(f"现有模型综合得分: {existing_model_score:.4f}")
                     
-                    # 重采样包含权重的DataFrame
-                    X_res, y_res = smote.fit_resample(
-                        X_train_fold_with_weights.drop('__label__', axis=1), 
-                        X_train_fold_with_weights['__label__']
-                    )
-                    
-                    # 提取重采样后的权重和特征
-                    weights_res = X_res['__weight__'].reset_index(drop=True)
-                    X_res = X_res.drop('__weight__', axis=1).reset_index(drop=True)
-                    y_res = y_res.reset_index(drop=True)
-                else:
-                    # 不带权重的SMOTE重采样
-                    X_res, y_res = smote.fit_resample(X_train_fold, y_train_fold)
-                    weights_res = None
-                
-                # 构建管道
-                pipeline_steps = [('preprocessor', trial_preprocessor)]
-                
-                # 如果选择使用特征选择，添加到管道中
-                if use_feature_selection:
-                    percentile = suggest_with_prior(trial, 'percentile', trial.suggest_int, 'percentile', 50, 100)  # 选择特征百分比
-                    pipeline_steps.append(('feature_selection', SelectPercentile(f_classif, percentile=percentile)))
-                
-                pipeline_steps.append(('classifier', SGDClassifier(**params)))
-                model = Pipeline(pipeline_steps)
-                
-                # 训练模型
-                model.fit(
-                    X_res, y_res,
-                    **({'classifier__sample_weight': weights_res} if weights_res is not None else {})
-                )
-                
-                # 评估验证集
-                y_val_prob = model.predict_proba(X_val_fold)[:, 1]
-                y_val_pred = model.predict(X_val_fold)
-                
-                # 计算指标
-                val_metrics = calculate_metrics(
-                    y_val_fold, y_val_pred, y_val_prob, 
-                    weights=weights_val_fold
-                )
-                fold_metrics.append(val_metrics)
-                
-            # 计算平均指标
-            avg_metrics = {}
-            for metric in fold_metrics[0].keys():
-                avg_metrics[metric] = np.mean([fm[metric] for fm in fold_metrics])
+                    if 'best_params' in model_data:
+                        logger.info("现有模型参数:")
+                        for k, v in model_data['best_params'].items():
+                            logger.info(f"  {k}: {v}")
+        except Exception as e:
+            logger.warning(f"加载或评估现有模型失败: {e}")
+    
+    # 定义Optuna目标函数
+    def objective(trial):
+        # 定义超参数搜索空间 - 优化以提高敏感度
+        loss = trial.suggest_categorical('loss', ['log_loss', 'modified_huber'])
+        penalty = trial.suggest_categorical('penalty', ['l2', 'l1', 'elasticnet'])
+        
+        # 根据penalty参数决定是否使用l1_ratio
+        if penalty == 'elasticnet':
+            l1_ratio = trial.suggest_float('l1_ratio', 0, 1)
+        else:
+            l1_ratio = 0
             
-            # 计算目标函数分数
-            score, failed_reasons = objective_function(avg_metrics, config_path='config.yaml', constraint_type='cv')
-            
-            # 更新参数信息，供后续使用
-            trial.set_user_attr('metrics', avg_metrics)
-            trial.set_user_attr('params', params)
-            trial.set_user_attr('failed_reasons', failed_reasons)  # 保存失败原因
-            
-            return score
+        # 设置learning_rate和power_t
+        learning_rate = trial.suggest_categorical('learning_rate', ['constant', 'optimal', 'invscaling', 'adaptive'])
+        power_t = 0.5
+        if learning_rate == 'invscaling':
+            power_t = trial.suggest_float('power_t', 0.1, 0.5)
         
-        # 创建Optuna学习器
-        study = optuna.create_study(direction='maximize')
-        logger.info(f"Running Optuna optimization for {n_trials} trials...")
+        # 添加class_weight参数以平衡类别，提高敏感度
+        class_weight = trial.suggest_categorical('class_weight', ['balanced', None])
         
-        # 如果有先前的最佳参数，添加特殊日志
-        if previous_best_params:
-            logger.info(f"Using previous best parameters as starting point for optimization")
-            # 记录问出来源
-            study.set_user_attr('previous_best_score', previous_best_params.get('score', 'unknown'))
-            study.set_user_attr('previous_best_params', previous_best_params)
+        # 提高过采样率，更有利于对极少类标签的检测
+        validation_fraction = trial.suggest_float('validation_fraction', 0.05, 0.2)
         
-        # 使用tqdm包装optimize过程，显示整体优化进度
-        from tqdm.auto import tqdm
-        with tqdm(total=n_trials, desc="Optuna优化进度", ncols=100) as pbar:
-            # 定义回调函数来更新进度条
-            def tqdm_callback(study, trial):
-                pbar.update(1)
-                best_value = study.best_value
-                best_trial = study.best_trial.number
-                current_value = trial.value if trial.value is not None else float('-inf')
-                # 更新进度条描述，显示当前最佳分数和本次试验分数
-                pbar.set_postfix({'最佳分数': f"{best_value:.4f}(#{best_trial})", 
-                                '当前分数': f"{current_value:.4f}"})
-            
-            # 添加回调函数到optimize过程
-            study.optimize(optuna_objective, n_trials=n_trials, callbacks=[tqdm_callback])
-        
-        # 获取最佳试验
-        best_trial = study.best_trial
-        best_params = best_trial.user_attrs['params']
-        best_metrics = best_trial.user_attrs['metrics']
-        best_score = best_trial.value
-        
-        logger.info("Optimization completed.")
-        logger.info(f"Best score: {best_score}")
-        
-        # 打印最佳参数和指标
-        logger.info("Best parameters:")
-        for k, v in best_params.items():
-            logger.info(f"{k}: {v}")
-        
-        logger.info("Best metrics:")
-        for metric, value in best_metrics.items():
-            if isinstance(value, float):
-                logger.info(f"{metric}: {value:.4f}")
-            else:
-                logger.info(f"{metric}: {value}")
-        
-        # 保存最佳参数
-        def convert_np(obj):
-            if isinstance(obj, (np.int_, np.intc, np.intp, np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.uint64)):
-                return int(obj)
-            elif isinstance(obj, (np.float_, np.float16, np.float32, np.float64)):
-                return float(obj)
-            elif isinstance(obj, (np.bool_)):
-                return bool(obj)
-            elif isinstance(obj, (np.ndarray,)):
-                return obj.tolist()
-            elif isinstance(obj, dict):
-                return {k: convert_np(v) for k, v in obj.items()}
-            elif isinstance(obj, list):
-                return [convert_np(i) for i in obj]
-            return obj
-        
-        params_serializable = {k: convert_np(v) for k, v in best_params.items()}
-        param_path = model_dir / f'PSGD_best_params.json'
-        with open(param_path, 'w') as f:
-            json.dump(params_serializable, f, indent=4)
-            
-        # 保存特征顺序和信息
-        feature_info = {
-            'features': features,
-            'cat_feature_indices': [features.index(col) for col in categorical_features if col in features],
-            'polynomial_degree': best_params.get('polynomial_degree', 2),  # 记录使用的多项式程度
-            'use_feature_selection': best_params.get('use_feature_selection', False),
-            'percentile': best_params.get('percentile', None) if best_params.get('use_feature_selection', False) else None
+        params = {
+            'loss': loss,
+            'penalty': penalty,
+            'alpha': trial.suggest_float('alpha', 1e-7, 1e-2, log=True),  # 扩大搜索范围
+            'l1_ratio': l1_ratio,
+            'learning_rate': learning_rate,
+            'eta0': trial.suggest_float('eta0', 1e-4, 0.2, log=True),  # 扩大搜索范围
+            'power_t': power_t,
+            'max_iter': 2000,  # 增加迭代次数
+            'tol': trial.suggest_float('tol', 1e-5, 1e-3, log=True),  # 动态调整收敛阈值
+            'early_stopping': True,
+            'validation_fraction': validation_fraction,
+            'n_iter_no_change': trial.suggest_int('n_iter_no_change', 5, 20),  # 动态调整早停参数
+            'class_weight': class_weight,  # 类别权重
+            'random_state': 42
         }
-        with open(model_dir / 'PSGD_feature_info.json', 'w') as f:
-            json.dump(feature_info, f, indent=4)
             
-        # 保存最佳指标
-        metrics_path = model_dir / f'PSGD_best_metrics.json'
-        with open(metrics_path, 'w') as f:
-            json.dump(best_metrics, f, indent=4)
-            
-    except Exception as e:
-        logger.error(f"Error during optimization: {e}")
-        logger.error(traceback.format_exc())
-    
-    # 如果成功找到最佳模型，在测试集上进行评估
-    if best_params is not None:
-        logger.info("Final best parameters:")
-        for k, v in best_params.items():
-            logger.info(f"{k}: {v}")
-        logger.info("Final best metrics (CV mean):")
-        for metric, value in best_metrics.items():
-            logger.info(f"{metric}: {value:.4f}")
-                
-        # 用最终最优参数在训练集做采样训练模型，并在test set评估
-        logger.info("评估在所有数据集上（从未在训练/调整期间使用）...")
+        # 创建模型
+        model = SGDClassifier(**params)
         
-        # 使用最佳参数设置SMOTE
-        best_smote_k = best_params.get('smote_k', 5)  # 默认为5如果没有最佳值
-        smote_final = SMOTE(random_state=42, k_neighbors=best_smote_k)
+        # 训练模型
         if weights_train is not None:
-            Xy_train = X_train.copy()
-            Xy_train['__label__'] = y_train
-            Xy_train['__weight__'] = weights_train
-            X_res_final, y_res_final = smote_final.fit_resample(Xy_train.drop(['__label__'], axis=1), Xy_train['__label__'])
-            weights_train_res_final = X_res_final['__weight__'].reset_index(drop=True)
-            X_train_res_final = X_res_final.drop(['__weight__'], axis=1)
-            y_train_res_final = y_res_final.reset_index(drop=True)
+            sample_weight = weights_train.values
         else:
-            X_train_res_final, y_train_res_final = smote_final.fit_resample(X_train, y_train)
-            weights_train_res_final = None
+            sample_weight = None
             
-        # 用最优参数训练模型
-        # 确保不重复传入参数
-        model_params = best_params.copy()
-        if 'random_state' not in model_params:
-            model_params['random_state'] = 42
+        # 使用交叉验证评估模型
+        cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+        cv_scores = []
+        
+        for train_idx, val_idx in cv.split(X_train, y_train):
+            X_train_fold, X_val_fold = X_train.iloc[train_idx], X_train.iloc[val_idx]
+            y_train_fold, y_val_fold = y_train.iloc[train_idx], y_train.iloc[val_idx]
             
-        # 生成最终的多项式程度配置
-        final_polynomial_degree = best_params.get('polynomial_degree', 2)  # 默认为2如果没有最佳值
-        final_numeric_transformer = Pipeline([
-            ('scaler', StandardScaler()),
-            ('poly', PolynomialFeatures(degree=final_polynomial_degree, include_bias=False))
-        ])
-        
-        final_preprocessor = ColumnTransformer([
-            ('num', final_numeric_transformer, ['DII_food'] + numeric_features),
-            ('cat', categorical_transformer, categorical_features)
-        ])
-        
-        # 构建最终管道
-        final_pipeline_steps = [('preprocessor', final_preprocessor)]
-        
-        # 根据最佳参数决定是否添加特征选择
-        if best_params.get('use_feature_selection', False):
-            best_percentile = best_params.get('percentile', 80)  # 默认值
-            final_pipeline_steps.append(('feature_selection', SelectPercentile(f_classif, percentile=best_percentile)))
-        
-        final_pipeline_steps.append(('classifier', SGDClassifier(**model_params)))
-        final_pipeline = Pipeline(final_pipeline_steps)
-        
-        final_pipeline.fit(
-            X_train_res_final, y_train_res_final,
-            **({'classifier__sample_weight': weights_train_res_final} if weights_train_res_final is not None else {})
-        )
-        
-        # 在test set评估
-        y_pred_test = final_pipeline.predict(X_test)
-        y_prob_test = final_pipeline.predict_proba(X_test)[:, 1]
-        test_metrics = calculate_metrics(y_test, y_pred_test, y_prob_test, weights_test)
-        
-        # 检查测试集指标是否满足test约束
-        test_score, test_failed_reasons = objective_function(test_metrics, config_path='config.yaml', constraint_type='test')
-        
-        logger.info("Test set metrics (never seen during training/tuning):")
-        for metric, value in test_metrics.items():
-            logger.info(f"{metric}: {value:.4f}")
-        
-        # 显示测试集约束检查结果
-        if test_failed_reasons:
-            logger.warning("Test set metrics did not satisfy test constraints:")
-            for reason in test_failed_reasons:
-                logger.warning(f"- {reason}")
-        else:
-            logger.info("Test set metrics satisfied all test constraints!")
-            logger.info(f"Test set objective score: {test_score:.4f}")
+            if weights_train is not None:
+                sample_weight_fold = weights_train.iloc[train_idx].values
+            else:
+                sample_weight_fold = None
+                
+            model.fit(X_train_fold, y_train_fold, sample_weight=sample_weight_fold)
             
-        # 保存模型和参数到 model_dir
-        model_path = model_dir / 'PSGD_model.pkl'
-        with open(model_path, 'wb') as f:
-            pickle.dump(final_pipeline, f)
+            # 在验证集上评估
+            y_prob = model.predict_proba(X_val_fold)[:, 1]
+            y_pred = (y_prob > 0.5).astype(int)
             
-        # 保存最终测试集指标到 output_dir
-        test_metrics_path = output_dir / 'PSGD_metrics.json'
-        with open(test_metrics_path, 'w') as f:
-            json.dump(test_metrics, f, indent=4)
+            # 计算指标
+            metrics = calculate_metrics(y_val_fold, y_pred, y_prob, 
+                                     weights=weights_train.iloc[val_idx] if weights_train is not None else None)
+            score, _ = objective_function(metrics)
+            cv_scores.append(score)
+            
+        # 返回平均得分
+        return np.mean(cv_scores)
+        
+    # 创建Optuna study
+    study = optuna.create_study(
+        direction='maximize',
+        study_name='PSGD_hyperparameter_optimization',
+        storage=storage,
+        load_if_exists=True,
+        pruner=optuna.pruners.MedianPruner(n_warmup_steps=5, n_startup_trials=5, n_min_trials=5)
+    )
+        
+    # 从配置文件中获取试验次数
+    with open('config.yaml', 'r') as f:
+        config = yaml.safe_load(f)
+    n_trials = config.get('n_trials', 100)
+    
+    # 自定义进度条回调
+    pbar = tqdm(total=n_trials, desc="超参数优化进度", unit="trial")
+    best_score = -np.inf
+    
+    def progress_callback(study, trial):
+        nonlocal best_score
+        current_score = study.best_value
+        if current_score > best_score:
+            best_score = current_score
+            pbar.set_postfix({"最佳分数": f"{best_score:.4f}"})
+        pbar.update(1)
+        
+    # 运行优化
+    logger.info(f"开始超参数优化，共进行 {n_trials} 次试验...")
+    study.optimize(
+        objective, 
+        n_trials=n_trials, 
+        n_jobs=-1, 
+        callbacks=[progress_callback],
+        show_progress_bar=False  # 使用自定义进度条
+    )
+    pbar.close()
+    
+    # 打印最佳结果
+    logger.info(f"\n=== 最佳参数 ===")
+    logger.info(f"最佳分数: {study.best_value:.4f}")
+    logger.info("最佳参数组合:")
+    for key, value in study.best_params.items():
+        logger.info(f"  {key}: {value}")
+        
+    # 使用最佳参数训练最终模型
+    best_params = study.best_params
+    
+    # 确保基本参数存在
+    if 'max_iter' not in best_params:
+        best_params['max_iter'] = 2000
+    if 'early_stopping' not in best_params:
+        best_params['early_stopping'] = True
+    if 'random_state' not in best_params:
+        best_params['random_state'] = 42
+    
+    # 添加类别权重以提高敏感度
+    if 'class_weight' not in best_params:
+        best_params['class_weight'] = 'balanced'
+        
+    # 训练基础模型
+    base_model = SGDClassifier(**best_params)
+    
+    # 训练基础模型
+    if weights_train is not None:
+        sample_weight = weights_train.values
     else:
-        logger.warning("No valid model found that meets the constraints.")
-        logger.warning("Check your objective constraints and data.")
+        sample_weight = None
+    
+    logger.info("训练基础SGD模型...")
+    base_model.fit(X_train, y_train, sample_weight=sample_weight)
+    
+    # 对模型进行概率校准
+    logger.info("对模型进行概率校准...")
+    # 使用isotonic回归和sigmoid校准分别进行试验
+    calibrated_model_sigmoid = CalibratedClassifierCV(
+        base_model, 
+        method='sigmoid',
+        cv='prefit'  # 使用预先训练好的模型
+    )
+    calibrated_model_isotonic = CalibratedClassifierCV(
+        base_model, 
+        method='isotonic',
+        cv='prefit'  # 使用预先训练好的模型
+    )
+    
+    # 对两种校准模型进行训练
+    calibrated_model_sigmoid.fit(X_test, y_test, sample_weight=weights_test.values if weights_test is not None else None)
+    calibrated_model_isotonic.fit(X_test, y_test, sample_weight=weights_test.values if weights_test is not None else None)
+    
+    # 评估三种模型
+    logger.info("评估基础模型和两种校准模型...")
+    
+    # 基础模型评估
+    y_pred_base = base_model.predict(X_test)
+    y_prob_base = base_model.predict_proba(X_test)[:, 1]
+    metrics_base = calculate_metrics(
+        y_test, y_pred_base, y_prob_base, 
+        weights=weights_test if weights_test is not None else None
+    )
+    base_score, _ = objective_function(metrics_base)
+    
+    # Sigmoid校准模型评估
+    y_pred_sigmoid = calibrated_model_sigmoid.predict(X_test)
+    y_prob_sigmoid = calibrated_model_sigmoid.predict_proba(X_test)[:, 1]
+    metrics_sigmoid = calculate_metrics(
+        y_test, y_pred_sigmoid, y_prob_sigmoid, 
+        weights=weights_test if weights_test is not None else None
+    )
+    sigmoid_score, _ = objective_function(metrics_sigmoid)
+    
+    # Isotonic校准模型评估
+    y_pred_isotonic = calibrated_model_isotonic.predict(X_test)
+    y_prob_isotonic = calibrated_model_isotonic.predict_proba(X_test)[:, 1]
+    metrics_isotonic = calculate_metrics(
+        y_test, y_pred_isotonic, y_prob_isotonic, 
+        weights=weights_test if weights_test is not None else None
+    )
+    isotonic_score, _ = objective_function(metrics_isotonic)
+    
+    # 打印比较结果
+    logger.info(f"基础模型得分: {base_score:.4f}")
+    logger.info(f"Sigmoid校准模型得分: {sigmoid_score:.4f}")
+    logger.info(f"Isotonic校准模型得分: {isotonic_score:.4f}")
+    
+    # 强制选择等温回归校准模型
+    logger.info("强制选择Isotonic校准模型")
+    final_model = calibrated_model_isotonic
+    final_metrics = metrics_isotonic
+    model_type = "Isotonic校准模型"
+    
+    # 将最终选择的模型结果保存
+    y_pred = final_model.predict(X_test)
+    y_prob = final_model.predict_proba(X_test)[:, 1]
+    best_metrics = final_metrics
+        
+    # 保存模型
+    with open(model_save_path, 'wb') as f:
+        pickle.dump({
+            'model': final_model,
+            'preprocessor': preprocessor,
+            'features': features,
+            'best_params': best_params,
+            'model_type': model_type,
+            'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }, f)
+        
+    # 计算综合得分
+    current_score, _ = objective_function(best_metrics)
+        
+    # 评估新模型
+    y_prob = final_model.predict_proba(X_test)[:, 1]
+    y_pred = (y_prob > 0.5).astype(int)
+    metrics = calculate_metrics(y_test, y_pred, y_prob, weights=weights_test)
+    new_model_score, _ = objective_function(metrics)
+        
+    # 比较新旧模型性能
+    if new_model_score > existing_model_score:
+        # 保存新模型
+        with open(model_save_path, 'wb') as f:
+            pickle.dump({
+                'model': final_model,
+                'preprocessor': preprocessor,
+                'features': features,
+                'best_params': best_params,
+                'model_type': model_type,
+                'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            }, f)
+        metrics = calculate_metrics(y_test, final_model.predict(X_test), final_model.predict_proba(X_test)[:, 1], weights=weights_test)
+        new_model_score, _ = objective_function(metrics)
+        
+        logger.info(f"新模型训练完成，综合得分: {new_model_score:.4f}")
+        logger.info(f"模型已保存至: {model_save_path}")
+    else:
+        logger.info(f"新模型得分 ({new_model_score:.4f}) 未超过现有模型得分 ({existing_model_score:.4f})，保留原模型")
+    
+    logger.info("模型训练/加载完成")
 
 if __name__ == "__main__":
     main()

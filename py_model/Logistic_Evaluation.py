@@ -229,9 +229,6 @@ def main():
         # 使用与校准曲线相同的处理方式：全量数据集+SMOTE过采样
         # 预测全量数据集的概率
         y_prob_all = model.predict_proba(X)[:, 1]
-        # 生成标准DCA曲线
-        plot_dca_curve(y, y_prob_all, weights, model_name, plot_dir, plot_data_dir, use_smote=True)
-        
         # 增加DII贡献评估
         print("\n评估DII对模型预测能力的贡献...")
         # 创建无DII版本的数据(将DII_food列设为0)
@@ -247,8 +244,24 @@ def main():
             f"{model_name}(without DII)": y_prob_no_dii
         }
         
-        # 绘制DII贡献对比DCA曲线
-        plot_dca_curve_comparison(y, y_probs_dict, weights, model_name, plot_dir, plot_data_dir, use_smote=True)
+        # 绘制DII贡献对比DCA曲线 - 现在直接返回数据而不是路径
+        comparison_data = plot_dca_curve_comparison(y, y_probs_dict, weights, model_name, plot_dir, plot_data_dir, use_smote=True)
+        
+        # 创建单模型格式数据
+        single_model_data = {
+            "thresholds": comparison_data["thresholds"],
+            "net_benefits_model": comparison_data["models"][f"{model_name}(all feature)"],
+            "net_benefits_all": comparison_data["treat_all"],
+            "net_benefits_none": comparison_data["treat_none"],
+            "model_name": model_name,
+            "prevalence": comparison_data.get("prevalence", np.mean(y))
+        }
+        
+        # 保存单模型数据
+        with open(plot_data_dir / f"{model_name}_DCA.json", 'w') as f:
+            json.dump(single_model_data, f, indent=4)
+            
+        print(f"已从比较版本中提取并保存单模型DCA数据 -> {model_name}_DCA.json")
         print(f"决策曲线分析(DCA)绘制完成 (耗时 {time.time() - start_time:.2f}秒)")
     
     print("\n所有评估与可视化任务完成！")

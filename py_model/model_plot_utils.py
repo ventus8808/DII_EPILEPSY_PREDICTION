@@ -241,15 +241,38 @@ def plot_learning_curve(model, X_train, y_train, X_test, y_test, model_name, plo
                     
                     # 训练模型并预测
                     try:
-                        # 使用模型自带的克隆方法
-                        from sklearn.base import clone
-                        cv_model = clone(model)
-                        
-                        # 训练模型
-                        cv_model.fit(X_train_cv_resampled, y_train_cv_resampled)
-                        
-                        # 预测验证集
-                        val_pred = cv_model.predict_proba(X_val_cv)[:, 1]
+                        # 检查是否是ModelWrapper类
+                        if hasattr(model, 'model') and hasattr(model, 'preprocessor'):
+                            # 处理ModelWrapper类
+                            from sklearn.base import clone
+                            from sklearn.naive_bayes import GaussianNB
+                            
+                            # 直接创建一个新的GaussianNB模型
+                            try:
+                                # 尝试获取原始模型的参数
+                                original_params = {}
+                                if hasattr(model.model, 'get_params'):
+                                    original_params = model.model.get_params()
+                                cv_model = GaussianNB(**original_params)
+                            except:
+                                # 如果出错，就使用默认参数
+                                cv_model = GaussianNB()
+                            
+                            # 直接在原始数据上训练
+                            cv_model.fit(X_train_cv_resampled, y_train_cv_resampled)
+                            
+                            # 预测验证集
+                            val_pred = cv_model.predict_proba(X_val_cv)[:, 1]
+                        else:
+                            # 正常的scikit-learn模型
+                            from sklearn.base import clone
+                            cv_model = clone(model)
+                            
+                            # 训练模型
+                            cv_model.fit(X_train_cv_resampled, y_train_cv_resampled)
+                            
+                            # 预测验证集
+                            val_pred = cv_model.predict_proba(X_val_cv)[:, 1]
                         
                     except Exception as e:
                         print(f"  样本量 {n_samples} 训练失败: {str(e)}")

@@ -66,6 +66,10 @@ def plot_dca_curve_comparison(y_true, y_probs_dict, weights, model_name, plot_di
         原始数据保存目录
     use_smote : bool
         是否使用SMOTE过采样
+        
+    Returns:
+    --------
+    dict : 包含对比DCA曲线数据的字典，可用于后续分析
     """
     # 原始数据统计信息
     total_samples = len(y_true)
@@ -208,7 +212,7 @@ def plot_dca_curve_comparison(y_true, y_probs_dict, weights, model_name, plot_di
     plt.legend(loc='lower right', frameon=True, fontsize=10, fancybox=True, framealpha=0.8, handlelength=3.0)
     plt.grid(False)
     plt.xlim(0.0, 1.0)  # 设置横轴范围
-    plt.ylim(-0.5, 0.5)  # 设置纵轴范围
+    plt.ylim(-0.1, 0.25)  # 设置纵轴范围
     plt.tight_layout()
     plt.subplots_adjust(right=0.95)  # 留出空间显示完整曲线
     
@@ -240,7 +244,10 @@ def plot_dca_curve_comparison(y_true, y_probs_dict, weights, model_name, plot_di
             dii_contribution[threshold] = contribution
             print(f"DII net benefit at threshold {threshold:.2f}: {contribution:.4f}")
     
-    return dca_plot_path
+    # 添加患病率到比较数据
+    comparison_data['prevalence'] = float(prevalence)
+    
+    return comparison_data
 
 def calculate_net_benefit(y_true, y_prob, threshold, weights=None):
     """
@@ -299,7 +306,9 @@ def plot_dca_curve(y_true, y_prob, weights, model_name, plot_dir, plot_data_dir,
         plot_dir: 图像保存路径
         plot_data_dir: 数据保存路径
         use_smote: 是否使用SMOTE过采样
-        原始数据保存目录
+    
+    Returns:
+        dict: 包含DCA曲线数据的字典，可用于后续分析
     """
     # 原始数据统计信息
     total_samples = len(y_true)
@@ -346,8 +355,8 @@ def plot_dca_curve(y_true, y_prob, weights, model_name, plot_dir, plot_data_dir,
             print(f"SMOTE过采样失败: {e}")
             print("使用原始不平衡数据集继续...")
     
-    # 创建阈值序列 - 避免极端值
-    thresholds = np.linspace(0.01, 0.99, 50)  # 重点关注低阈值区间，因为疾病为稀有事件
+    # 创建阈值序列 - 与比较DCA使用完全相同的阈值点数
+    thresholds = np.linspace(0.001, 0.999, 100)  # 使用100个点均匀覆盖从接近0到接近1
     
     # 计算模型在各阈值下的净收益
     net_benefits_model = []
@@ -421,7 +430,7 @@ def plot_dca_curve(y_true, y_prob, weights, model_name, plot_dir, plot_data_dir,
     plt.legend(loc='lower right', frameon=True, fontsize=10, fancybox=True, framealpha=0.8, handlelength=3.0)
     plt.grid(False)
     plt.xlim(0.0, 1.0)  # 设置横轴范围
-    plt.ylim(-0.5, 0.5)  # 设置纵轴范围
+    plt.ylim(-0.1, 0.25)  # 设置纵轴范围
     plt.tight_layout()
     plt.subplots_adjust(right=0.95)  # 留出空间显示完整曲线
     
@@ -446,4 +455,4 @@ def plot_dca_curve(y_true, y_prob, weights, model_name, plot_dir, plot_data_dir,
     print(f"决策曲线分析(DCA)图表已保存至: {dca_plot_path}")
     print(f"决策曲线分析(DCA)数据已保存至: {dca_data_path}")
     
-    return dca_plot_path
+    return dca_data
