@@ -55,7 +55,7 @@ eval_settings:
   draw_pr: 1           # 是否绘制PR曲线(1:是, 0:否)
   draw_calibration: 1  # 是否绘制校准曲线(1:是, 0:否)
   draw_confusion: 1    # 是否绘制混淆矩阵(1:是, 0:否)
-  draw_learning: 1     # 是否绘制学习曲线(1:是, 0:否)
+  draw_learning: 0     # 是否绘制学习曲线(1:是, 0:否)
   draw_threshold: 1    # 是否绘制阈值曲线(1:是, 0:否)
   draw_dca: 1          # 是否绘制决策曲线分析(DCA)(1:是, 0:否)
 
@@ -73,7 +73,7 @@ models:
     - "CatBoost"
     - "FNN"
     - "LightGBM"
-    - "PSGD"
+    - "GNB"
     - "RF"
     - "XGBoost"
     - "Ensemble_Voting"
@@ -85,7 +85,7 @@ models:
     CatBoost: "CatBoost"
     RF: "RF"
     FNN: "FNN"
-    PSGD: "PSGD"
+    GNB: "GNB"
     Logistic: "Logistic"
     Ensemble_Voting: "Voting"
   
@@ -96,7 +96,7 @@ models:
     CatBoost: "#2ca02c"     # 绿色
     RF: "#d62728"           # 红色
     FNN: "#9467bd"          # 紫色
-    PSGD: "#8c564b"         # 棕色
+    GNB: "#8c564b"         # 棕色
     Logistic: "#e377c2"     # 粉色
     Ensemble_Voting: "#17becf" # 青色
     Random: "gray"          # 随机分类器参考线

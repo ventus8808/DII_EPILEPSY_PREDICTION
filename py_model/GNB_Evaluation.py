@@ -199,6 +199,12 @@ def main():
     
     # 加载模型
     model_path = model_dir / 'GNB_model.pkl'
+    print(f"正在从 {model_path} 加载模型...")
+    if not model_path.exists():
+        print(f"错误: 模型文件 {model_path} 不存在")
+        print(f"当前工作目录: {Path.cwd()}")
+        print(f"模型目录内容: {[f.name for f in model_dir.glob('*')] if model_dir.exists() else '目录不存在'}")
+        return
     with open(model_path, 'rb') as f:
         model_data = pickle.load(f)
     
@@ -210,9 +216,11 @@ def main():
         print(f"最后更新时间: {last_updated}")
         
         # 打印模型参数
-        print("\n===== 最佳参数 =====")
+        print("\n===== 模型参数 =====")
+        print(f"模型类型: {model_data.get('model_type', '未知')}")
+        print("\n最佳参数:")
         for param, value in model_data.get('best_params', {}).items():
-            print(f"{param}: {value}")
+            print(f"  {param}: {value}")
     else:
         # 兼容旧模型格式
         model = model_data
@@ -257,7 +265,7 @@ def main():
     # 使用较低的阈值提高敏感度
     threshold = 0.05  # 从默认的0.5改为0.05以大幅提高敏感度
     y_pred = (y_prob >= threshold).astype(int)
-    print(f"使用的决策阈值: {threshold} (降低阈值以提高敏感度)")
+    print(f"\n决策阈值: {threshold} (降低阈值以提高敏感度)")
     
     model_name = "GNB"  # 用于文件命名
     
@@ -271,12 +279,19 @@ def main():
             # 使用阈值计算评估指标
             metrics = calculate_metrics(y_test, y_pred, y_prob, weights_test)
             
-            # 添加阈值信息到指标
-            metrics["threshold"] = threshold
-            
             print("\n===== 测试集评估指标 =====")
-            for metric, value in metrics.items():
-                print(f"{metric}: {value}")
+            # 打印主要指标
+            print("\n主要指标:")
+            main_metrics = ["Accuracy", "Precision", "Sensitivity", "Specificity", "F1 Score", "AUC-ROC", "AUC-PR"]
+            for metric in main_metrics:
+                if metric in metrics:
+                    print(f"{metric}: {metrics[metric]:.4f}")
+            
+            # 打印其他指标
+            print("\n其他指标:")
+            other_metrics = [m for m in metrics.keys() if m not in main_metrics]
+            for metric in other_metrics:
+                print(f"{metric}: {metrics[metric]:.4f}")
             
             print(f"\n评估指标计算完成 (耗时 {time.time() - start_time:.2f}秒)")
             
@@ -432,10 +447,10 @@ def plot_gnb_learning_curve(X_train, y_train, X_test, y_test, model_data, model_
         ('cat', categorical_transformer, categorical_features)
     ])
     
-    # 定义要测试的样本量 - 使用1000开始，每500递增
+    # 定义要评估的样本量 - 使用1000开始，每500递增，最大到8000
     start_size = 1000
     step_size = 500
-    max_train_size = len(X_train)
+    max_train_size = min(8000, len(X_train))  # 限制最大样本量为8000
     train_sizes_abs = list(range(start_size, max_train_size, step_size))
     # 确保包含最后一个点（全部训练数据）
     if train_sizes_abs[-1] != max_train_size and max_train_size - train_sizes_abs[-1] > 100:
@@ -575,15 +590,15 @@ def plot_gnb_learning_curve(X_train, y_train, X_test, y_test, model_data, model_
                        np.array(train_scores_mean) + np.array(train_scores_std), 
                        color=light_green, alpha=0.2)
         
-        # 设置固定的X轴范围为0-9000样本
+        # 设置固定的X轴范围为0-9000样本，确保数据点（1000-8000）完全显示
         ax.set_xlim(0, 9000)
         
-        # 创建介于0到9000的整数刻度
+        # 创建0到9000的整数刻度，每1000一个刻度
         fixed_tick_values = [i * 1000 for i in range(10)]  # 0, 1000, 2000, ..., 9000
         
         # 设置主要刻度标签 (0-9)
         ax.set_xticks(fixed_tick_values)
-        ax.set_xticklabels([str(i) for i in range(10)])
+        ax.set_xticklabels([str(i) for i in range(10)])  # 0-9 对应 0-9000
         
         # 设置Y轴范围从0.5到1.0，间隔0.1
         ax.set_ylim(0.5, 1.0)
