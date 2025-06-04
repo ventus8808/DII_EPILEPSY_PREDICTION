@@ -13,7 +13,7 @@ from imblearn.over_sampling import SMOTE
 from model_metrics_utils import calculate_metrics
 from model_plot_utils import (
     plot_roc_curve, plot_pr_curve, plot_learning_curve, 
-    plot_confusion_matrix, plot_threshold_curve
+    plot_confusion_matrix, plot_threshold_curve, plot_roc_curve_comparison
 )
 from model_plot_calibration import plot_calibration_all_data
 from model_plot_DCA import plot_dca_curve, plot_dca_curve_comparison
@@ -190,6 +190,30 @@ def main():
         print("绘制ROC曲线...")
         plot_roc_curve(y_test, y_prob, weights_test, model_name, plot_dir, plot_data_dir)
         print(f"ROC曲线绘制完成 (耗时 {time.time() - start_time:.2f}秒)")
+        
+        # 新增：ROC比较曲线（含DII vs 不含DII）
+        start_time = time.time()
+        print("绘制ROC比较曲线（评估DII贡献）...")
+        
+        # 创建无DII版本的测试数据
+        X_test_no_dii = X_test.copy()
+        X_test_no_dii['DII_food'] = 0
+        
+        # 预测测试集的概率
+        y_prob_with_dii = y_prob  # 已有的测试集预测结果
+        y_prob_no_dii = model.predict_proba(X_test_no_dii)[:, 1]
+        
+        # 构建比较字典
+        y_probs_dict = {
+            f"{model_name}(all feature)": y_prob_with_dii,
+            f"{model_name}(without DII)": y_prob_no_dii
+        }
+        
+        # 调用比较函数，在测试集上进行比较，不使用SMOTE过采样
+        plot_roc_curve_comparison(y_test, y_probs_dict, weights_test, model_name, plot_dir, plot_data_dir, use_smote=False)
+        # 打印提示，明确说明ROC比较中不使用SMOTE过采样
+        print("注意: ROC比较曲线保持与单独ROC曲线相同的数据处理方式，不进行SMOTE过采样")
+        print(f"ROC比较曲线绘制完成 (耗时 {time.time() - start_time:.2f}秒)")
     
     if draw_pr:
         start_time = time.time()
@@ -263,6 +287,57 @@ def main():
             
         print(f"已从比较版本中提取并保存单模型DCA数据 -> {model_name}_DCA.json")
         print(f"决策曲线分析(DCA)绘制完成 (耗时 {time.time() - start_time:.2f}秒)")
+    
+    # 打印逻辑回归模型系数（β值）
+    print("\n===== 逻辑回归模型系数 (β值) =====")
+    coef = model.coef_[0]  # 获取系数，对于二分类只有一组系数
+    intercept = model.intercept_[0]  # 获取截距
+    
+    # 创建特征名称和系数的对应关系
+    feature_names = X.columns.tolist()
+    coefficients = list(coef)
+    
+    # 打印截距(Intercept)
+    print(f"Intercept: {intercept:.4f}")
+    
+    # 打印各个特征的系数
+    print("\n特征系数（从高到低排序）:")
+    
+    # 创建特征-系数对，并按系数绝对值降序排序
+    feature_coef_pairs = sorted(zip(feature_names, coefficients), 
+                               key=lambda x: abs(x[1]), reverse=True)
+    
+    # 创建简洁的JSON格式
+    coef_dict = {"Intercept": float(intercept)}
+    for feature, coefficient in feature_coef_pairs:
+        print(f"{feature}: {coefficient:.4f}")
+        coef_dict[feature] = float(coefficient)
+    
+    # 将系数保存到model目录，文件名为LR_best_params.json
+    model_dir_path = Path(config['model_dir'])
+    coef_path = model_dir_path / "LR_best_params.json"
+    with open(coef_path, 'w') as f:
+        json.dump(coef_dict, f, indent=4)
+    
+    print(f"\n模型系数已保存到: {coef_path}")
+    
+    # 计算和打印优势比(Odds Ratio)，但不保存
+    print("\n===== 优势比 (Odds Ratio) =====")
+    print("特征优势比（从高到低排序）:")
+    
+    # 计算优势比并按降序排序
+    for feature, coefficient in feature_coef_pairs:
+        odds_ratio = np.exp(coefficient)
+        ci_lower = np.exp(coefficient - 1.96 * np.sqrt(1/len(y_train_res)))  # 简化的95%置信区间下限
+        ci_upper = np.exp(coefficient + 1.96 * np.sqrt(1/len(y_train_res)))  # 简化的95%置信区间上限
+        
+        print(f"{feature}: {odds_ratio:.4f} (95% CI: {ci_lower:.4f}-{ci_upper:.4f})")
+    
+    # 添加截距的优势比
+    intercept_odds = np.exp(intercept)
+    ci_lower = np.exp(intercept - 1.96 * np.sqrt(1/len(y_train_res)))
+    ci_upper = np.exp(intercept + 1.96 * np.sqrt(1/len(y_train_res)))
+    print(f"Intercept: {intercept_odds:.4f} (95% CI: {ci_lower:.4f}-{ci_upper:.4f})")
     
     print("\n所有评估与可视化任务完成！")
 

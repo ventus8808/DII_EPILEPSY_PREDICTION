@@ -13,7 +13,7 @@ import os
 from model_metrics_utils import calculate_metrics
 from model_plot_utils import (
     plot_roc_curve, plot_pr_curve, plot_learning_curve, 
-    plot_confusion_matrix, plot_threshold_curve
+    plot_confusion_matrix, plot_threshold_curve, plot_roc_curve_comparison
 )
 from model_plot_calibration import plot_calibration_all_data
 from model_plot_DCA import plot_dca_curve, plot_dca_curve_comparison
@@ -289,6 +289,44 @@ def main():
         print("绘制ROC曲线...")
         plot_roc_curve(y_test, y_prob, weights_test, model_name, plot_dir, plot_data_dir)
         print(f"ROC曲线绘制完成 (耗时 {time.time() - start_time:.2f}秒)")
+        
+        # 新增：ROC比较曲线（含DII vs 不含DII）
+        start_time = time.time()
+        print("绘制ROC比较曲线（评估DII贡献）...")
+        
+        # 创建无DII版本的测试数据
+        X_test_no_dii = X_test.copy()
+        X_test_no_dii['DII_food'] = 0
+        
+        # 预测测试集的概率
+        y_prob_with_dii = y_prob  # 已有的测试集预测结果
+        
+        # 使用与原始预测相同的方式，手动集成各模型的预测
+        model_probs_no_dii = {}
+        for base_model_name, (model, weight) in models_dict.items():
+            if base_model_name == 'FNN':
+                # 对FNN模型使用特殊处理
+                _, fnn_prob = fnn_predict(model, X_test_no_dii, feature_info)
+                model_probs_no_dii[base_model_name] = fnn_prob * weight
+            elif base_model_name == 'SVM':
+                # 对SVM模型使用特殊处理
+                _, svm_prob = svm_predict(model, X_test_no_dii)
+                model_probs_no_dii[base_model_name] = svm_prob * weight
+            else:
+                model_probs_no_dii[base_model_name] = model.predict_proba(X_test_no_dii)[:, 1] * weight
+        
+        # 计算所有模型的加权平均
+        y_prob_no_dii = sum(probs for probs in model_probs_no_dii.values()) / total_weight
+        
+        # 构建比较字典
+        y_probs_dict = {
+            f"{model_name}(all feature)": y_prob_with_dii,
+            f"{model_name}(without DII)": y_prob_no_dii
+        }
+        
+        # 调用比较函数，在测试集上进行比较，不使用SMOTE过采样
+        plot_roc_curve_comparison(y_test, y_probs_dict, weights_test, model_name, plot_dir, plot_data_dir, use_smote=False)
+        print(f"ROC比较曲线绘制完成 (耗时 {time.time() - start_time:.2f}秒)")
     
     if draw_pr:
         start_time = time.time()

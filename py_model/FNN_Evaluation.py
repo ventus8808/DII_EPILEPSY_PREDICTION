@@ -40,7 +40,7 @@ plt.rcParams['figure.dpi'] = 300
 from model_metrics_utils import calculate_metrics
 from model_plot_utils import (
     plot_roc_curve, plot_pr_curve, plot_learning_curve, 
-    plot_confusion_matrix, plot_threshold_curve
+    plot_confusion_matrix, plot_threshold_curve, plot_roc_curve_comparison
 )
 from model_plot_calibration import plot_calibration_all_data
 from model_plot_DCA import plot_dca_curve, plot_dca_curve_comparison
@@ -231,12 +231,39 @@ def main():
             print(f"{metric_name}: {metric_value:.4f}")
         print(f"评估指标计算完成 (耗时 {time.time() - start_time:.2f}秒)")
     
-    # 绘图
+    # 绘制各种图表
     if draw_roc:
         start_time = time.time()
         print("绘制ROC曲线...")
         plot_roc_curve(y_test, y_prob, weights_test, model_name, plot_dir, plot_data_dir)
         print(f"ROC曲线绘制完成 (耗时 {time.time() - start_time:.2f}秒)")
+        
+        # 新增：ROC比较曲线（含DII vs 不含DII）
+        start_time = time.time()
+        print("绘制ROC比较曲线（评估DII贡献）...")
+        
+        # 创建无DII版本的测试数据
+        X_test_no_dii = X_test.copy()
+        # 找到DII_food列并替换为均值，而不是0
+        if 'DII_food' in X_test.columns:
+            # 计算原始数据中DII_food的均值
+            dii_mean = df['DII_food'].mean()
+            print(f"使用DII_food的均值 {dii_mean:.4f} 替代所有样本的DII值")
+            X_test_no_dii['DII_food'] = dii_mean
+        
+        # 预测测试集的概率
+        y_prob_with_dii = y_prob  # 已有的测试集预测结果
+        _, y_prob_no_dii = fnn_predict(model, X_test_no_dii)  # 正确解包元组，获取第二个元素（概率）
+        
+        # 构建比较字典
+        y_probs_dict = {
+            f"{model_name}(all feature)": y_prob_with_dii,
+            f"{model_name}(with mean DII)": y_prob_no_dii  # 更新标签以反映使用均值
+        }
+        
+        # 调用比较函数，在测试集上进行比较，不使用SMOTE过采样
+        plot_roc_curve_comparison(y_test, y_probs_dict, weights_test, model_name, plot_dir, plot_data_dir, use_smote=False)
+        print(f"ROC比较曲线绘制完成 (耗时 {time.time() - start_time:.2f}秒)")
     
     if draw_pr:
         start_time = time.time()
