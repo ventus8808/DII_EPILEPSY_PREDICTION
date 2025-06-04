@@ -171,6 +171,14 @@ def plot_dca_curve_comparison(y_true, y_probs_dict, weights, model_name, plot_di
     
     # 计算并绘制每个模型的DCA曲线
     for i, (model_name, y_prob) in enumerate(y_probs_dict.items()):
+        # 设置标签和颜色
+        if i == 0:  # 第一个曲线（有DII的模型）
+            display_name = "All Feature"
+            color = '#1f77b4'  # 蓝色
+        else:  # 第二个曲线（没有DII的模型）
+            display_name = "Without DII"
+            color = '#555555'  # 深灰色
+            
         # 计算该模型的净收益
         net_benefits_model = []
         for threshold in thresholds:
@@ -180,9 +188,8 @@ def plot_dca_curve_comparison(y_true, y_probs_dict, weights, model_name, plot_di
         # 保存数据
         comparison_data['models'][model_name] = net_benefits_model
                 
-        # 绘制曲线 - 使用model_plot_utils的颜色方案
-        color = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728'][i % 4]
-        plt.plot(thresholds, net_benefits_model, label=model_name, color=color, linewidth=2)
+        # 绘制曲线
+        plt.plot(thresholds, net_benefits_model, label=display_name, color=color, linewidth=2)
         
     # 绘制"Treat All"策略的曲线 - 绿色长虚线
     plt.plot(
@@ -208,8 +215,8 @@ def plot_dca_curve_comparison(y_true, y_probs_dict, weights, model_name, plot_di
     # 从model_name中提取基础名称（不包含括号）
     base_model_name = model_name.split('(')[0].strip()
     plt.title(f'Decision Curve Analysis - {base_model_name}')
-    # 图例移动到右下角并缩小，添加边框并增加虹线长度
-    plt.legend(loc='lower right', frameon=True, fontsize=10, fancybox=True, framealpha=0.8, handlelength=3.0)
+    # 图例移动到左下角并缩小，添加边框并增加虹线长度
+    plt.legend(loc='lower left', frameon=True, fontsize=10, fancybox=True, framealpha=0.8, handlelength=3.0)
     plt.grid(False)
     plt.xlim(0.0, 1.0)  # 设置横轴范围
     plt.ylim(-0.1, 0.25)  # 设置纵轴范围

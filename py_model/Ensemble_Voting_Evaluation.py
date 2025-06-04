@@ -296,7 +296,7 @@ def main():
         
         # 创建无DII版本的测试数据
         X_test_no_dii = X_test.copy()
-        X_test_no_dii['DII_food'] = 0
+        X_test_no_dii['DII_food'] = X['DII_food'].median()  # 填充中位数而不是0
         
         # 预测测试集的概率
         y_prob_with_dii = y_prob  # 已有的测试集预测结果
@@ -431,7 +431,7 @@ def main():
         print("\n评估DII对模型预测能力的贡献...")
         # 创建无DII版本的数据(将DII_food列设为0)
         X_no_dii = X_full.copy()
-        X_no_dii['DII_food'] = 0  # 将DII列设为0
+        X_no_dii['DII_food'] = X['DII_food'].median()  # 填充中位数而不是0
         
         # 预测无DII数据
         model_probs_no_dii = {}

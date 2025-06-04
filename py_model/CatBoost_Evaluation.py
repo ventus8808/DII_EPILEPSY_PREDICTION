@@ -133,18 +133,22 @@ def main():
         start_time = time.time()
         print("绘制ROC比较曲线（评估DII贡献）...")
         
-        # 创建无DII版本的测试数据
-        X_test_no_dii = X_test.copy()
-        X_test_no_dii['DII_food'] = 0
+        # 获取DII_food的中位数
+        dii_median = X['DII_food'].median()
+        print(f"DII_food的中位数为: {dii_median:.4f}")
+        
+        # 创建填充DII中位数版本的测试数据
+        X_test_median_dii = X_test.copy()
+        X_test_median_dii['DII_food'] = dii_median  # 填充中位数而不是0
         
         # 预测测试集的概率
         y_prob_with_dii = y_prob  # 已有的测试集预测结果
-        y_prob_no_dii = model.predict_proba(X_test_no_dii)[:, 1]
+        y_prob_median_dii = model.predict_proba(X_test_median_dii)[:, 1]
         
         # 构建比较字典
         y_probs_dict = {
             f"{model_name}(all feature)": y_prob_with_dii,
-            f"{model_name}(without DII)": y_prob_no_dii
+            f"{model_name}(without DII)": y_prob_median_dii  # 标签保持一致，便于后续处理
         }
         
         # 调用比较函数，在测试集上进行比较，不使用SMOTE过采样
@@ -192,17 +196,22 @@ def main():
         y_prob_all = model.predict_proba(X)[:, 1]
         # 增加DII贡献评估
         print("\n评估DII对模型预测能力的贡献...")
-        # 创建无DII版本的数据(将DII_food列设为0)
-        X_no_dii = X.copy()
-        X_no_dii['DII_food'] = 0  # 将DII列设为0
         
-        # 预测无DII数据
-        y_prob_no_dii = model.predict_proba(X_no_dii)[:, 1]
+        # 获取DII_food的中位数
+        dii_median = X['DII_food'].median()
+        print(f"DII_food的中位数为: {dii_median:.4f}")
+        
+        # 创建填充DII中位数版本的数据
+        X_median_dii = X.copy()
+        X_median_dii['DII_food'] = dii_median  # 填充中位数而不是0
+        
+        # 预测填充中位数的数据
+        y_prob_median_dii = model.predict_proba(X_median_dii)[:, 1]
         
         # 构建DII对比字典
         y_probs_dict = {
             f"{model_name}(all feature)": y_prob_all,
-            f"{model_name}(without DII)": y_prob_no_dii
+            f"{model_name}(without DII)": y_prob_median_dii  # 标签保持一致，便于后续处理
         }
         
         # 绘制DII贡献对比DCA曲线 - 现在直接返回数据而不是路径

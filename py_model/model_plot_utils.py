@@ -745,12 +745,15 @@ def plot_roc_curve_comparison(y_true, y_probs_dict, weights, model_name, plot_di
         # 存储所有曲线的数据，用于返回和保存
         curves_data = {'models': {}}
         
+        # 添加网格线
+        ax.grid(True, linestyle='--', alpha=0.3, color='gray')
+        
         # 绘制每个模型的ROC曲线
         for i, (curve_name, y_prob) in enumerate(y_probs_dict.items()):
             fpr, tpr, _ = roc_curve(y_true, y_prob, sample_weight=weights)
             
             # 计算AUC
-            if not use_smote and i == 0 and "all feature" in curve_name:
+            if not use_smote and i == 0 and "all feature" in curve_name.lower():
                 # 当use_smote=False且是第一个模型(all feature)时，使用与单独ROC曲线相同的AUC值
                 # 尝试从metrics_comparison.csv读取AUC值
                 metrics_file = Path('/Users/ventus/Repository/DII_EPILEPSY_PREDICTION/Table&Figure/metrics_comparison.csv')
@@ -758,7 +761,12 @@ def plot_roc_curve_comparison(y_true, y_probs_dict, weights, model_name, plot_di
                     if metrics_file.exists():
                         metrics_df = pd.read_csv(metrics_file, index_col=0)
                         base_model_name = model_name.split('(')[0].strip()
-                        if base_model_name in metrics_df.columns and 'AUC-ROC' in metrics_df.index:
+                        
+                        # 特殊处理Ensemble_Voting模型，在metrics_comparison.csv中列名为"Ensemble"
+                        if base_model_name == "Ensemble_Voting" and "Ensemble" in metrics_df.columns:
+                            print(f"使用metrics_comparison.csv中的Ensemble AUC值: {metrics_df.loc['AUC-ROC', 'Ensemble']}")
+                            roc_auc = metrics_df.loc['AUC-ROC', 'Ensemble']
+                        elif base_model_name in metrics_df.columns and 'AUC-ROC' in metrics_df.index:
                             print(f"使用metrics_comparison.csv中的AUC值: {metrics_df.loc['AUC-ROC', base_model_name]}")
                             roc_auc = metrics_df.loc['AUC-ROC', base_model_name]
                         else:
@@ -778,11 +786,16 @@ def plot_roc_curve_comparison(y_true, y_probs_dict, weights, model_name, plot_di
             
             roc_auc_rounded = round(roc_auc, 3)
             
-            # 选择颜色 - 使用与DCA比较相同的配色方案
-            color = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728'][i % 4]
+            # 设置标签和颜色
+            if i == 0:  # 第一个曲线（有DII的模型）
+                display_name = "All Feature"
+                color = '#1f77b4'  # 蓝色
+            else:  # 第二个曲线（没有DII的模型）
+                display_name = "Without DII"
+                color = '#555555'  # 深灰色
             
             # 绘制ROC曲线
-            ax.plot(fpr, tpr, label=f'{curve_name} (AUC = {roc_auc_rounded:.3f})', 
+            ax.plot(fpr, tpr, label=f'{display_name} (AUC = {roc_auc_rounded:.3f})', 
                    color=color, linewidth=2)
             
             # 存储曲线数据

@@ -916,7 +916,7 @@ def main():
         print("\n评估DII对模型预测能力的贡献...")
         # 创建无DII版本的数据(将DII_food列设为0)
         X_no_dii = X.copy()
-        X_no_dii['DII_food'] = 0  # 将DII列设为0
+        X_no_dii['DII_food'] = X['DII_food'].median()  # 填充中位数而不是0
         
         # 预测无DII数据
         _, y_prob_no_dii = fnn_predict(model, X_no_dii)
