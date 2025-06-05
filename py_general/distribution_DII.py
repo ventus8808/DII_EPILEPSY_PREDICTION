@@ -238,7 +238,7 @@ def main():
     data_path = Path(config['data_path'])
     
     # 创建输出目录
-    output_dir = Path("plot_distribution")
+    output_dir = Path("plot_general")
     output_dir.mkdir(exist_ok=True)
     
     # 读取数据
