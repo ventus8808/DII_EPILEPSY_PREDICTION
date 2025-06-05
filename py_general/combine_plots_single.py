@@ -129,10 +129,12 @@ def process_plots(plot_dir, output_dir):
     
     # 定义要处理的图片模式（不区分大小写）
     patterns = [
+        '*ROC_DII.png',
         '*DCA_DII.png', 
         '*Threshold.png', 
         '*Learning_Curve.png',
-        '*Calibration_Curve.png'  # 添加校准曲线
+        '*Calibration_Curve.png'
+        
     ]
     
     for pattern in patterns:

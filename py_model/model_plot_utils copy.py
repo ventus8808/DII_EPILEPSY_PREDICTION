@@ -184,7 +184,7 @@ def plot_learning_curve(model, X_train, y_train, X_test, y_test, model_name, plo
     from scipy import stats
     import numpy as np
     
-    # 定义要测试的样本量 - 使用1000开始
+    # 定义要测试的样本量 - 使用1000开始，每500递增
     start_size = 1000
     step_size = 500
     max_train_size = len(X_train)

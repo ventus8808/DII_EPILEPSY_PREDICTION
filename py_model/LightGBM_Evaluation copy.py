@@ -18,7 +18,7 @@ from model_plot_DCA import plot_dca_curve, plot_dca_curve_comparison
 
 def main():
     # 命令行参数处理，允许覆盖配置文件中的设置
-    parser = argparse.ArgumentParser(description="XGBoost模型评估与可视化")
+    parser = argparse.ArgumentParser(description="LightGBM模型评估与可视化")
     parser.add_argument("--config", default="config.yaml", help="配置文件路径")
     parser.add_argument("--metrics", type=int, choices=[0, 1], help="是否计算评估指标(0:否, 1:是)")
     parser.add_argument("--roc", type=int, choices=[0, 1], help="是否绘制ROC曲线(0:否, 1:是)")
@@ -71,13 +71,13 @@ def main():
     result_dir.mkdir(exist_ok=True)
     
     # 加载模型
-    model_path = model_dir / 'XGBoost_model.pkl'
+    model_path = model_dir / 'LightGBM_model.pkl'
     with open(model_path, 'rb') as f:
         model = pickle.load(f)
     
     # 加载数据
     df = pd.read_csv(data_path)
-    with open(model_dir / 'XGBoost_feature_info.json', 'r') as f:
+    with open(model_dir / 'LightGBM_feature_info.json', 'r') as f:
         feature_info = json.load(f)
     features = feature_info['features']
     X = df[features]
@@ -105,45 +105,22 @@ def main():
     print(f"成功加载特征信息文件，模型使用的特征数：{len(features)}")
     y_pred = model.predict(X_test)
     y_prob = model.predict_proba(X_test)[:, 1]
-    model_name = "XGBoost"
+    model_name = "LightGBM"
     
     # 打印配置设置
     print(f"\n===== 模型评估 =====")
     
     # 计算评估指标
-    print(f"\n===== 开始计算评估指标 =====")
-    print(f"calc_metrics 值: {calc_metrics}")
-    print(f"y_test 形状: {y_test.shape if hasattr(y_test, 'shape') else 'N/A'}")
-    print(f"y_pred 形状: {y_pred.shape if hasattr(y_pred, 'shape') else 'N/A'}")
-    print(f"y_prob 形状: {y_prob.shape if hasattr(y_prob, 'shape') else 'N/A'}")
-    
     if calc_metrics:
         start_time = time.time()
-        print("\n正在计算评估指标...")
-        try:
-            metrics = calculate_metrics(y_test, y_pred, y_prob, weights_test)
-            
-            # 打印评估结果
-            print("\n===== 测试集评估指标 =====")
-            for metric_name, metric_value in metrics.items():
-                if isinstance(metric_value, (int, float)):
-                    print(f"{metric_name}: {metric_value:.4f}")
-                else:
-                    print(f"{metric_name}: {metric_value}")
-            print(f"\n评估指标计算完成 (耗时 {time.time() - start_time:.2f}秒)")
-            
-            # 保存指标到文件
-            metrics_path = Path(config['output_dir']) / f'{model_name}_metrics.json'
-            with open(metrics_path, 'w') as f:
-                json.dump(metrics, f, indent=4)
-            print(f"评估指标已保存到: {metrics_path}")
-            
-        except Exception as e:
-            print(f"\n计算评估指标时出错: {e}")
-            import traceback
-            traceback.print_exc()
-    else:
-        print("根据配置，跳过评估指标计算")
+        print("计算评估指标...")
+        metrics = calculate_metrics(y_test, y_pred, y_prob, weights_test)
+        
+        # 打印评估结果
+        print("\nTest Set Metrics:")
+        for metric_name, metric_value in metrics.items():
+            print(f"{metric_name}: {metric_value:.4f}")
+        print(f"评估指标计算完成 (耗时 {time.time() - start_time:.2f}秒)")
     
     # 绘图
     if draw_roc:
@@ -156,22 +133,18 @@ def main():
         start_time = time.time()
         print("绘制ROC比较曲线（评估DII贡献）...")
         
-        # 获取DII_food的中位数
-        dii_median = X['DII_food'].median()
-        print(f"DII_food的中位数为: {dii_median:.4f}")
-        
-        # 创建填充DII中位数版本的测试数据
-        X_test_median_dii = X_test.copy()
-        X_test_median_dii['DII_food'] = dii_median  # 填充中位数而不是0
+        # 创建无DII版本的测试数据
+        X_test_no_dii = X_test.copy()
+        X_test_no_dii['DII_food'] = X['DII_food'].median()  # 填充中位数而不是0
         
         # 预测测试集的概率
         y_prob_with_dii = y_prob  # 已有的测试集预测结果
-        y_prob_median_dii = model.predict_proba(X_test_median_dii)[:, 1]
+        y_prob_no_dii = model.predict_proba(X_test_no_dii)[:, 1]
         
         # 构建比较字典
         y_probs_dict = {
             f"{model_name}(all feature)": y_prob_with_dii,
-            f"{model_name}(without DII)": y_prob_median_dii  # 标签保持一致，便于后续处理
+            f"{model_name}(without DII)": y_prob_no_dii
         }
         
         # 调用比较函数，在测试集上进行比较，不使用SMOTE过采样
@@ -219,22 +192,17 @@ def main():
         y_prob_all = model.predict_proba(X)[:, 1]
         # 增加DII贡献评估
         print("\n评估DII对模型预测能力的贡献...")
+        # 创建无DII版本的数据(将DII_food列设为0)
+        X_no_dii = X.copy()
+        X_no_dii['DII_food'] = X['DII_food'].median()  # 填充中位数而不是0
         
-        # 获取DII_food的中位数
-        dii_median = X['DII_food'].median()
-        print(f"DII_food的中位数为: {dii_median:.4f}")
-        
-        # 创建填充DII中位数版本的数据
-        X_median_dii = X.copy()
-        X_median_dii['DII_food'] = dii_median  # 填充中位数而不是0
-        
-        # 预测填充中位数的数据
-        y_prob_median_dii = model.predict_proba(X_median_dii)[:, 1]
+        # 预测无DII数据
+        y_prob_no_dii = model.predict_proba(X_no_dii)[:, 1]
         
         # 构建DII对比字典
         y_probs_dict = {
             f"{model_name}(all feature)": y_prob_all,
-            f"{model_name}(without DII)": y_prob_median_dii  # 标签保持一致，便于后续处理
+            f"{model_name}(without DII)": y_prob_no_dii
         }
         
         # 绘制DII贡献对比DCA曲线 - 现在直接返回数据而不是路径
@@ -255,10 +223,6 @@ def main():
             json.dump(single_model_data, f, indent=4)
             
         print(f"已从比较版本中提取并保存单模型DCA数据 -> {model_name}_DCA.json")
-        
-        # 直接调用plot_dca_curve函数绘制单模型DCA图表
-        plot_dca_curve(y, y_prob_all, weights, model_name, plot_dir, plot_data_dir, use_smote=True)
-        
         print(f"决策曲线分析(DCA)绘制完成 (耗时 {time.time() - start_time:.2f}秒)")
     
     print("\n所有评估与可视化任务完成！")

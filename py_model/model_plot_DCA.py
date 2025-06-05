@@ -200,11 +200,11 @@ def plot_dca_curve_comparison(y_true, y_probs_dict, weights, model_name, plot_di
         linestyle='--'
     )
     
-    # 绘制"Treat None"策略的曲线 - 红色长虚线
+    # 绘制"Treat None"策略的曲线 - 灰色长虚线
     plt.plot(
         thresholds, net_benefits_none, 
         label='Treat None', 
-        color='red', 
+        color='#888888', 
         linewidth=1.5, 
         linestyle='--'
     )
@@ -417,11 +417,11 @@ def plot_dca_curve(y_true, y_prob, weights, model_name, plot_dir, plot_data_dir,
         linestyle='--'
     )
     
-    # 绘制"Treat None"策略的曲线 - 红色长虚线
+    # 绘制"Treat None"策略的曲线 - 灰色长虚线
     plt.plot(
         thresholds, net_benefits_none, 
         label='Treat None', 
-        color='red', 
+        color='#888888', 
         linewidth=1.5, 
         linestyle='--'
     )

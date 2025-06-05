@@ -223,6 +223,10 @@ def main():
             json.dump(single_model_data, f, indent=4)
             
         print(f"已从比较版本中提取并保存单模型DCA数据 -> {model_name}_DCA.json")
+        
+        # 直接调用plot_dca_curve函数绘制单模型DCA图表
+        plot_dca_curve(y, y_prob_all, weights, model_name, plot_dir, plot_data_dir, use_smote=True)
+        
         print(f"决策曲线分析(DCA)绘制完成 (耗时 {time.time() - start_time:.2f}秒)")
     
     print("\n所有评估与可视化任务完成！")
