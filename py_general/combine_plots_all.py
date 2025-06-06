@@ -7,8 +7,22 @@ import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 from PIL import Image
 import re
+import yaml
+
+def load_config():
+    """加载配置文件"""
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    config_path = os.path.join(script_dir, '..', 'config.yaml')
+    
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
+    
+    return config
 
 def combine_plots():
+    # 加载配置
+    config = load_config()
+    
     # 输入和输出路径
     script_dir = os.path.dirname(os.path.abspath(__file__))
     plot_dir = os.path.join(script_dir, '..', 'plot')
@@ -37,15 +51,32 @@ def combine_plots():
             continue  # 跳过All模型
         elif first_part == 'ensemble':
             if len(parts) >= 3:
-                # 处理 Ensemble_Voting_XXX 模式
-                model_display = "Ensemble Voting"
-                model_key = "Ensemble_Voting"
+                # 处理 Ensemble_Voting_XXX 模式，统一使用Voting
+                model_key = "Voting"
+                # 从配置中获取显示名称
+                if 'models' in config and 'display_names' in config['models'] and 'Voting' in config['models']['display_names']:
+                    model_display = config['models']['display_names']['Voting']
+                else:
+                    model_display = "Voting"
                 img_type = '_'.join(parts[2:])
             else:
                 continue  # 格式不正确则跳过
+        elif first_part == 'voting':
+            # 直接处理Voting开头的文件
+            model_key = "Voting"
+            # 从配置中获取显示名称
+            if 'models' in config and 'display_names' in config['models'] and 'Voting' in config['models']['display_names']:
+                model_display = config['models']['display_names']['Voting']
+            else:
+                model_display = "Voting"
+            img_type = '_'.join(parts[1:])
         else:
-            model_display = parts[0]  # 显示名称
-            model_key = parts[0].lower()  # 键名称统一转为小写
+            model_key = parts[0]  # 键名称
+            # 从配置中获取显示名称
+            if 'models' in config and 'display_names' in config['models'] and model_key in config['models']['display_names']:
+                model_display = config['models']['display_names'][model_key]
+            else:
+                model_display = model_key  # 默认使用键名称作为显示名称
             img_type = '_'.join(parts[1:])
         
         # 将文件添加到模型映射中
@@ -57,23 +88,19 @@ def combine_plots():
         img_type_no_ext = os.path.splitext(img_type)[0]  # 去除扩展名
         files_by_model[model_key][img_type_no_ext] = f
     
-    # 按特定规则排序模型名称
-    # 1. 将Ensemble模型与非Ensemble模型分开
-    ensemble_models = []
-    regular_models = []
+    # 从配置中获取模型顺序
+    model_keys = []
+    if 'models' in config and 'order' in config['models']:
+        # 按照配置的顺序排列
+        for model in config['models']['order']:
+            # 如果模型在找到的文件中存在，添加到排序列表
+            if model in model_file_map:
+                model_keys.append(model)
     
-    for key in model_file_map.keys():
-        if key.startswith('Ensemble'):
-            ensemble_models.append(key)
-        else:
-            regular_models.append(key)
-    
-    # 2. 分别按照字母顺序排序
-    regular_models.sort()
-    ensemble_models.sort()
-    
-    # 3. 将常规模型放前面，Ensemble模型放后面
-    model_keys = regular_models + ensemble_models
+    # 添加任何在配置中未指定但在files_by_model中存在的模型
+    for model in files_by_model:
+        if model not in model_keys:
+            model_keys.append(model)
     
     print(f"找到的模型: {[model_file_map[key] for key in model_keys]}")
     print(f"模型显示顺序: {[model_file_map[key] for key in model_keys]}")

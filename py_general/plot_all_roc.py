@@ -24,6 +24,10 @@ models = config['models']['order']
 model_display_names = config['models']['display_names']
 colors = config['models']['colors']
 
+# 添加参考线颜色（如果配置中没有）
+if "Random" not in colors:
+    colors["Random"] = "gray"  # 随机分类器参考线的默认颜色
+
 # ROC配置
 ROC_CONFIG = {
     'figure_size': (7, 8),
@@ -37,21 +41,8 @@ ROC_CONFIG = {
     'output_dir': 'plot_combined'
 }
 
-def sort_models(models):
-    """按照指定的顺序对模型进行排序"""
-    # 分离出Logistic、Ensemble和其他模型
-    logistic_models = [m for m in models if m.lower().startswith('logistic')]
-    ensemble_models = [m for m in models if m.lower().startswith('ensemble')]
-    other_models = [m for m in models if not (m.lower().startswith('logistic') or m.lower().startswith('ensemble'))]
-    
-    # 对其他模型按字母顺序排序（不区分大小写）
-    other_models_sorted = sorted(other_models, key=str.lower)
-    
-    # 合并列表：Logistic + 其他模型 + Ensemble
-    return logistic_models + other_models_sorted + ensemble_models
-
-# 按照指定顺序对模型进行排序
-models = sort_models(models)
+# 直接使用config中定义的模型顺序，不再使用sort_models函数
+# 保留models变量不变，因为它已经是从config中读取的顺序
 
 def load_metrics_from_csv():
     """从 metrics_comparison.csv 加载模型的AUC-ROC值"""
@@ -147,10 +138,11 @@ def plot_all_roc():
     plt.ylabel("True Positive Rate")
     plt.title("Receiver Operating Characteristic (ROC) Curve")
     
-    # 模型图例，按首字母排序
+    # 按照config中定义的顺序创建模型图例
     model_handles = []
     model_labels = []
     
+    # 遍历config中定义的模型顺序
     for model_name in models:
         if model_name in all_models_data:
             model_handles.append(plt.Line2D(

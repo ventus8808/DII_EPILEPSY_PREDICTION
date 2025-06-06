@@ -1,5 +1,16 @@
 import json
+import yaml
 from pathlib import Path
+
+def load_config():
+    """加载配置文件"""
+    script_dir = Path(__file__).parent.absolute()
+    config_path = script_dir.parent / "config.yaml"
+    
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
+    
+    return config
 
 def format_value(v):
     """
@@ -38,6 +49,9 @@ def find_param_files(model_dir):
     return param_files
 
 def generate_params_table():
+    # 加载配置
+    config = load_config()
+    
     # 查找所有参数文件
     script_dir = Path(__file__).parent.absolute()
     model_dir = script_dir.parent / "model"
@@ -59,9 +73,13 @@ def generate_params_table():
         else:
             print(f"警告: 文件不存在 {file_path}")
     
+    # 使用配置中的模型顺序
+    ordered_models = get_ordered_models(config, all_params)
+    
     # 生成表格内容
     table = []
-    for model_name, params in all_params.items():
+    for model in ordered_models:
+        params = all_params[model]
         # 将所有参数格式化为一个字符串
         param_items = []
         for key, value in params.items():
@@ -69,7 +87,15 @@ def generate_params_table():
         
         # 将所有参数合并为一行，用分号分隔
         param_line = "; ".join(param_items)
-        table.append(f"{model_name}\t{param_line}")
+        
+        # 使用配置中的显示名称（如果有）
+        display_name = model
+        if 'models' in config and 'display_names' in config['models']:
+            # 检查普通模型名称
+            if model in config['models']['display_names']:
+                display_name = config['models']['display_names'][model]
+        
+        table.append(f"{display_name}\t{param_line}")
     
     # 添加表头
     output = "Model\tParameters\n" + "\n".join(table)
@@ -81,6 +107,23 @@ def generate_params_table():
         f.write(output)
     
     print(f"已生成 {output_path}")
+
+# 使用配置中的模型顺序
+def get_ordered_models(config, all_params):
+    """获取按照配置排序的模型列表"""
+    ordered_models = []
+    if 'models' in config and 'order' in config['models']:
+        # 处理配置中指定的模型
+        for model in config['models']['order']:
+            if model in all_params:
+                ordered_models.append(model)
+    
+    # 添加未在配置中指定但存在的模型
+    for model in all_params:
+        if model not in ordered_models:
+            ordered_models.append(model)
+    
+    return ordered_models
 
 if __name__ == "__main__":
     generate_params_table()

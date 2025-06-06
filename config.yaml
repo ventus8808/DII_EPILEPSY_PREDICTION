@@ -67,27 +67,27 @@ random_seed: 42
 
 # 模型配置
 models:
-  # 模型显示顺序
+  # 模型显示顺序，按照 线性、非线性、集成 模型的顺序排列 GNB LR CatBoost FNN LGBM RF XGBoost Voting
   order:
-    - "Logistic"
-    - "CatBoost"
-    - "FNN"
-    - "LightGBM"
-    - "GNB"
-    - "RF"
-    - "XGBoost"
-    - "Ensemble_Voting"
+    - "GNB"       # 线性模型
+    - "LR"        # 线性模型
+    - "CatBoost"  # 非线性模型
+    - "FNN"       # 非线性模型
+    - "LGBM"      # 非线性模型
+    - "RF"        # 非线性模型
+    - "XGBoost"   # 非线性模型
+    - "Voting"    # 集成模型
   
   # 模型显示名称
   display_names:
     XGBoost: "XGBoost"
-    LightGBM: "LightGBM"
+    LGBM: "LGBM"
     CatBoost: "CatBoost"
     RF: "RF"
     FNN: "FNN"
     GNB: "GNB"
-    Logistic: "Logistic"
-    Ensemble_Voting: "Voting"
+    LR: "LR"
+    Voting: "Voting"
   
   # 模型颜色
   colors:
@@ -97,8 +97,5 @@ models:
     RF: "#d62728"           # 红色
     FNN: "#9467bd"          # 紫色
     GNB: "#8c564b"         # 棕色
-    Logistic: "#e377c2"     # 粉色
-    Ensemble_Voting: "#17becf" # 青色
-    Random: "gray"          # 随机分类器参考线
-    Treat_All: "green"      # Treat All参考线
-    Treat_None: "red"       # Treat None参考线
+    LR: "#e377c2"          # 粉色
+    Voting: "#17becf"       # 青色

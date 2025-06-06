@@ -487,16 +487,16 @@ def plot_calibration_all_data(y_true, y_prob, weights, model_name, plot_dir, plo
             # 对数-对数坐标情况下的标题和显示范围
             plt.xlim([0.001, 1.1])
             plt.ylim([0.001, 1.1])
-            plt.title(f"Calibration Curve (Log-Log Scale) - {model_name}", fontproperties=font_props_title)
+            plt.title(f"Calibration Curve (Log-Log Scale) - {model_name}", pad=20, fontproperties=font_props_title)
         elif transform_type == 'log':
             # 单对数变换，范围需要计算
             plt.xlim([-0.01, np.log1p(1.02 * 9) / np.log(10)])
             plt.ylim([-0.01, 1.02])
-            plt.title(f"Calibration Curve (Log Scale) - {model_name}", fontproperties=font_props_title)
+            plt.title(f"Calibration Curve (Log Scale) - {model_name}", pad=20, fontproperties=font_props_title)
     else:
         plt.xlim([-0.01, 1.02])
         plt.ylim([-0.01, 1.02])
-        plt.title(f"Calibration Curve - {model_name}", fontproperties=font_props_title)
+        plt.title(f"Calibration Curve - {model_name}", pad=20, fontproperties=font_props_title)
     
     # 使用Monaco字体设置标签
     plt.xlabel("Mean predicted probability", fontproperties=font_props_label)

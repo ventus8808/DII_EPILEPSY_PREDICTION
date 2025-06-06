@@ -214,7 +214,7 @@ def plot_dca_curve_comparison(y_true, y_probs_dict, weights, model_name, plot_di
     plt.ylabel('Net Benefit')
     # 从model_name中提取基础名称（不包含括号）
     base_model_name = model_name.split('(')[0].strip()
-    plt.title(f'Decision Curve Analysis - {base_model_name}')
+    plt.title(f'DCA - {base_model_name}', pad=20)
     # 图例移动到左下角并缩小，添加边框并增加虹线长度
     plt.legend(loc='lower left', frameon=True, fontsize=10, fancybox=True, framealpha=0.8, handlelength=3.0)
     plt.grid(False)
@@ -432,7 +432,7 @@ def plot_dca_curve(y_true, y_prob, weights, model_name, plot_dir, plot_data_dir,
     # 从model_name中提取基础名称（不包含括号）
     base_model_name = model_name.split('(')[0].strip()
     # 简化标题，只保留模型名
-    plt.title(f'Decision Curve Analysis - {base_model_name}')
+    plt.title(f'DCA - {base_model_name}', pad=20)
     # 图例移动到右下角并缩小，添加边框并增加虹线长度
     plt.legend(loc='lower right', frameon=True, fontsize=10, fancybox=True, framealpha=0.8, handlelength=3.0)
     plt.grid(False)

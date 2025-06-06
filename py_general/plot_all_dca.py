@@ -18,10 +18,11 @@ models = config['models']['order']
 model_display_names = config['models']['display_names']
 colors = config['models']['colors']
 
-# 添加参考线颜色
+# 添加参考线颜色（如果配置中没有）
+# 使用硬编码的颜色，不依赖config.yaml
 colors.update({
-    "Treat_All": "#2ca02c",  # 绿色
-    "Treat_None": "#7f7f7f"  # 灰色
+    "Treat_All": "green",  # 绿色，与model_plot_DCA.py一致
+    "Treat_None": "#888888"  # 灰色，与model_plot_DCA.py一致
 })
 
 def load_dca_data(model_name):
@@ -149,7 +150,7 @@ def plot_all_dca():
         handles=model_handles,
         labels=model_labels,
         loc='center left',
-        bbox_to_anchor=(1.05, 0.5),  # 垂直居中
+        bbox_to_anchor=(1.05, 0.4),  # 垂直居中
         frameon=True,
         fontsize=10,  # 稍微减小字体
         title='Models',
@@ -163,7 +164,7 @@ def plot_all_dca():
         handles=dashed_handles,
         labels=dashed_labels,
         loc='upper left',
-        bbox_to_anchor=(1.05, 0.9),  # 靠近顶部
+        bbox_to_anchor=(1.05, 0.7),  # 靠近顶部
         frameon=True,
         fontsize=10,  # 统一字体大小
         title='Reference',

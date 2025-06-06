@@ -6,24 +6,70 @@ import glob
 from PIL import Image, ImageFile
 import numpy as np
 from pathlib import Path
+import yaml
+import re
 
 # 禁用PIL的DecompressionBomb保护
 Image.MAX_IMAGE_PIXELS = None
 # 允许加载大图片
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
-def sort_image_files(files):
-    """按照指定顺序对图片文件进行排序，不区分大小写"""
-    # 分离出Logistic、Ensemble和其他模型
-    logistic_files = [f for f in files if f.lower().startswith('logistic')]
-    ensemble_files = [f for f in files if f.lower().startswith('ensemble')]
-    other_files = [f for f in files if not (f.lower().startswith('logistic') or f.lower().startswith('ensemble'))]
+def load_config():
+    """加载配置文件"""
+    script_dir = Path(__file__).parent.absolute()
+    config_path = script_dir.parent / "config.yaml"
     
-    # 对其他模型按字母顺序排序（不区分大小写）
-    other_files_sorted = sorted(other_files, key=str.lower)
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
     
-    # 合并列表：Logistic + 其他模型 + Ensemble
-    sorted_files = logistic_files + other_files_sorted + ensemble_files
+    return config
+
+def sort_image_files(files, config):
+    """按照config.yaml中的模型顺序对图片文件进行排序"""
+    # 从配置中获取模型顺序
+    if 'models' in config and 'order' in config['models']:
+        model_order = config['models']['order']
+    else:
+        # 如果没有配置，使用文件名排序
+        return sorted(files, key=str.lower)
+    
+    # 创建映射，将文件名映射到模型名和排序索引
+    file_info = {}
+    for file in files:
+        basename = os.path.basename(file)
+        # 提取文件名的第一部分作为模型名
+        for model_name in model_order:
+            if basename.lower().startswith(model_name.lower()):
+                # 找到匹配的模型名
+                file_info[file] = {
+                    'model': model_name,
+                    'order': model_order.index(model_name)
+                }
+                break
+        else:
+            # 特殊处理Voting/Ensemble
+            if basename.lower().startswith("voting") or basename.lower().startswith("ensemble"):
+                voting_idx = model_order.index("Voting") if "Voting" in model_order else len(model_order)
+                file_info[file] = {
+                    'model': "Voting",
+                    'order': voting_idx
+                }
+            else:
+                # 未找到匹配的模型名
+                file_info[file] = {
+                    'model': "Unknown",
+                    'order': len(model_order)
+                }
+    
+    # 根据模型顺序排序
+    sorted_files = sorted(files, key=lambda f: file_info[f]['order'])
+    
+    # 调试输出，显示排序结果
+    print("\n排序结果:")
+    for file in sorted_files:
+        model_name = file_info[file]['model']
+        order = file_info[file]['order']
+        print(f"  {os.path.basename(file)} -> {model_name} (顺序: {order})")
     
     return sorted_files
 
@@ -119,7 +165,7 @@ def case_insensitive_glob(directory, pattern):
     # 返回匹配的文件路径
     return [Path(directory) / f for f in all_files if regex.match(f)]
 
-def process_plots(plot_dir, output_dir):
+def process_plots(plot_dir, output_dir, config):
     """处理plot目录下的图片（不区分大小写）"""
     plot_dir = Path(plot_dir)
     output_dir = Path(output_dir)
@@ -134,7 +180,6 @@ def process_plots(plot_dir, output_dir):
         '*Threshold.png', 
         '*Learning_Curve.png',
         '*Calibration_Curve.png'
-        
     ]
     
     for pattern in patterns:
@@ -144,12 +189,15 @@ def process_plots(plot_dir, output_dir):
             print(f"未找到匹配 {pattern} 的图片（不区分大小写）")
             continue
         
-        # 获取文件名并排序
-        file_names = [f.name for f in image_files]
-        sorted_files = sort_image_files(file_names)
+        print(f"\n处理模式 {pattern} 的图片:")
         
-        # 获取完整路径
-        sorted_paths = [plot_dir / f for f in sorted_files]
+        # 打印找到的文件
+        print("找到以下文件:")
+        for f in image_files:
+            print(f"  {f.name}")
+        
+        # 获取完整路径并按配置排序
+        sorted_paths = sort_image_files([str(f) for f in image_files], config)
         
         # 生成输出文件名
         output_name = f"Combine_{pattern.strip('*')}"
@@ -171,8 +219,12 @@ if __name__ == "__main__":
     plot_dir.mkdir(parents=True, exist_ok=True)
     output_dir.mkdir(parents=True, exist_ok=True)
     
+    # 加载配置文件
+    config = load_config()
+    
     print(f"输入目录: {plot_dir}")
     print(f"输出目录: {output_dir}")
+    print(f"模型顺序: {config['models']['order']}")
     
     # 处理图片
-    process_plots(plot_dir, output_dir)
+    process_plots(plot_dir, output_dir, config)

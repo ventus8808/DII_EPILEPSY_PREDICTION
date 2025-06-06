@@ -74,7 +74,11 @@ def plot_roc_curve(y_true, y_prob, weights, model_name, plot_dir, plot_data_dir)
         # 设置图的大小与阈值曲线相同
         fig, ax = plt.subplots(figsize=(7, 7))
         ax.set_aspect('equal', adjustable='box')
-        ax.plot(fpr, tpr, label=f'ROC curve (AUC = {roc_auc_rounded:.3f})', color='red', linewidth=2)
+        
+        # 添加网格线
+        ax.grid(True, linestyle='--', alpha=0.3, color='gray')
+        
+        ax.plot(fpr, tpr, label=f'ROC curve (AUC = {roc_auc_rounded:.3f})', color='#1f77b4', linewidth=2)
         ax.plot([0, 1], [0, 1], linestyle='--', color='gray', linewidth=2)
         
         # 设置标签和字体
@@ -82,7 +86,7 @@ def plot_roc_curve(y_true, y_prob, weights, model_name, plot_dir, plot_data_dir)
         ax.set_ylabel('True Positive Rate', fontproperties=monaco_font)
         ax.set_xlim(0, 1)
         ax.set_ylim(0, 1)
-        ax.set_title(f'ROC - {model_name}', pad=30, fontproperties=monaco_font)
+        ax.set_title(f'ROC - {model_name}', pad=20, fontproperties=monaco_font)
         
         # 只显示x轴的零点，不显示y轴的零点
         ax.set_xticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])
@@ -129,6 +133,10 @@ def plot_pr_curve(y_true, y_prob, weights, model_name, plot_dir, plot_data_dir):
         # 设置图的大小与阈值曲线相同
         fig, ax = plt.subplots(figsize=(7, 7))
         ax.set_aspect('equal', adjustable='box')
+        
+        # 添加网格线
+        ax.grid(True, linestyle='--', alpha=0.3, color='gray')
+        
         ax.plot(recall_values, precision_values, label=f'PR curve (AUC = {pr_auc_rounded:.3f})', color='green', linewidth=2)
         
         # 设置标签和字体
@@ -136,7 +144,7 @@ def plot_pr_curve(y_true, y_prob, weights, model_name, plot_dir, plot_data_dir):
         ax.set_ylabel('Precision', fontproperties=monaco_font)
         ax.set_xlim(0, 1)
         ax.set_ylim(0, 1)
-        ax.set_title(f'PR - {model_name}', pad=30, fontproperties=monaco_font)
+        ax.set_title(f'PR - {model_name}', pad=20, fontproperties=monaco_font)
         
         # 只显示x轴的零点，不显示y轴的零点
         ax.set_xticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])
@@ -560,9 +568,11 @@ def plot_confusion_matrix(y_true, y_pred, model_name, plot_dir, plot_data_dir, n
     # 设置轴标签和标题
     ax.set_ylabel('True label', fontproperties=monaco_font)
     ax.set_xlabel('Predicted label', fontproperties=monaco_font)
-    ax.set_title(title, pad=40, fontproperties=monaco_font)  # 增加pad值，将标题往上移动
-    ax.xaxis.set_ticks_position('top')
-    ax.xaxis.set_label_position('top')
+    ax.set_title(title, pad=20, fontproperties=monaco_font)  # 统一pad值为20
+    
+    # 将x轴刻度和标签放在底部
+    ax.xaxis.set_ticks_position('bottom')
+    ax.xaxis.set_label_position('bottom')
     
     if normalize:
         fname = f"{model_name}_Normalized_Confusion_Matrix.png"
@@ -615,7 +625,7 @@ def plot_threshold_curve(y_true, y_prob, model_name, plot_dir, plot_data_dir):
         ax.set_ylabel("Score", fontproperties=monaco_font)
         ax.set_xlim(0, 1)
         ax.set_ylim(0, 1)
-        ax.set_title(f"Threshold Curve - {model_name}", pad=30, fontproperties=monaco_font)
+        ax.set_title(f"Threshold Curve - {model_name}", pad=20, fontproperties=monaco_font)
         
         # 设置刻度 - 只显示x轴的零点，不显示y轴的零点
         ax.set_xticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])
@@ -816,7 +826,7 @@ def plot_roc_curve_comparison(y_true, y_probs_dict, weights, model_name, plot_di
         
         # 从model_name中提取基础名称（不包含括号）
         base_model_name = model_name.split('(')[0].strip()
-        ax.set_title(f'ROC Comparison - {base_model_name}', pad=30, fontproperties=monaco_font)
+        ax.set_title(f'ROC - {base_model_name}', pad=20, fontproperties=monaco_font)
         
         # 只显示x轴的零点，不显示y轴的零点
         ax.set_xticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])
