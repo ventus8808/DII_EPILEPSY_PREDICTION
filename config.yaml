@@ -91,11 +91,11 @@ models:
   
   # 模型颜色
   colors:
-    XGBoost: "#1f77b4"      # 蓝色
-    LightGBM: "#ff7f0e"     # 橙色
-    CatBoost: "#2ca02c"     # 绿色
-    RF: "#d62728"           # 红色
-    FNN: "#9467bd"          # 紫色
-    GNB: "#8c564b"         # 棕色
-    LR: "#e377c2"          # 粉色
-    Voting: "#17becf"       # 青色
+    XGBoost: "#3575B2"      # 深海蓝（更沉稳的学术蓝）
+    LGBM: "#E69F00"         # 琥珀橙（降低荧光感）
+    CatBoost: "#009E73"     # 翡翠绿（Nature风格绿色）
+    RF: "#CC3333"           # 砖红色（优化印刷对比度）
+    FNN: "#7A67CC"          # 薰衣草紫（添加灰度更柔和）
+    GNB: "#997570"          # 陶土棕（暖调中性色）
+    LR: "#D35FB0"           # 梅子粉（适合投影展示）
+    Voting: "#00B4D0"       # 孔雀青（SCI期刊常用青色）

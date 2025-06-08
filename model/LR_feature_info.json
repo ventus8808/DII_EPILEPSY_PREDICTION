@@ -12,9 +12,9 @@
         "ActivityLevel"
     ],
     "feature_count": 10,
-    "training_samples": 19346,
+    "training_samples": 18885,
     "original_training_samples": 8075,
     "test_samples": 3461,
     "use_smote": true,
-    "smote_pos_ratio": 0.5899927633619353
+    "smote_pos_ratio": 0.5799841143764892
 }

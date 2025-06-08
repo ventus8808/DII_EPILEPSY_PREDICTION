@@ -111,7 +111,7 @@ def main():
     # 计算采样策略，使正例比例为30%
     neg_count = sum(y_train == 0)
     pos_count = sum(y_train == 1)
-    target_pos_ratio = 0.59 # 目标正例比例
+    target_pos_ratio = 0.58 # 目标正例比例
     target_pos_count = int(neg_count * target_pos_ratio / (1 - target_pos_ratio))
     
     # 设置采样策略
